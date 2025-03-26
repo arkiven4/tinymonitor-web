@@ -1,0 +1,71 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="{% static 'img/favicon.ico' %}" type="image/ico" />
+
+    <title>{% block title %}{% endblock %}</title>
+
+    <link href="{% static 'css/vendors/bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/vendors/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/vendors/dataTables/dataTables.dataTables.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/custom.min.css' %}" rel="stylesheet">
+</head>
+
+<body class="nav-md">
+    <div class="container body">
+        <div class="main_container">
+            <div class="col-md-3 left_col">
+                <div class="left_col scroll-view">
+                    {% include 'sidebar.html' %}
+                </div>
+            </div>
+
+            <!-- top navigation -->
+            <div class="top_nav">
+                <div class="nav_menu">
+                    <div class="nav toggle">
+                        <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+                    </div>
+                    <nav class="nav navbar-nav">
+                        <ul class=" navbar-right">
+                            <li class="nav-item dropdown open" style="padding-left: 15px;"></li>
+                            <li role="presentation" class="nav-item dropdown open"></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <!-- /top navigation -->
+
+            <script src="{% static 'js/vendors/jquery/dist/jquery.min.js' %}"></script>
+            <script src="{% static 'js/vendors/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
+            <script src="{% static 'js/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js' %}"></script>
+            <script src="{% static 'js/vendors/dataTables/dataTables.min.js' %}"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script src="{% static 'js/custom.js' %}"></script>
+
+            <!-- page content -->
+            <div class="right_col" role="main">
+                {% block content %}{% endblock %}
+            </div>
+            <!-- /page content -->
+
+            <!-- footer content -->
+            <footer>
+                <div class="pull-right">
+                    -
+                </div>
+                <div class="clearfix"></div>
+            </footer>
+            <!-- /footer content -->
+        </div>
+    </div>
+</body>
+</html>

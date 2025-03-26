@@ -1,0 +1,484 @@
+<!-- templates/index.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Advisory{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
+
+<style>
+    #custom-tooltip {
+        position: absolute;
+        background: white;
+        border: 1px solid black;
+        padding: 10px;
+        border-radius: 5px;
+        pointer-events: auto;
+        display: none;
+        z-index: 1000;
+    }
+</style>
+
+<div class="row" id="chart_container">
+    <!-- <div class="col-md-12 col-sm-12">
+        <div class="x_panel tile fixed_height_320">
+            <div class="x_title">
+                <h2>Active Power</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                    <li class="dropdown"></li>
+                    <li><a class="close-link"><i class="fa fa-close"></i></a>
+                    </li>
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <button onclick="resetZoom()">Reset Zoom</button>
+                <div id="custom-tooltip0"></div>
+                <canvas id="chart_data0" style="width: 100%; height: 200px"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12 col-sm-12">
+        <div class="x_panel tile fixed_height_320">
+            <div class="x_title">
+                <h2>Reactive Power</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                    <li class="dropdown"></li>
+                    <li><a class="close-link"><i class="fa fa-close"></i></a>
+                    </li>
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <button onclick="resetZoom()">Reset Zoom</button>
+                <div id="custom-tooltip1"></div>
+                <canvas id="chart_data1" style="width: 100%; height: 200px"></canvas>
+            </div>
+        </div>
+    </div> -->
+</div>
+
+<div class="row">
+    <!-- <div class="col-md-12 col-sm-12 ">
+        <div class="dashboard_graph">
+            <div class="row x_title">
+                <div class="col-md-6">
+                    <h3>Sensor Parameters</h3>
+                </div>
+                <div class="col-md-6">
+                </div>
+            </div>
+            <div class="col-md-12 col-sm-12" style="width: 100%; height: 200px;"></div>
+        </div>
+    </div> -->
+
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="max-width: 80%;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Popup</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="{% static 'img/output2.png' %}" class="img-fluid mx-auto d-block">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"
+    integrity="sha512-vc58qvvBdrDR4etbxMdlTt4GBQk1qjvyORR2nrsPsFPyrs+/u5c3+1Ct6upOgdZoIl7eq6k3a1UPDSNAQi/32A=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.2.0/chartjs-plugin-zoom.min.js"
+    integrity="sha512-FRGbE3pigbYamZnw4+uT4t63+QJOfg4MXSgzPn2t8AWg9ofmFvZ/0Z37ZpCawjfXLBSVX2p2CncsmUH2hzsgJg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+    const featureSet = [
+        "Active Power", "Reactive Power", "Governor speed actual", "UGB X displacement", "UGB Y displacement",
+        "LGB X displacement", "LGB Y displacement", "TGB X displacement",
+        "TGB Y displacement", "Stator winding temperature 13",
+        "Stator winding temperature 14", "Stator winding temperature 15",
+        "Surface Air Cooler Air Outlet Temperature",
+        "Surface Air Cooler Water Inlet Temperature",
+        "Surface Air Cooler Water Outlet Temperature",
+        "Stator core temperature", "UGB metal temperature",
+        "LGB metal temperature 1", "LGB metal temperature 2",
+        "LGB oil temperature", "Penstock Flow", "Turbine flow",
+        "UGB cooling water flow", "LGB cooling water flow",
+        "Generator cooling water flow", "Governor Penstock Pressure",
+        "Penstock pressure", "Opening Wicked Gate", "UGB Oil Contaminant",
+        "Gen Thrust Bearing Oil Contaminant"
+    ];
+
+
+
+    function percentage2severity(value) {
+        return (value >= 0 && value < 5) ? 1 :
+            (value >= 5 && value < 20) ? 2 :
+                (value >= 20 && value < 40) ? 3 :
+                    (value >= 40 && value < 75) ? 4 :
+                        (value >= 75 && value <= 100) ? 5 : 6;
+    }
+
+    function severity2color(severity) {
+        const norm = (severity - 1) / 5; // Normalize severity to range [0,1]
+        const colorScale = d3.scaleLinear()
+            .domain([0, 0.5, 1]) // Normalized values
+            .range(["green", "yellow", "red"]); // Corresponding colors
+
+        return colorScale(norm); // Return the mapped color
+    }
+
+    let chart_array = [];
+
+    let sensor_data = [];
+    let severity_data = [];
+    let severity_color_data = [];
+
+    function updateChart(params) {
+        sensor_data = [];
+        severity_data = [];
+        severity_color_data = [];
+
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            //data: { name: name },
+            url: "/api/top10_charts",
+            success: function (data) {
+                for (let index = 0; index < data.counter_feature_s2.length; index++) {
+                    var current_sensor_name = data.counter_feature_s2[index];
+
+                    let current_sensor_data = [];
+                    let current_severity_data = [];
+                    let current_severity_color_data = [];
+                    let current_max = -999999;
+
+                    for (var i = 0; i < data['df_timestamp'].length; i++) {
+                        if (current_max < data['sensor_datas'][i][index]) {
+                            current_max = data['sensor_datas'][i][index]
+                        }
+                        current_sensor_data.push({
+                            x: data['df_timestamp'][i], y: data['sensor_datas'][i][index]
+                        })
+                    }
+
+                    document.getElementById("title_sensor" + index).innerText = current_sensor_name;
+
+                    current_max = current_max * 1.03
+                    for (var i = 0; i < data['df_timestamp'].length; i++) {
+                        if (data['severity_trending_datas'][i][index] >= 5) {
+                            var severity = percentage2severity(data['severity_trending_datas'][i][index]);
+                            current_severity_data.push({
+                                x: data['df_timestamp'][i], y: current_max, severity_value: data['severity_trending_datas'][i][index]
+                            })
+                            current_severity_color_data.push(severity2color(severity))
+                        }
+                    }
+                    severity_data.push(current_severity_data);
+                    severity_color_data.push(current_severity_color_data);
+
+                    setTimeout(() => {
+                        chart_array[index].data.datasets[0].label = current_sensor_name;
+                        chart_array[index].data.datasets[0].data = current_sensor_data;
+                        chart_array[index].data.datasets[1].data = severity_data[index];
+                        chart_array[index].data.datasets[1].pointBackgroundColor = severity_color_data[index];
+                        chart_array[index].update();
+                    }, 500);
+                }
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            //data: { name: name },
+            url: "/api/top10_charts",
+            success: function (data) {
+                for (let index = 0; index < data.counter_feature_s2.length; index++) {
+                    var current_sensor_name = data.counter_feature_s2[index];
+
+                    let current_sensor_data = [];
+                    let current_severity_data = [];
+                    let current_severity_color_data = [];
+                    let current_max = -999999;
+
+                    for (var i = 0; i < data['df_timestamp'].length; i++) {
+                        if (current_max < data['sensor_datas'][i][index]) {
+                            current_max = data['sensor_datas'][i][index]
+                        }
+                        current_sensor_data.push({
+                            x: data['df_timestamp'][i], y: data['sensor_datas'][i][index]
+                        })
+                    }
+
+                    document.getElementById("chart_container").innerHTML += `
+                        <div class="col-md-12 col-sm-12">
+                            <div class="x_panel tile">
+                                <div class="x_title">
+                                    <h2 id="title_sensor${index}">${current_sensor_name}</h2>
+                                    <ul class="nav navbar-right panel_toolbox">
+                                        <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                                        <li class="dropdown"></li>
+                                        <li><a class="close-link"><i class="fa fa-close"></i></a>
+                                        </li>
+                                    </ul>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="x_content">
+                                    <button onclick="resetZoom(${index})">Reset Zoom</button>
+                                    <div id="custom-tooltip${index}" style=" position: absolute; background: white; border: 1px solid black; padding: 10px; border-radius: 5px; pointer-events: auto; display: none; z-index: 1000; "></div>
+                                    <canvas id="chart_data${index}" style="width: 100%; height: 400px"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        `
+
+                    current_max = current_max * 1.03
+                    for (var i = 0; i < data['df_timestamp'].length; i++) {
+                        if (data['severity_trending_datas'][i][index] >= 5) {
+                            var severity = percentage2severity(data['severity_trending_datas'][i][index]);
+                            current_severity_data.push({
+                                x: data['df_timestamp'][i], y: current_max, severity_value: data['severity_trending_datas'][i][index]
+                            })
+                            current_severity_color_data.push(severity2color(severity))
+                        }
+                    }
+                    severity_data.push(current_severity_data);
+                    severity_color_data.push(current_severity_color_data);
+
+                    setTimeout(() => {
+                        var ctx = document.getElementById(`chart_data${index}`).getContext('2d');
+
+                        chart_array.push(new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                datasets: [{
+                                    label: data.counter_feature_s2[index],
+                                    data: current_sensor_data,
+                                    borderColor: 'blue',
+                                    backgroundColor: 'transparent',
+                                    tension: 0.4,
+                                    pointBackgroundColor: 'transparent',
+                                    pointRadius: 0,
+                                    pointHoverRadius: 0,
+                                    parsing: {
+                                        xAxisKey: 'x',
+                                        yAxisKey: 'y'
+                                    }
+                                }, {
+                                    label: 'Severity',
+                                    type: 'scatter',
+                                    data: severity_data[index],
+                                    //borderColor: 'green',
+                                    pointBackgroundColor: severity_color_data[index],
+                                    pointRadius: 5,
+                                    tension: 0
+                                }]
+                            },
+                            options: {
+                                responsive: false,
+                                scales: {
+                                    x: {
+                                        type: 'time',
+                                        time: {
+                                            unit: 'minute',
+                                            tooltipFormat: 'Do-MM-yyyy HH:mm:ss',
+                                            displayFormats: { minute: 'Do-MM-yyyy HH:mm:ss' }
+                                        },
+                                        ticks: {
+                                            minRotation: 45,
+                                            maxTicksLimit: 7,
+                                            //source: 'labels'
+                                        },
+                                        title: {
+                                            display: true,
+                                            text: 'Timestamp'
+                                        }
+                                    },
+                                    y: {
+                                        title: {
+                                            display: true,
+                                            text: 'Value'
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    tooltip: {
+                                        enabled: false,
+                                    },
+                                    zoom: {
+                                        zoom: {
+                                            wheel: {
+                                                enabled: false // Disable zoom on scroll
+                                            },
+                                            drag: {
+                                                enabled: true, // Enable drag-to-zoom
+                                                borderColor: 'rgba(0,0,0,0.3)',
+                                                borderWidth: 1,
+                                                backgroundColor: 'rgba(0,0,0,0.1)'
+                                            },
+                                            mode: 'xy' // Zoom in both X and Y directions
+                                        },
+                                        pan: {
+                                            enabled: false,
+                                            mode: 'xy'
+                                        }
+                                    }
+                                },
+                                onClick: (event, elements) => {
+                                    if (elements.length > 0) {
+                                        const datasetIndex = elements[0].datasetIndex;
+                                        if (datasetIndex === 1) {
+                                            var now_idx_sensor = parseInt(event.native.target.id.replace('chart_data', ''));
+                                            var tooltipEl = document.getElementById(`custom-tooltip${now_idx_sensor}`);
+
+                                            const index = elements[0].index;
+                                            const pointData = severity_data[now_idx_sensor][index];
+                                            const meta = chart_array[now_idx_sensor].getDatasetMeta(1);
+                                            const point = meta.data[index];
+                                            const canvasRect = chart_array[now_idx_sensor].canvas.getBoundingClientRect();
+
+                                            const clickedData = chart_array[now_idx_sensor].data.datasets[datasetIndex].data[index];
+
+
+                                            // Get pixel coordinates
+                                            const xScale = chart_array[now_idx_sensor].scales.x;
+                                            const yScale = chart_array[now_idx_sensor].scales.y;
+                                            const xPx = xScale.getPixelForValue(new Date(clickedData.x));
+                                            const yPx = yScale.getPixelForValue(clickedData.y);
+
+                                            // Position tooltip div
+                                            tooltipEl.innerHTML = `Time: ${pointData.x}<br>Severity Percentage: ${pointData.severity_value}<br>
+                    <button class="btn btn-primary btn-sm mt-2" onclick="openModal()">See Detail</button>`;
+
+                                            tooltipEl.style.left = `${xPx + chart_array[now_idx_sensor].canvas.offsetLeft}px`;
+                                            tooltipEl.style.top = `${yPx + chart_array[now_idx_sensor].canvas.offsetTop - 30}px`;
+                                            tooltipEl.style.display = 'block';
+                                        }
+
+                                    } else {
+                                        tooltipEl.style.display = 'none';
+                                    }
+                                }
+                            }
+                        }));
+                    }, 500);
+                }
+            }
+        });
+
+        // setInterval(() => {
+        //     updateChart();
+        // }, 1 * 10 * 1000);
+
+    });
+
+    // Reset Zoom Button
+    function resetZoom(index_chart) {
+        chart_array[index_chart].resetZoom();
+    }
+</script>
+<script>
+
+
+    // const maxY = Math.max(...data.map(d => d.y));
+    // const flatY = maxY * 1.03;
+    // const flatData = data.map(d => ({ x: d.x, y: flatY }));
+
+    // const clickableIndexes = [0, 2, 4, 6, 8]; // Only these indexes will be clickable
+
+    // const tooltipEl = document.getElementById('custom-tooltip');
+
+    // const chart = new Chart(ctx, {
+    //     type: 'line',
+    //     data: {
+    //         datasets: [{
+    //             label: 'Line Chart',
+    //             data: data,
+    //             borderColor: 'blue',
+    //             backgroundColor: 'transparent',
+    //             tension: 0.4,
+    //             pointBackgroundColor: (ctx) => clickableIndexes.includes(ctx.dataIndex) ? 'red' : 'transparent',
+    //             pointRadius: (ctx) => clickableIndexes.includes(ctx.dataIndex) ? 5 : 0,
+    //             pointHoverRadius: (ctx) => clickableIndexes.includes(ctx.dataIndex) ? 7 : 0,
+    //             parsing: {
+    //                 xAxisKey: 'x',
+    //                 yAxisKey: 'y'
+    //             }
+    //         }, {
+    //             label: 'Flat Scatter',
+    //             type: 'scatter',
+    //             data: flatData,
+    //             borderColor: 'green',
+    //             backgroundColor: 'green',
+    //             pointRadius: 5,
+    //             tension: 0
+    //         }]
+    //     },
+    //     options: {
+    //         responsive: true,
+    //         scales: {
+    //             x: {
+    //                 type: 'time',
+    //                 time: {
+    //                     unit: 'minute'
+    //                 },
+    //                 title: {
+    //                     display: true,
+    //                     text: 'Timestamp'
+    //                 }
+    //             },
+    //             y: {
+    //                 title: {
+    //                     display: true,
+    //                     text: 'Value'
+    //                 }
+    //             }
+    //         },
+    //         plugins: {
+    //             tooltip: {
+    //                 enabled: false,
+    //             }
+    //         },
+    //         onClick: (event, elements) => {
+    //             if (elements.length > 0) {
+    //                 const index = elements[0].index;
+    //                 if (!clickableIndexes.includes(index)) return;
+
+    //                 const pointData = data[index];
+    //                 const meta = chart.getDatasetMeta(0);
+    //                 const point = meta.data[index];
+    //                 const canvasRect = chart.canvas.getBoundingClientRect();
+
+    //                 tooltipEl.innerHTML = `Time: ${pointData.x}<br>Value: ${pointData.y}<br>
+    //                     <button class="btn btn-primary btn-sm mt-2" onclick="openModal()">Open Modal</button>`;
+
+    //                 const left = point.x;
+    //                 const top = point.y - tooltipEl.offsetHeight - 10;
+
+    //                 tooltipEl.style.left = left + 'px';
+    //                 tooltipEl.style.top = top + 'px';
+    //                 tooltipEl.style.display = 'block';
+    //             } else {
+    //                 tooltipEl.style.display = 'none';
+    //             }
+    //         }
+    //     }
+    // });
+
+    function openModal() {
+        var modal = new bootstrap.Modal(document.getElementById('myModal'));
+        modal.show();
+    }
+</script>
+{% endblock %}
