@@ -116,8 +116,8 @@ def get_sensorNtrend(start_date, end_date):
     #start_date = "2021-04-28T06:15:00"
     #end_date = "2021-05-28T06:15:00"
 
-    severity_trending_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
-    sensor_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor")
+    severity_trending_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db\\severity_trendings.db", "severity_trendings")
+    sensor_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db\\severity_trendings.db", "original_sensor")
 
     data_timestamp = sensor_datas[:, 1]
     severity_trending_datas = severity_trending_datas[:, 2:].astype(float)
@@ -140,7 +140,7 @@ def get_severityNTrend(start_date=None, end_date=datetime.now().strftime("%Y-%m-
     threshold_percentages = {}
     threshold_percentages_sorted = {}
     for idx_model, (model_name) in enumerate(model_array):
-        now_fetched = fetch_between_dates(end_date, end_date, settings.MONITORINGDB_PATH + "db/threshold_data.db", model_name)[0, 2:]
+        now_fetched = fetch_between_dates(end_date, end_date, settings.MONITORINGDB_PATH + "db\\threshold_data.db", model_name)[0, 2:]
 
         threshold_pass = {}
         for idx_sensor, sensor_thre in enumerate(now_fetched):
@@ -149,13 +149,13 @@ def get_severityNTrend(start_date=None, end_date=datetime.now().strftime("%Y-%m-
         threshold_percentages_sorted[idx_model] = dict(sorted(threshold_pass.items(), key=lambda item: item[1], reverse=True)[:10])
         threshold_percentages[idx_model] = threshold_pass
 
-    temp_original_data = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "original_data")
+    temp_original_data = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db\\original_data.db", "original_data")
     df_timestamp, df_feature = temp_original_data[:, 1], temp_original_data[:, 2:].astype(np.float16)
     #df_timestamp = np.array([convert_timestamp(now_str) for now_str in df_timestamp])
 
     temp_ypreds = {}
     for idx_model, (model_name) in enumerate(model_array):
-        temp_ypreds[idx_model] = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/pred_data.db", model_name)[:, 2:].astype(np.float16)
+        temp_ypreds[idx_model] = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db\\pred_data.db", model_name)[:, 2:].astype(np.float16)
 
     counter_feature_s2, counter_feature_plot = calc_counterPercentage(threshold_percentages_sorted)
     df_feature_send = []
@@ -186,7 +186,7 @@ def get_top10Charts(start_date, end_date):
     threshold_percentages = {}
     threshold_percentages_sorted = {}
     for idx_model, (model_name) in enumerate(model_array):
-        now_fetched = fetch_between_dates(end_date, end_date, settings.MONITORINGDB_PATH + "db/threshold_data.db", model_name)[0, 2:]
+        now_fetched = fetch_between_dates(end_date, end_date, settings.MONITORINGDB_PATH + "db\\threshold_data.db", model_name)[0, 2:]
 
         threshold_pass = {}
         for idx_sensor, sensor_thre in enumerate(now_fetched):
@@ -204,8 +204,8 @@ def get_top10Charts(start_date, end_date):
     #index_top10feat = list(reversed(index_top10feat))
     ## ^ Get 10 Feature
 
-    severity_trending_datas = fetch_between_dates(start_date_month, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
-    sensor_datas = fetch_between_dates(start_date_month, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor")
+    severity_trending_datas = fetch_between_dates(start_date_month, end_date, settings.MONITORINGDB_PATH + "db\\severity_trendings.db", "severity_trendings")
+    sensor_datas = fetch_between_dates(start_date_month, end_date, settings.MONITORINGDB_PATH + "db\\severity_trendings.db", "original_sensor")
 
     data_timestamp = sensor_datas[:, 1]
     severity_trending_datas = severity_trending_datas[:, 2:][:, index_top10feat].astype(float)
@@ -221,7 +221,7 @@ def get_top10Charts(start_date, end_date):
 
 
 def get_advisoryTable():
-    raw_trending_datas = fetch_last_rows(10, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
+    raw_trending_datas = fetch_last_rows(10, settings.MONITORINGDB_PATH + "db\\severity_trendings.db", "severity_trendings")
     raw_trending_datas = raw_trending_datas[::-1] # Reverse order
     data_timestamp = raw_trending_datas[:, 1]
     severity_trending_datas = raw_trending_datas[:, 2:].astype(float)
@@ -242,8 +242,8 @@ def get_advisoryDetail(sensor_id):
     start_date = start_date.strftime("%Y-%m-%dT%H:%M:%S")
     end_date = datetime_now.strftime("%Y-%m-%dT%H:%M:%S")
 
-    severity_trending_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
-    sensor_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor")
+    severity_trending_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db\\severity_trendings.db", "severity_trendings")
+    sensor_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db\\severity_trendings.db", "original_sensor")
 
     data_timestamp = sensor_datas[:, 1]
     severity_trending_datas = severity_trending_datas[:, sensor_id].astype(float)
