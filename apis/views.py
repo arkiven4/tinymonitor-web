@@ -3,6 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response 
 from django.http import JsonResponse
 from rest_framework import status
+from datetime import datetime, timedelta
 
 from apis.helper import get_sensorNtrend, get_severityNTrend, get_advisoryTable, get_advisoryDetail, get_top10Charts
 
@@ -45,7 +46,7 @@ def advisory_detail(request, feat_id=0):
 @api_view(['GET'])
 def severity_plot(request):
     start_date = None
-    end_date = "2021-05-28T03:55:00" # datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+    end_date = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S") #"2021-05-28T03:55:00" # datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
 
     counter_feature_s2, df_timestamp, df_feature_send, y_pred_send = get_severityNTrend(start_date, end_date)
     data = {

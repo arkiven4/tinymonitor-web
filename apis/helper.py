@@ -32,7 +32,7 @@ feature_set = ['Active Power', 'Reactive Power', 'Governor speed actual', 'UGB X
     'Penstock pressure', 'Opening Wicked Gate', 'UGB Oil Contaminant',
     'Gen Thrust Bearing Oil Contaminant']
 
-model_array = ["Attention", "DTAAD", "MAD_GAN", "TranAD", "DAGMM", "USAD"]
+model_array = ["Attention", "DTAAD", "MAD_GAN", "TranAD", "DAGMM", "USAD", "OmniAnomaly"]
 
 def fetch_between_dates(start_date, end_date, db_name="data.db", table_name="sensor_data"):
     conn = sqlite3.connect(db_name)
@@ -135,12 +135,13 @@ def get_severityNTrend(start_date=None, end_date=datetime.now().strftime("%Y-%m-
     if start_date == None:
         timestamp = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
         hours_2before = timestamp - timedelta(hours=2)
+        last_30minutes = timestamp - timedelta(minutes=20)
         start_date = hours_2before.strftime("%Y-%m-%dT%H:%M:%S")
 
     threshold_percentages = {}
     threshold_percentages_sorted = {}
     for idx_model, (model_name) in enumerate(model_array):
-        now_fetched = fetch_between_dates(end_date, end_date, settings.MONITORINGDB_PATH + "db\\threshold_data.db", model_name)[0, 2:]
+        now_fetched = fetch_between_dates(last_30minutes.strftime("%Y-%m-%dT%H:%M:%S"), end_date, settings.MONITORINGDB_PATH + "db\\threshold_data.db", model_name)[0, 2:]
 
         threshold_pass = {}
         for idx_sensor, sensor_thre in enumerate(now_fetched):
