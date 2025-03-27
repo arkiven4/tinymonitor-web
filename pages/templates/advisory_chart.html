@@ -91,23 +91,6 @@
     </div>
 </div>
 <script>
-    const featureSet = [
-        "Active Power", "Reactive Power", "Governor speed actual", "UGB X displacement", "UGB Y displacement",
-        "LGB X displacement", "LGB Y displacement", "TGB X displacement",
-        "TGB Y displacement", "Stator winding temperature 13",
-        "Stator winding temperature 14", "Stator winding temperature 15",
-        "Surface Air Cooler Air Outlet Temperature",
-        "Surface Air Cooler Water Inlet Temperature",
-        "Surface Air Cooler Water Outlet Temperature",
-        "Stator core temperature", "UGB metal temperature",
-        "LGB metal temperature 1", "LGB metal temperature 2",
-        "LGB oil temperature", "Penstock Flow", "Turbine flow",
-        "UGB cooling water flow", "LGB cooling water flow",
-        "Generator cooling water flow", "Governor Penstock Pressure",
-        "Penstock pressure", "Opening Wicked Gate", "UGB Oil Contaminant",
-        "Gen Thrust Bearing Oil Contaminant"
-    ];
-
     function percentage2severity(value) {
         return (value >= 0 && value < 5) ? 1 :
             (value >= 5 && value < 20) ? 2 :
@@ -219,8 +202,8 @@
                                     type: 'time',
                                     time: {
                                         unit: 'minute',
-                                        tooltipFormat: 'Do-MM-yyyy HH:mm:ss',
-                                        displayFormats: { minute: 'Do-MM-yyyy HH:mm:ss' }
+                                        tooltipFormat: 'Do-MMM HH:mm',
+                                        displayFormats: { minute: 'Do-MMM HH:mm' }
                                     },
                                     ticks: {
                                         minRotation: 45,
@@ -234,7 +217,7 @@
                                 y: {
                                     title: {
                                         display: true,
-                                        text: 'Sensor Value'
+                                        text: unitSet[idx_sensor]
                                     }
                                 }
                             },

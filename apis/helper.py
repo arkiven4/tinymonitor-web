@@ -80,9 +80,10 @@ def percentage2severity(value):
         6
     )
     
-def calc_counterPercentage(threshold_percentages_sorted):
+def calc_counterPercentage(threshold_percentages):
     counter_feature = {}
-    for modex_idx, values_pred in threshold_percentages_sorted.items():
+    for modex_idx, values_pred in threshold_percentages.items():
+        values_pred = dict(sorted(values_pred.items(), key=lambda item: item[1], reverse=True)[:10])
         for name_feat, percentage in values_pred.items():
             if name_feat in counter_feature:
                 counter_feature[name_feat]["count"] = counter_feature[name_feat]["count"] + 1
@@ -92,6 +93,7 @@ def calc_counterPercentage(threshold_percentages_sorted):
 
     counter_feature_s1 = dict(sorted(counter_feature.items(), key=lambda item: item[1]['count'], reverse=True)[:10])
     counter_feature_s2 = dict(sorted(counter_feature_s1.items(), key=lambda item: item[1]['percentage'] // len(model_array), reverse=True))
+    #counter_feature_s2_rank = dict(sorted(counter_feature_s1.items(), key=lambda item: item[1]['count'], reverse=True))
 
     for key, value in counter_feature_s2.items():
         counter_feature_s2[key]['count'] = (counter_feature_s2[key]['count'] / len(model_array)) * 100
@@ -102,22 +104,19 @@ def calc_counterPercentage(threshold_percentages_sorted):
     counter_feature_plot = {}
     for index, value in counter_feature_s2.items():
         higher_data = {"model": 0, "percentage": 0}
-        for model_idx in threshold_percentages_sorted:
-            if index in threshold_percentages_sorted[model_idx]:
-                if higher_data["percentage"] <= threshold_percentages_sorted[model_idx][index]:
+        for model_idx in threshold_percentages:
+            if index in threshold_percentages[model_idx]:
+                if higher_data["percentage"] <= threshold_percentages[model_idx][index]:
                     higher_data["model"] = model_idx
-                    higher_data["percentage"] = threshold_percentages_sorted[model_idx][index]
+                    higher_data["percentage"] = threshold_percentages[model_idx][index]
         
         counter_feature_plot[index] = higher_data['model']
 
     return counter_feature_s2, counter_feature_plot
 
 def get_sensorNtrend(start_date, end_date):
-    #start_date = "2021-04-28T06:15:00"
-    #end_date = "2021-05-28T06:15:00"
-
-    severity_trending_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db\\severity_trendings.db", "severity_trendings")
-    sensor_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db\\severity_trendings.db", "original_sensor")
+    severity_trending_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
+    sensor_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor")
 
     data_timestamp = sensor_datas[:, 1]
     severity_trending_datas = severity_trending_datas[:, 2:].astype(float)
@@ -135,13 +134,13 @@ def get_severityNTrend(start_date=None, end_date=datetime.now().strftime("%Y-%m-
     if start_date == None:
         timestamp = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
         hours_2before = timestamp - timedelta(hours=2)
-        last_30minutes = timestamp - timedelta(minutes=20)
+        last_30minutes = timestamp - timedelta(minutes=30)
         start_date = hours_2before.strftime("%Y-%m-%dT%H:%M:%S")
 
     threshold_percentages = {}
     threshold_percentages_sorted = {}
     for idx_model, (model_name) in enumerate(model_array):
-        now_fetched = fetch_between_dates(last_30minutes.strftime("%Y-%m-%dT%H:%M:%S"), end_date, settings.MONITORINGDB_PATH + "db\\threshold_data.db", model_name)[0, 2:]
+        now_fetched = fetch_between_dates(last_30minutes.strftime("%Y-%m-%dT%H:%M:%S"), end_date, settings.MONITORINGDB_PATH + "db/threshold_data.db", model_name)[-1, 2:]
 
         threshold_pass = {}
         for idx_sensor, sensor_thre in enumerate(now_fetched):
@@ -150,13 +149,13 @@ def get_severityNTrend(start_date=None, end_date=datetime.now().strftime("%Y-%m-
         threshold_percentages_sorted[idx_model] = dict(sorted(threshold_pass.items(), key=lambda item: item[1], reverse=True)[:10])
         threshold_percentages[idx_model] = threshold_pass
 
-    temp_original_data = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db\\original_data.db", "original_data")
+    temp_original_data = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "original_data")
     df_timestamp, df_feature = temp_original_data[:, 1], temp_original_data[:, 2:].astype(np.float16)
     #df_timestamp = np.array([convert_timestamp(now_str) for now_str in df_timestamp])
 
     temp_ypreds = {}
     for idx_model, (model_name) in enumerate(model_array):
-        temp_ypreds[idx_model] = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db\\pred_data.db", model_name)[:, 2:].astype(np.float16)
+        temp_ypreds[idx_model] = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/pred_data.db", model_name)[:, 2:].astype(np.float16)
 
     counter_feature_s2, counter_feature_plot = calc_counterPercentage(threshold_percentages_sorted)
     df_feature_send = []
@@ -166,8 +165,8 @@ def get_severityNTrend(start_date=None, end_date=datetime.now().strftime("%Y-%m-
     for idx, (feature_index_now) in enumerate(feature_index_list[:4]):
         model_idx_highest = counter_feature_plot[feature_set[feature_index_now]]
 
-        df_feature_send.append(temp_ypreds[model_idx_highest][:, idx])
-        y_pred_send.append(df_feature[:, idx])
+        df_feature_send.append(temp_ypreds[model_idx_highest][:, feature_index_now])
+        y_pred_send.append(df_feature[:, feature_index_now])
 
     df_feature_send = np.vstack(df_feature_send).T
     y_pred_send = np.vstack(y_pred_send).T
@@ -177,6 +176,7 @@ def get_severityNTrend(start_date=None, end_date=datetime.now().strftime("%Y-%m-
 def get_top10Charts(start_date, end_date):
     if start_date == None:
         timestamp = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
+        last_30minutes = timestamp - timedelta(minutes=30)
 
         hours_2before = timestamp - timedelta(hours=2)
         start_date = hours_2before.strftime("%Y-%m-%dT%H:%M:%S")
@@ -185,18 +185,16 @@ def get_top10Charts(start_date, end_date):
         start_date_month = month_before.strftime("%Y-%m-%dT%H:%M:%S")
 
     threshold_percentages = {}
-    threshold_percentages_sorted = {}
     for idx_model, (model_name) in enumerate(model_array):
-        now_fetched = fetch_between_dates(end_date, end_date, settings.MONITORINGDB_PATH + "db\\threshold_data.db", model_name)[0, 2:]
+        now_fetched = fetch_between_dates(last_30minutes.strftime("%Y-%m-%dT%H:%M:%S"), end_date, settings.MONITORINGDB_PATH + "db/threshold_data.db", model_name)[-1, 2:]
 
         threshold_pass = {}
         for idx_sensor, sensor_thre in enumerate(now_fetched):
             threshold_pass[feature_set[idx_sensor]] = float(sensor_thre)
 
-        threshold_percentages_sorted[idx_model] = dict(sorted(threshold_pass.items(), key=lambda item: item[1], reverse=True)[:10])
         threshold_percentages[idx_model] = threshold_pass
 
-    counter_feature_s2, counter_feature_plot = calc_counterPercentage(threshold_percentages_sorted)
+    counter_feature_s2, counter_feature_plot = calc_counterPercentage(threshold_percentages)
     counter_feature_s2 = counter_feature_s2.keys()
     index_top10feat = []
     for feat_top in counter_feature_s2:
@@ -205,25 +203,25 @@ def get_top10Charts(start_date, end_date):
     #index_top10feat = list(reversed(index_top10feat))
     ## ^ Get 10 Feature
 
-    severity_trending_datas = fetch_between_dates(start_date_month, end_date, settings.MONITORINGDB_PATH + "db\\severity_trendings.db", "severity_trendings")
-    sensor_datas = fetch_between_dates(start_date_month, end_date, settings.MONITORINGDB_PATH + "db\\severity_trendings.db", "original_sensor")
+    severity_trending_datas = fetch_between_dates(start_date_month, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
+    sensor_datas = fetch_between_dates(start_date_month, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor")
 
     data_timestamp = sensor_datas[:, 1]
     severity_trending_datas = severity_trending_datas[:, 2:][:, index_top10feat].astype(float)
     sensor_datas = sensor_datas[:, 2:][:, index_top10feat].astype(float)
 
-    window_size = 15
-    kernel = np.ones(window_size) / window_size
+    # window_size = 15
+    # kernel = np.ones(window_size) / window_size
 
-    for i in range(sensor_datas.shape[-1]):
-        sensor_datas[:, i] = np.convolve(sensor_datas[:, i], kernel, mode='same')
+    # for i in range(sensor_datas.shape[-1]):
+    #     sensor_datas[:, i] = np.convolve(sensor_datas[:, i], kernel, mode='same')
 
     return counter_feature_s2, data_timestamp, severity_trending_datas, sensor_datas
 
 
 def get_advisoryTable():
-    raw_trending_datas = fetch_last_rows(10, settings.MONITORINGDB_PATH + "db\\severity_trendings.db", "severity_trendings")
-    raw_trending_datas = raw_trending_datas[::-1] # Reverse order
+    raw_trending_datas = fetch_last_rows(10, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
+    raw_trending_datas = raw_trending_datas[::-1]
     data_timestamp = raw_trending_datas[:, 1]
     severity_trending_datas = raw_trending_datas[:, 2:].astype(float)
 
@@ -237,14 +235,14 @@ def get_advisoryTable():
     last_severity_featname = dict(sorted(sever_featname.items(), key=lambda item: item[1], reverse=True))
     return data_timestamp[-1], last_severity_featname
 
-def get_advisoryDetail(sensor_id):
-    datetime_now = datetime.strptime("2021-05-28T06:15:00", "%Y-%m-%dT%H:%M:%S") #datetime.utcnow()
-    start_date = datetime_now - timedelta(days=30)
-    start_date = start_date.strftime("%Y-%m-%dT%H:%M:%S")
-    end_date = datetime_now.strftime("%Y-%m-%dT%H:%M:%S")
+def get_advisoryDetail(start_date, end_date, sensor_id):
+    if start_date == None:
+        datetime_now = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
+        start_date = datetime_now - timedelta(days=30)
+        start_date = start_date.strftime("%Y-%m-%dT%H:%M:%S")
 
-    severity_trending_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db\\severity_trendings.db", "severity_trendings")
-    sensor_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db\\severity_trendings.db", "original_sensor")
+    severity_trending_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
+    sensor_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor")
 
     data_timestamp = sensor_datas[:, 1]
     severity_trending_datas = severity_trending_datas[:, sensor_id].astype(float)

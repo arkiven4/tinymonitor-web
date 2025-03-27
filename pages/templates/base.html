@@ -14,7 +14,8 @@
 
     <link href="{% static 'css/vendors/bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
     <link href="{% static 'css/vendors/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
-    <link href="{% static 'css/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css' %}"
+        rel="stylesheet">
     <link href="{% static 'css/vendors/dataTables/dataTables.dataTables.min.css' %}" rel="stylesheet">
     <link href="{% static 'css/custom.min.css' %}" rel="stylesheet">
 </head>
@@ -52,8 +53,40 @@
             <script src="{% static 'js/vendors/others/chart.js' %}"></script>
             <script src="{% static 'js/vendors/others/chartjs-adapter-moment@1.0.0.js' %}"></script>
             <script src="{% static 'js/vendors/others/chartjs-plugin-zoom.min.js' %}"></script>
+            <script src="{% static 'js/vendors/others/chartjs-plugin-datalabels@2.0.0.js' %}"></script>
             <script src="{% static 'js/vendors/others/d3.min.js' %}"></script>
             <script src="{% static 'js/custom.js' %}"></script>
+
+            <script>
+                const featureSet = [
+                    "Active Power", "Reactive Power", "Governor speed actual", "UGB X displacement", "UGB Y displacement",
+                    "LGB X displacement", "LGB Y displacement", "TGB X displacement",
+                    "TGB Y displacement", "Stator winding temperature 13",
+                    "Stator winding temperature 14", "Stator winding temperature 15",
+                    "Surface Air Cooler Air Outlet Temperature",
+                    "Surface Air Cooler Water Inlet Temperature",
+                    "Surface Air Cooler Water Outlet Temperature",
+                    "Stator core temperature", "UGB metal temperature",
+                    "LGB metal temperature 1", "LGB metal temperature 2",
+                    "LGB oil temperature", "Penstock Flow", "Turbine flow",
+                    "UGB cooling water flow", "LGB cooling water flow",
+                    "Generator cooling water flow", "Governor Penstock Pressure",
+                    "Penstock pressure", "Opening Wicked Gate", "UGB Oil Contaminant",
+                    "Gen Thrust Bearing Oil Contaminant"
+                ];
+
+                const unitSet = [
+                    "MW", "Mvar", "RPM", "µm", "µm",
+                    "µm", "µm", "µm", "µm", "˚C",
+                    "˚C", "˚C", "˚C", "˚C",
+                    "˚C", "˚C", "˚C",
+                    "˚C", "˚C", "˚C", "Cumecs", "Cumecs",
+                    "Cumecs", "Cumecs",
+                    "Cumecs", "mBar",
+                    "mBar", "%", "",
+                    ""
+                ];
+            </script>
 
             <!-- page content -->
             <div class="right_col" role="main">
@@ -72,4 +105,5 @@
         </div>
     </div>
 </body>
+
 </html>

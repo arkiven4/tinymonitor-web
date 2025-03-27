@@ -20,7 +20,7 @@
 </style>
 
 <div class="row" id="chart_container">
-    <div class="col-md-5 col-sm-12">
+    <div class="col-md-6 col-sm-12">
         <div class="x_panel tile">
             <div class="x_title">
                 <h2>Severity Chart</h2>
@@ -31,10 +31,23 @@
             </div>
         </div>
     </div>
-    <div class="col-md-7 col-sm-12">
+    <div class="col-md-6 col-sm-12">
         <div class="x_panel tile">
             <div class="x_title">
-                <h2>Original vs Predction Sensor Data</h2>
+                <h2>Severity Chart</h2>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <!-- <canvas id="barChart" style="width: 100%; height: 500px"></canvas> -->
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row" id="chart_container">
+    <div class="col-md-6 col-sm-12">
+        <div class="x_panel tile">
+            <div class="x_title">
+                <h2>Original vs Prediction Sensor Data</h2>
                 <div class="clearfix"></div>
             </div>
             <div class="x_content">
@@ -45,7 +58,20 @@
             </div>
         </div>
     </div>
-
+    <div class="col-md-6 col-sm-12">
+        <div class="x_panel tile">
+            <div class="x_title">
+                <h2>Loss and Threshold</h2>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <!-- <canvas id="lineChart1" style="width: 100%; height: 300px"></canvas>
+                <canvas id="lineChart2" style="width: 100%; height: 300px"></canvas>
+                <canvas id="lineChart3" style="width: 100%; height: 300px"></canvas>
+                <canvas id="lineChart4" style="width: 100%; height: 300px"></canvas> -->
+            </div>
+        </div>
+    </div>
 
     <!-- <div class="col-md-12 col-sm-12">
         <div class="x_panel tile fixed_height_320">
@@ -99,23 +125,6 @@
 </div>
 
 <script>
-    const featureSet = [
-        "Active Power", "Reactive Power", "Governor speed actual", "UGB X displacement", "UGB Y displacement",
-        "LGB X displacement", "LGB Y displacement", "TGB X displacement",
-        "TGB Y displacement", "Stator winding temperature 13",
-        "Stator winding temperature 14", "Stator winding temperature 15",
-        "Surface Air Cooler Air Outlet Temperature",
-        "Surface Air Cooler Water Inlet Temperature",
-        "Surface Air Cooler Water Outlet Temperature",
-        "Stator core temperature", "UGB metal temperature",
-        "LGB metal temperature 1", "LGB metal temperature 2",
-        "LGB oil temperature", "Penstock Flow", "Turbine flow",
-        "UGB cooling water flow", "LGB cooling water flow",
-        "Generator cooling water flow", "Governor Penstock Pressure",
-        "Penstock pressure", "Opening Wicked Gate", "UGB Oil Contaminant",
-        "Gen Thrust Bearing Oil Contaminant"
-    ];
-
     function percentage2severity(value) {
         return (value >= 0 && value < 5) ? 1 :
             (value >= 5 && value < 20) ? 2 :
@@ -164,7 +173,7 @@
 
                 // Bar Chart
                 barchart.data.labels = severityLabels
-                barchart.data.datasets[0] = { label: "Severity", data: severityValues, backgroundColor: colors}
+                barchart.data.datasets[0] = { label: "Severity", data: severityValues, backgroundColor: colors }
                 barchart.update();
             }
         });
@@ -184,7 +193,7 @@
                 const severityData = data.counter_feature_s2
                 const severityLabels = Object.keys(severityData);
                 const severityValues = severityLabels.map(label => severityData[label].severity);
-                const severityCounts = severityLabels.map(label => severityData[label].count);
+                const severityCounts = severityLabels.map(label => parseInt(severityData[label].count) + "%");
 
                 const colors = severityValues.map(value => severity2color(value));
 
@@ -206,8 +215,8 @@
                                     type: 'time',
                                     time: {
                                         unit: 'minute',
-                                        tooltipFormat: 'Do-MM-yyyy HH:mm:ss',
-                                        displayFormats: { minute: 'Do-MM-yyyy HH:mm:ss' }
+                                        tooltipFormat: 'Do-MMM HH:mm',
+                                        displayFormats: { minute: 'Do-MMM HH:mm' }
                                     },
                                     ticks: {
                                         minRotation: 45,
@@ -215,14 +224,18 @@
                                         autoSkip: false,
                                         //source: 'labels'
                                     }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: unitSet[featureSet.indexOf(feature)]
+                                    }
                                 }
                             }
-
                         }
                     }));
                 });
-                
-                console.log(severityValues)
+
                 // Bar Chart
                 barchart = new Chart(document.getElementById("barChart").getContext('2d'), {
                     type: 'bar',
@@ -231,6 +244,7 @@
                         datasets: [{
                             label: "Severity",
                             data: severityValues,
+                            count: severityCounts,
                             backgroundColor: colors
                         }]
                     },
@@ -243,7 +257,16 @@
                         },
                         plugins: {
                             legend: { display: false },
-                            tooltip: { enabled: true }
+                            tooltip: { enabled: true },
+                            datalabels: {
+                                anchor: 'center',  
+                                align: 'center',  
+                                color: 'white',    
+                                font: { weight: 'bold' },
+                                formatter: (value, context) => {
+                                    return context.dataset.count[context.dataIndex]; 
+                                }
+                            }
                         },
                         onClick: (event, elements) => {
                             if (elements.length > 0) {
@@ -252,7 +275,8 @@
                                 alert(`You clicked on ${selectedFeature}`);
                             }
                         }
-                    }
+                    },
+                    plugins: [ChartDataLabels]
                 });
             }
         });
