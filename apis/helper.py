@@ -33,6 +33,20 @@ feature_set = ['Active Power', 'Reactive Power', 'Governor speed actual', 'UGB X
     'Gen Thrust Bearing Oil Contaminant']
 
 model_array = ["Attention", "DTAAD", "MAD_GAN", "TranAD", "DAGMM", "USAD", "OmniAnomaly"]
+with open('model_thr.pickle', 'rb') as handle:
+    model_thr = pickle.load(handle)
+
+with open('normalize_2023.pickle', 'rb') as handle:
+    normalize_obj = pickle.load(handle)
+    min_a, max_a = normalize_obj['min_a'], normalize_obj['max_a']
+
+def normalize3(a, min_a=None, max_a=None):
+    if min_a is None: min_a, max_a = np.min(a, axis=0), np.max(a, axis=0)
+    return ((a - min_a) / (max_a - min_a + 0.0001)), min_a, max_a
+
+def denormalize3(a_norm, min_a, max_a):
+    return a_norm * (max_a - min_a + 0.0001) + min_a
+
 
 def fetch_between_dates(start_date, end_date, db_name="data.db", table_name="sensor_data"):
     conn = sqlite3.connect(db_name)
@@ -130,17 +144,13 @@ def get_sensorNtrend(start_date, end_date):
 
     return data_timestamp, severity_trending_datas, sensor_datas
 
-def get_severityNTrend(start_date=None, end_date=datetime.now().strftime("%Y-%m-%dT%H:%M:%S")):
-    if start_date == None:
-        timestamp = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
-        hours_2before = timestamp - timedelta(hours=2)
-        last_30minutes = timestamp - timedelta(minutes=30)
-        start_date = hours_2before.strftime("%Y-%m-%dT%H:%M:%S")
+def get_severityNTrend(start_date=None, end_date=None):
+    start_date45 = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S") - timedelta(minutes=30)
 
     threshold_percentages = {}
     threshold_percentages_sorted = {}
     for idx_model, (model_name) in enumerate(model_array):
-        now_fetched = fetch_between_dates(last_30minutes.strftime("%Y-%m-%dT%H:%M:%S"), end_date, settings.MONITORINGDB_PATH + "db/threshold_data.db", model_name)[-1, 2:]
+        now_fetched = fetch_between_dates(start_date45.strftime("%Y-%m-%dT%H:%M:%S"), end_date, settings.MONITORINGDB_PATH + "db/threshold_data.db", model_name)[-1, 2:]
 
         threshold_pass = {}
         for idx_sensor, sensor_thre in enumerate(now_fetched):
@@ -160,28 +170,41 @@ def get_severityNTrend(start_date=None, end_date=datetime.now().strftime("%Y-%m-
     counter_feature_s2, counter_feature_plot = calc_counterPercentage(threshold_percentages_sorted)
     df_feature_send = []
     y_pred_send = []
+    loss_send = []
+    thr_now_model = []
 
     feature_index_list = [feature_set.index(feat_name) for feat_name in list(counter_feature_s2.keys())]
     for idx, (feature_index_now) in enumerate(feature_index_list[:4]):
         model_idx_highest = counter_feature_plot[feature_set[feature_index_now]]
 
+        y_true, _, _ = normalize3(df_feature, min_a, max_a)
+        y_pred, _, _ = normalize3(temp_ypreds[model_idx_highest], min_a, max_a)
+
+        loss = denormalize3((y_true - y_pred) ** 2, min_a, max_a)
+        model_thr_temp = denormalize3(model_thr[model_array[model_idx_highest]], min_a, max_a)
+
+        loss_send.append(loss[:, feature_index_now])
+        thr_now_model.append(float(model_thr_temp[feature_index_now]))
+
         df_feature_send.append(temp_ypreds[model_idx_highest][:, feature_index_now])
         y_pred_send.append(df_feature[:, feature_index_now])
 
+
     df_feature_send = np.vstack(df_feature_send).T
     y_pred_send = np.vstack(y_pred_send).T
-    return counter_feature_s2, df_timestamp, df_feature_send, y_pred_send
+    loss_send = np.vstack(loss_send).T
+    return counter_feature_s2, df_timestamp, df_feature_send, y_pred_send, loss_send, thr_now_model
 
 
 def get_top10Charts(start_date, end_date):
     if start_date == None:
         timestamp = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
-        last_30minutes = timestamp - timedelta(minutes=30)
+        last_30minutes = timestamp - timedelta(minutes=60)
 
         hours_2before = timestamp - timedelta(hours=2)
         start_date = hours_2before.strftime("%Y-%m-%dT%H:%M:%S")
 
-        month_before = timestamp - timedelta(days=30)
+        month_before = timestamp - timedelta(days=7)
         start_date_month = month_before.strftime("%Y-%m-%dT%H:%M:%S")
 
     threshold_percentages = {}
@@ -236,15 +259,13 @@ def get_advisoryTable():
     return data_timestamp[-1], last_severity_featname
 
 def get_advisoryDetail(start_date, end_date, sensor_id):
-    if start_date == None:
-        datetime_now = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S")
-        start_date = datetime_now - timedelta(days=30)
-        start_date = start_date.strftime("%Y-%m-%dT%H:%M:%S")
-
     severity_trending_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
     sensor_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor")
-
+    
     data_timestamp = sensor_datas[:, 1]
+    severity_trending_datas = severity_trending_datas[:, 2:]
+    sensor_datas = sensor_datas[:, 2:]
+
     severity_trending_datas = severity_trending_datas[:, sensor_id].astype(float)
     sensor_datas = sensor_datas[:, sensor_id].astype(float)
 

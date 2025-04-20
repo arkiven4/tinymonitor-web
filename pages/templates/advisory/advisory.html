@@ -1,7 +1,7 @@
 <!-- templates/index.html -->
 {% extends 'base.html' %}
 
-{% block title %}Advisory{% endblock %}
+{% block title %}Advisory - Vale Dash{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -86,7 +86,7 @@
                             <td>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum
                                 has been</td>
                             <td>${data.last_timestamp}</td>
-                            <td><button class="btn btn-primary" onclick="window.open('/advisory/chart?feat_id=${featureSet.indexOf(key)}','_blank')">Chart</button></td>
+                            <td><button class="btn btn-primary" onclick="window.open('/advisory/chart?feat_id=${featureSet.indexOf(key)}&minusdays=7','_blank')">Chart</button></td>
                         </tr>`
                 }
 

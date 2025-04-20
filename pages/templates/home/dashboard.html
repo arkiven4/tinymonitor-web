@@ -2,7 +2,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Advisory{% endblock %}
+{% block title %}Home - Vale Dash{% endblock %}
 
 {% block content %}
 
@@ -65,10 +65,10 @@
                 <div class="clearfix"></div>
             </div>
             <div class="x_content">
-                <!-- <canvas id="lineChart1" style="width: 100%; height: 300px"></canvas>
-                <canvas id="lineChart2" style="width: 100%; height: 300px"></canvas>
-                <canvas id="lineChart3" style="width: 100%; height: 300px"></canvas>
-                <canvas id="lineChart4" style="width: 100%; height: 300px"></canvas> -->
+                <canvas id="losslineChart1" style="width: 100%; height: 300px"></canvas>
+                <canvas id="losslineChart2" style="width: 100%; height: 300px"></canvas>
+                <canvas id="losslineChart3" style="width: 100%; height: 300px"></canvas>
+                <canvas id="losslineChart4" style="width: 100%; height: 300px"></canvas>
             </div>
         </div>
     </div>
@@ -145,11 +145,14 @@
     let chart_array = [];
     let barchart = null;
 
-    function updateChart(params) {
+    function updateChart() {
+        var end_date = nowDateMoment.format("YYYY-MM-DDTHH:mm:ss"); // moment.utc();
+        var start_date = nowDateMoment.subtract(2, 'hours').format("YYYY-MM-DDTHH:mm:ss");
+
         $.ajax({
             type: "GET",
             dataType: "json",
-            //data: { name: name },
+            data: { start_date: start_date, end_date: end_date},
             url: "/api/severity_plot",
             success: function (data) {
                 const timestamps = data.df_timestamp;
@@ -159,7 +162,7 @@
                 const severityData = data.counter_feature_s2
                 const severityLabels = Object.keys(severityData);
                 const severityValues = severityLabels.map(label => severityData[label].severity);
-                const severityCounts = severityLabels.map(label => severityData[label].count);
+                const severityCounts = severityLabels.map(label => parseInt(severityData[label].count) + "%");
 
                 const colors = severityValues.map(value => severity2color(value));
 
@@ -171,24 +174,28 @@
                     chart_array[idx].update();
                 });
 
-                // Bar Chart
+                // Bar Chart 
                 barchart.data.labels = severityLabels
-                barchart.data.datasets[0] = { label: "Severity", data: severityValues, backgroundColor: colors }
+                barchart.data.datasets[0] = { label: "Severity", data: severityValues, backgroundColor: colors, count: severityCounts }
                 barchart.update();
             }
         });
     }
 
     $(document).ready(function () {
+        var end_date = nowDateMoment.format("YYYY-MM-DDTHH:mm:ss");
+        var start_date = nowDateMoment.subtract(2, 'hours').format("YYYY-MM-DDTHH:mm:ss");
+
         $.ajax({
             type: "GET",
             dataType: "json",
-            //data: { name: name },
             url: "/api/severity_plot",
+            data: { start_date: start_date, end_date: end_date},
             success: function (data) {
                 const timestamps = data.df_timestamp;
                 const predictions = data.y_pred_send;
                 const originalData = data.df_feature_send;
+                const lossData = data.loss_send;
 
                 const severityData = data.counter_feature_s2
                 const severityLabels = Object.keys(severityData);
@@ -211,20 +218,7 @@
                             animation: { duration: 500 },
                             plugins: { legend: { display: true }, title: { display: true, text: feature } },
                             scales: {
-                                x: {
-                                    type: 'time',
-                                    time: {
-                                        unit: 'minute',
-                                        tooltipFormat: 'Do-MMM HH:mm',
-                                        displayFormats: { minute: 'Do-MMM HH:mm' }
-                                    },
-                                    ticks: {
-                                        minRotation: 45,
-                                        maxTicksLimit: 7,
-                                        autoSkip: false,
-                                        //source: 'labels'
-                                    }
-                                },
+                                x: xChartLineFormat,
                                 y: {
                                     title: {
                                         display: true,
@@ -233,6 +227,44 @@
                                 }
                             }
                         }
+                    }));
+
+                    var thresholdHighArray = new Array(timestamps.length).fill(data.thr_now_model[idx]);
+                    chart_array.push(new Chart(document.getElementById(`losslineChart${idx + 1}`).getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: timestamps,
+                            datasets: [{ label: "Loss", data: lossData.map(row => row[idx]), borderColor: "red", fill: false },
+                            { label: "Threshold", data: thresholdHighArray, borderColor: "blue", fill: false }]
+                        },
+                        options: {
+                            responsive: true,
+                            animation: { duration: 500 },
+                            plugins: { legend: { display: true }, title: { display: true, text: feature } },
+                            annotation: {
+                                annotations: [{
+                                    type: 'line',
+                                    mode: 'horizontal',
+                                    scaleID: 'y-axis-0',
+                                    value: 5,
+                                    borderColor: 'rgb(75, 192, 192)',
+                                    borderWidth: 4,
+                                    label: {
+                                        enabled: false,
+                                        content: 'Test label'
+                                    }
+                                }]
+                            },
+                            scales: {
+                                x: xChartLineFormat,
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: unitSet[featureSet.indexOf(feature)]
+                                    }
+                                }
+                            }
+                        },
                     }));
                 });
 
@@ -259,12 +291,12 @@
                             legend: { display: false },
                             tooltip: { enabled: true },
                             datalabels: {
-                                anchor: 'center',  
-                                align: 'center',  
-                                color: 'white',    
+                                anchor: 'center',
+                                align: 'center',
+                                color: 'white',
                                 font: { weight: 'bold' },
                                 formatter: (value, context) => {
-                                    return context.dataset.count[context.dataIndex]; 
+                                    return context.dataset.count[context.dataIndex];
                                 }
                             }
                         },
