@@ -20,7 +20,7 @@
 </style>
 
 <div class="row" id="chart_container">
-    <div class="col-md-6 col-sm-12">
+    <div class="col-md-8 col-sm-12">
         <div class="x_panel tile">
             <div class="x_title">
                 <h2>Severity Chart</h2>
@@ -31,14 +31,50 @@
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-sm-12">
+    <div class="col-md-4 col-sm-12">
         <div class="x_panel tile">
             <div class="x_title">
-                <h2>To be Developed</h2>
+                <h2>Information</h2>
                 <div class="clearfix"></div>
             </div>
             <div class="x_content">
-                <!-- <canvas id="barChart" style="width: 100%; height: 500px"></canvas> -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <th style="width:25%">Current Time</th>
+                                        <td>"YYYY-MM-DDTHH:mm:ss"</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Last update</th>
+                                        <td>"YYYY-MM-DDTHH:mm:ss"</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Next Update</th>
+                                        <td>"YYYY-MM-DDTHH:mm:ss"</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <hr />
+                        <div class="table-responsive">
+                            <table class="table">
+                                <tbody>
+                                    <tr>
+                                        <th style="width:25%">Models Used in Calc</th>
+                                        <td>6</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Threshold Setting</th>
+                                        <td>"YYYY-MM-DDTHH:mm:ss"</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -76,12 +112,28 @@
 
 <script>
     function severity2color(severity) {
-        const norm = (severity - 1) / 5; // Normalize severity to range [0,1]
+        const norm = (severity - 1) / 5;
         const colorScale = d3.scaleLinear()
             .domain([0, 0.5, 1]) // Normalized values
             .range(["green", "yellow", "red"]); // Corresponding colors
 
         return colorScale(norm); // Return the mapped color
+    }
+
+    function parseData_fromserver(data) {
+        const timestamps = data.df_timestamp;
+        const predictions = data.y_pred_send;
+        const originalData = data.df_feature_send;
+        const lossData = data.loss_send;
+
+        const severityData = data.counter_feature_s2
+        const severityLabels = Object.keys(severityData);
+        const severityValues = severityLabels.map(label => severityData[label].severity);
+        const severityCounts = severityLabels.map(label => parseInt(severityData[label].count) + "%");
+
+        const colors = severityValues.map(value => severity2color(value));
+
+        return [timestamps, predictions, originalData, lossData, severityData, severityLabels, severityValues, severityCounts, colors]
     }
 
     let chart_array = [];
@@ -98,23 +150,22 @@
             data: { start_date: start_date, end_date: end_date },
             url: "/api/severity_plot",
             success: function (data) {
-                const timestamps = data.df_timestamp;
-                const predictions = data.y_pred_send;
-                const originalData = data.df_feature_send;
-
-                const severityData = data.counter_feature_s2
-                const severityLabels = Object.keys(severityData);
-                const severityValues = severityLabels.map(label => severityData[label].severity);
-                const severityCounts = severityLabels.map(label => parseInt(severityData[label].count) + "%");
-
-                const colors = severityValues.map(value => severity2color(value));
+                let [timestamps, predictions, originalData, lossData, severityData, severityLabels, severityValues, severityCounts, colors] = parseData_fromserver(data)
 
                 // Line Charts
                 severityLabels.slice(0, 4).forEach((feature, idx) => {
-                    chart_array[idx].data.labels = timestamps
+                    chart_array[idx].data.labels = timestamps;
                     chart_array[idx].data.datasets[0] = { label: "Original", data: originalData.map(row => row[idx]), borderColor: "red", fill: false },
                         { label: "Prediction", data: predictions.map(row => row[idx]), borderColor: "blue", fill: false }
                     chart_array[idx].update();
+
+                    losschart_array[idx].data.labels = timestamps;
+                    losschart_array[idx].data.datasets[0] = { label: "Loss", data: lossData.map(row => row[idx]), backgroundColor: "black", borderColor: "black", fill: false }
+
+                    losschart_array[idx].options.plugins.annotation.annotations[0].yMin = data.thr_now_model[idx]
+                    losschart_array[idx].options.plugins.annotation.annotations[0].yMax = data.thr_now_model[idx]
+
+                    losschart_array[idx].update();
                 });
 
                 // Bar Chart 
@@ -135,17 +186,8 @@
             url: "/api/severity_plot",
             data: { start_date: start_date, end_date: end_date },
             success: function (data) {
-                const timestamps = data.df_timestamp;
-                const predictions = data.y_pred_send;
-                const originalData = data.df_feature_send;
-                const lossData = data.loss_send;
-
-                const severityData = data.counter_feature_s2
-                const severityLabels = Object.keys(severityData);
-                const severityValues = severityLabels.map(label => severityData[label].severity);
-                const severityCounts = severityLabels.map(label => parseInt(severityData[label].count) + "%");
-
-                const colors = severityValues.map(value => severity2color(value));
+                let [timestamps, predictions, originalData, lossData,
+                    severityData, severityLabels, severityValues, severityCounts, colors] = parseData_fromserver(data)
 
                 // Line Charts
                 severityLabels.slice(0, 4).forEach((feature, idx) => {
@@ -153,8 +195,8 @@
                         type: 'line',
                         data: {
                             labels: timestamps,
-                            datasets: [{ label: "Original", data: originalData.map(row => row[idx]), borderColor: "red", fill: false },
-                            { label: "Prediction", data: predictions.map(row => row[idx]), borderColor: "blue", fill: false }]
+                            datasets: [{ label: "Original", data: originalData.map(row => row[idx]), backgroundColor: "red", borderColor: "red", fill: false },
+                            { label: "Prediction", data: predictions.map(row => row[idx]), backgroundColor: "blue", borderColor: "blue", fill: false }]
                         },
                         options: {
                             responsive: true,
@@ -169,13 +211,11 @@
                         }
                     }));
 
-                    var thresholdHighArray = new Array(timestamps.length).fill(data.thr_now_model[idx]);
                     losschart_array.push(new Chart(document.getElementById(`losslineChart${idx + 1}`).getContext('2d'), {
                         type: 'line',
                         data: {
                             labels: timestamps,
-                            datasets: [{ label: "Loss", data: lossData.map(row => row[idx]), borderColor: "red", fill: false },
-                            { label: "Threshold", data: thresholdHighArray, borderColor: "blue", fill: false }]
+                            datasets: [{ label: "Loss", data: lossData.map(row => row[idx]), backgroundColor: "black", borderColor: "black", fill: false }]
                         },
                         options: {
                             responsive: true,
@@ -183,19 +223,19 @@
                             plugins: {
                                 legend: { display: true }, title: { display: true, text: feature },
                                 annotation: {
-                                    annotations: {
-                                        line1: {
-                                            type: 'line',
-                                            yMin: data.thr_now_model[idx],
-                                            yMax: data.thr_now_model[idx],
-                                            borderColor: 'rgb(255, 99, 132)',
-                                            borderWidth: 2,
-                                            label: {
-                                                display: true,
-                                                content: "Threshold"
-                                            }
+                                    annotations: [{
+                                        type: 'line',
+                                        yMin: data.thr_now_model[idx],
+                                        yMax: data.thr_now_model[idx],
+                                        borderColor: 'red',
+                                        borderWidth: 3,
+                                        label: {
+                                            display: true,
+                                            position: 'center',
+                                            content: "Threshold",
+                                            drawTime: 'afterDatasetsDraw',
                                         }
-                                    }
+                                    }]
                                 }
                             },
                             scales: {
@@ -257,103 +297,5 @@
             updateChart();
         }, 5 * 60 * 1000);
     });
-
-    // Reset Zoom Button
-    function resetZoom(index_chart) {
-        chart_array[index_chart].resetZoom();
-    }
-</script>
-<script>
-
-
-    // const maxY = Math.max(...data.map(d => d.y));
-    // const flatY = maxY * 1.03;
-    // const flatData = data.map(d => ({ x: d.x, y: flatY }));
-
-    // const clickableIndexes = [0, 2, 4, 6, 8]; // Only these indexes will be clickable
-
-    // const tooltipEl = document.getElementById('custom-tooltip');
-
-    // const chart = new Chart(ctx, {
-    //     type: 'line',
-    //     data: {
-    //         datasets: [{
-    //             label: 'Line Chart',
-    //             data: data,
-    //             borderColor: 'blue',
-    //             backgroundColor: 'transparent',
-    //             tension: 0.4,
-    //             pointBackgroundColor: (ctx) => clickableIndexes.includes(ctx.dataIndex) ? 'red' : 'transparent',
-    //             pointRadius: (ctx) => clickableIndexes.includes(ctx.dataIndex) ? 5 : 0,
-    //             pointHoverRadius: (ctx) => clickableIndexes.includes(ctx.dataIndex) ? 7 : 0,
-    //             parsing: {
-    //                 xAxisKey: 'x',
-    //                 yAxisKey: 'y'
-    //             }
-    //         }, {
-    //             label: 'Flat Scatter',
-    //             type: 'scatter',
-    //             data: flatData,
-    //             borderColor: 'green',
-    //             backgroundColor: 'green',
-    //             pointRadius: 5,
-    //             tension: 0
-    //         }]
-    //     },
-    //     options: {
-    //         responsive: true,
-    //         scales: {
-    //             x: {
-    //                 type: 'time',
-    //                 time: {
-    //                     unit: 'minute'
-    //                 },
-    //                 title: {
-    //                     display: true,
-    //                     text: 'Timestamp'
-    //                 }
-    //             },
-    //             y: {
-    //                 title: {
-    //                     display: true,
-    //                     text: 'Value'
-    //                 }
-    //             }
-    //         },
-    //         plugins: {
-    //             tooltip: {
-    //                 enabled: false,
-    //             }
-    //         },
-    //         onClick: (event, elements) => {
-    //             if (elements.length > 0) {
-    //                 const index = elements[0].index;
-    //                 if (!clickableIndexes.includes(index)) return;
-
-    //                 const pointData = data[index];
-    //                 const meta = chart.getDatasetMeta(0);
-    //                 const point = meta.data[index];
-    //                 const canvasRect = chart.canvas.getBoundingClientRect();
-
-    //                 tooltipEl.innerHTML = `Time: ${pointData.x}<br>Value: ${pointData.y}<br>
-    //                     <button class="btn btn-primary btn-sm mt-2" onclick="openModal()">Open Modal</button>`;
-
-    //                 const left = point.x;
-    //                 const top = point.y - tooltipEl.offsetHeight - 10;
-
-    //                 tooltipEl.style.left = left + 'px';
-    //                 tooltipEl.style.top = top + 'px';
-    //                 tooltipEl.style.display = 'block';
-    //             } else {
-    //                 tooltipEl.style.display = 'none';
-    //             }
-    //         }
-    //     }
-    // });
-
-    function openModal() {
-        var modal = new bootstrap.Modal(document.getElementById('myModal'));
-        modal.show();
-    }
 </script>
 {% endblock %}

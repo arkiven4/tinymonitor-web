@@ -146,12 +146,12 @@ function init_sidebar() {
 
 // Panel toolbox
 $(document).ready(function () {
-    $('.collapse-link').on('click', function () {
+    // Use event delegation for dynamically added .collapse-link
+    $(document).on('click', '.collapse-link', function () {
         var $BOX_PANEL = $(this).closest('.x_panel'),
             $ICON = $(this).find('i'),
             $BOX_CONTENT = $BOX_PANEL.find('.x_content');
-
-        // fix for some div with hardcoded fix class
+    
         if ($BOX_PANEL.attr('style')) {
             $BOX_CONTENT.slideToggle(200, function () {
                 $BOX_PANEL.removeAttr('style');
@@ -160,13 +160,13 @@ $(document).ready(function () {
             $BOX_CONTENT.slideToggle(200);
             $BOX_PANEL.css('height', 'auto');
         }
-
+    
         $ICON.toggleClass('fa-chevron-up fa-chevron-down');
-    });
+    });    
 
-    $('.close-link').click(function () {
+    // Also delegate for close-link if needed
+    $(document).on('click', '.close-link', function () {
         var $BOX_PANEL = $(this).closest('.x_panel');
-
         $BOX_PANEL.remove();
     });
 });

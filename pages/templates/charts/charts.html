@@ -19,6 +19,14 @@
     }
 </style>
 
+<div class="row">
+    <div class="col-md-12 col-sm-12">
+        <div class="alert alert-warning" role="alert">
+            <b>These are the Top 10 Parameters and the corresponding Severity Trends derived from the Severity Chart on the Home page, reflecting trends over the past month.</b>
+        </div>
+    </div>
+</div>
+
 <div class="row" id="chart_container">
     <!-- <div class="col-md-12 col-sm-12">
         <div class="x_panel tile fixed_height_320">
@@ -92,14 +100,6 @@
 </div>
 
 <script>
-    function percentage2severity(value) {
-        return (value >= 0 && value < 5) ? 1 :
-            (value >= 5 && value < 20) ? 2 :
-                (value >= 20 && value < 40) ? 3 :
-                    (value >= 40 && value < 75) ? 4 :
-                        (value >= 75 && value <= 100) ? 5 : 6;
-    }
-
     function severity2color(severity) {
         const norm = (severity - 1) / 5; // Normalize severity to range [0,1]
         const colorScale = d3.scaleLinear()
@@ -115,66 +115,14 @@
     let severity_data = [];
     let severity_color_data = [];
 
-    function updateChart(params) {
-        sensor_data = [];
-        severity_data = [];
-        severity_color_data = [];
-
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            //data: { name: name },
-            url: "/api/top10_charts",
-            success: function (data) {
-                for (let index = 0; index < data.counter_feature_s2.length; index++) {
-                    var current_sensor_name = data.counter_feature_s2[index];
-
-                    let current_sensor_data = [];
-                    let current_severity_data = [];
-                    let current_severity_color_data = [];
-                    let current_max = -999999;
-
-                    for (var i = 0; i < data['df_timestamp'].length; i++) {
-                        if (current_max < data['sensor_datas'][i][index]) {
-                            current_max = data['sensor_datas'][i][index]
-                        }
-                        current_sensor_data.push({
-                            x: data['df_timestamp'][i], y: data['sensor_datas'][i][index]
-                        })
-                    }
-
-                    document.getElementById("title_sensor" + index).innerText = current_sensor_name;
-
-                    current_max = current_max * 1.03
-                    for (var i = 0; i < data['df_timestamp'].length; i++) {
-                        if (data['severity_trending_datas'][i][index] >= 5) {
-                            var severity = percentage2severity(data['severity_trending_datas'][i][index]);
-                            current_severity_data.push({
-                                x: data['df_timestamp'][i], y: current_max, severity_value: data['severity_trending_datas'][i][index]
-                            })
-                            current_severity_color_data.push(severity2color(severity))
-                        }
-                    }
-                    severity_data.push(current_severity_data);
-                    severity_color_data.push(current_severity_color_data);
-
-                    setTimeout(() => {
-                        chart_array[index].data.datasets[0].label = current_sensor_name;
-                        chart_array[index].data.datasets[0].data = current_sensor_data;
-                        chart_array[index].data.datasets[1].data = severity_data[index];
-                        chart_array[index].data.datasets[1].pointBackgroundColor = severity_color_data[index];
-                        chart_array[index].update();
-                    }, 500);
-                }
-            }
-        });
-    }
-
     $(document).ready(function () {
+        var end_date = nowDateMoment.format("YYYY-MM-DDTHH:mm:ss");
+        var start_date = nowDateMoment.subtract(30, 'days').format("YYYY-MM-DDTHH:mm:ss");
+
         $.ajax({
             type: "GET",
             dataType: "json",
-            //data: { name: name },
+            data: { start_date: start_date, end_date: end_date },
             url: "/api/top10_charts",
             success: function (data) {
                 for (let index = 0; index < data.counter_feature_s2.length; index++) {
@@ -252,7 +200,6 @@
                                     label: 'Severity',
                                     type: 'scatter',
                                     data: severity_data[index],
-                                    //borderColor: 'green',
                                     pointBackgroundColor: severity_color_data[index],
                                     pointRadius: 5,
                                     tension: 0
@@ -261,24 +208,10 @@
                             options: {
                                 responsive: false,
                                 scales: {
-                                    x: {
-                                        type: 'time',
-                                        time: {
-                                            unit: 'minute',
-                                            tooltipFormat: 'Do-MMM HH:mm',
-                                            displayFormats: { minute: 'Do-MMM HH:mm' }
-                                        },
-                                        ticks: {
-                                            minRotation: 45,
-                                            maxTicksLimit: 7,
-                                            //source: 'labels'
-                                        },
-                                        title: {
-                                            display: true,
-                                            text: 'Timestamp'
-                                        }
-                                    },
+                                    x: xChartLineFormat,
                                     y: {
+                                        min:data.sensor_statistic_current[0][index],
+                                        max:data.sensor_statistic_current[1][index] + data.sensor_statistic_current[3][index],
                                         title: {
                                             display: true,
                                             text: unitSet[featureSet.indexOf(data.counter_feature_s2[index])]
@@ -289,24 +222,7 @@
                                     tooltip: {
                                         enabled: false,
                                     },
-                                    zoom: {
-                                        zoom: {
-                                            wheel: {
-                                                enabled: false // Disable zoom on scroll
-                                            },
-                                            drag: {
-                                                enabled: true, // Enable drag-to-zoom
-                                                borderColor: 'rgba(0,0,0,0.3)',
-                                                borderWidth: 1,
-                                                backgroundColor: 'rgba(0,0,0,0.1)'
-                                            },
-                                            mode: 'xy' // Zoom in both X and Y directions
-                                        },
-                                        pan: {
-                                            enabled: false,
-                                            mode: 'xy'
-                                        }
-                                    }
+                                    zoom: zoomPluginsLineConfig
                                 },
                                 onClick: (event, elements) => {
                                     if (elements.length > 0) {
@@ -352,104 +268,14 @@
             }
         });
 
-        // setInterval(() => {
-        //     updateChart();
-        // }, 1 * 10 * 1000);
-
+        setTimeout(() => {
+            location.reload();
+        }, 5 * 60 * 1000);
     });
 
-    // Reset Zoom Button
     function resetZoom(index_chart) {
         chart_array[index_chart].resetZoom();
     }
-</script>
-<script>
-
-
-    // const maxY = Math.max(...data.map(d => d.y));
-    // const flatY = maxY * 1.03;
-    // const flatData = data.map(d => ({ x: d.x, y: flatY }));
-
-    // const clickableIndexes = [0, 2, 4, 6, 8]; // Only these indexes will be clickable
-
-    // const tooltipEl = document.getElementById('custom-tooltip');
-
-    // const chart = new Chart(ctx, {
-    //     type: 'line',
-    //     data: {
-    //         datasets: [{
-    //             label: 'Line Chart',
-    //             data: data,
-    //             borderColor: 'blue',
-    //             backgroundColor: 'transparent',
-    //             tension: 0.4,
-    //             pointBackgroundColor: (ctx) => clickableIndexes.includes(ctx.dataIndex) ? 'red' : 'transparent',
-    //             pointRadius: (ctx) => clickableIndexes.includes(ctx.dataIndex) ? 5 : 0,
-    //             pointHoverRadius: (ctx) => clickableIndexes.includes(ctx.dataIndex) ? 7 : 0,
-    //             parsing: {
-    //                 xAxisKey: 'x',
-    //                 yAxisKey: 'y'
-    //             }
-    //         }, {
-    //             label: 'Flat Scatter',
-    //             type: 'scatter',
-    //             data: flatData,
-    //             borderColor: 'green',
-    //             backgroundColor: 'green',
-    //             pointRadius: 5,
-    //             tension: 0
-    //         }]
-    //     },
-    //     options: {
-    //         responsive: true,
-    //         scales: {
-    //             x: {
-    //                 type: 'time',
-    //                 time: {
-    //                     unit: 'minute'
-    //                 },
-    //                 title: {
-    //                     display: true,
-    //                     text: 'Timestamp'
-    //                 }
-    //             },
-    //             y: {
-    //                 title: {
-    //                     display: true,
-    //                     text: 'Value'
-    //                 }
-    //             }
-    //         },
-    //         plugins: {
-    //             tooltip: {
-    //                 enabled: false,
-    //             }
-    //         },
-    //         onClick: (event, elements) => {
-    //             if (elements.length > 0) {
-    //                 const index = elements[0].index;
-    //                 if (!clickableIndexes.includes(index)) return;
-
-    //                 const pointData = data[index];
-    //                 const meta = chart.getDatasetMeta(0);
-    //                 const point = meta.data[index];
-    //                 const canvasRect = chart.canvas.getBoundingClientRect();
-
-    //                 tooltipEl.innerHTML = `Time: ${pointData.x}<br>Value: ${pointData.y}<br>
-    //                     <button class="btn btn-primary btn-sm mt-2" onclick="openModal()">Open Modal</button>`;
-
-    //                 const left = point.x;
-    //                 const top = point.y - tooltipEl.offsetHeight - 10;
-
-    //                 tooltipEl.style.left = left + 'px';
-    //                 tooltipEl.style.top = top + 'px';
-    //                 tooltipEl.style.display = 'block';
-    //             } else {
-    //                 tooltipEl.style.display = 'none';
-    //             }
-    //         }
-    //     }
-    // });
 
     function openModal() {
         var modal = new bootstrap.Modal(document.getElementById('myModal'));

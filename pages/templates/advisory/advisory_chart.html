@@ -1,0 +1,755 @@
+<!-- templates/index.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Advisory Details - Vale Dash{% endblock %}
+
+{% block content %}
+
+<style>
+    #custom-tooltip {
+        position: absolute;
+        background: white;
+        border: 1px solid black;
+        padding: 10px;
+        border-radius: 5px;
+        pointer-events: auto;
+        display: none;
+        z-index: 1000;
+    }
+</style>
+<style>
+    .checkbox-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+</style>
+<link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.css"
+    integrity="sha512-rBi1cGvEdd3NmSAQhPWId5Nd6QxE8To4ADjM2a6n0BrqQdisZ/RPUlm0YycDzvNL1HHAh1nKZqI0kSbif+5upQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<div class="row" id="chart_container">
+    <div class="col-md-12 col-sm-12">
+        <div class="x_panel tile">
+            <div id="reportrange_right" class="pull-left"
+                style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                <i class="fa fa-calendar"></i>
+                <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="">
+            <div class="x_content">
+                <div class="row">
+                    <div class="col-lg-4 col-md-4 col-sm-6 ">
+                        <div class="x_panel tile fixed_height_320 overflow_hidden">
+                            <div class="x_title">
+                                <h2>Percentage Distribution</h2>
+                                <ul class="nav navbar-right panel_toolbox">
+                                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                                </ul>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="x_content">
+                                <table class="" style="width:100%">
+                                    <tr>
+                                        <th style="width:65%;">
+                                            <p>Pie Chart</p>
+                                        </th>
+                                        <th>
+                                            <div class="col-lg-6 col-md-6 col-sm-6 ">
+                                                <p class="">Severity</p>
+                                            </div>
+                                            <div class="col-lg-6 col-md-6 col-sm-6 ">
+                                                <p class="">Count</p>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <canvas id="canvasDoughnut"
+                                                style="margin: 15px 10px 10px 0; height: 100%;"></canvas>
+                                        </td>
+                                        <td>
+                                            <table class="tile_info" id="severityTable">
+                                                <tbody>
+                                                    <tr>
+                                                        <td style="width:50%">
+                                                            <p><i class="fa fa-square" style="color: #00ff00;"></i>1
+                                                            </p>
+                                                        </td>
+                                                        <td class="severity-percent" data-severity="1"
+                                                            style="width:50%">0.0%</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="width:50%">
+                                                            <p><i class="fa fa-square" style="color: #aaff00;"></i>2
+                                                            </p>
+                                                        </td>
+                                                        <td class="severity-percent" data-severity="2"
+                                                            style="width:50%">7.0%</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="width:50%">
+                                                            <p><i class="fa fa-square" style="color: #ffff00;"></i>3
+                                                            </p>
+                                                        </td>
+                                                        <td class="severity-percent" data-severity="3"
+                                                            style="width:50%">64.7%</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="width:50%">
+                                                            <p><i class="fa fa-square" style="color: #ffaa00;"></i>4
+                                                            </p>
+                                                        </td>
+                                                        <td class="severity-percent" data-severity="4"
+                                                            style="width:50%">28.3%</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="width:50%">
+                                                            <p><i class="fa fa-square" style="color: #ff5500;"></i>5
+                                                            </p>
+                                                        </td>
+                                                        <td class="severity-percent" data-severity="5"
+                                                            style="width:50%">0.0%</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td style="width:50%">
+                                                            <p><i class="fa fa-square" style="color: #ff0000;"></i>6
+                                                            </p>
+                                                        </td>
+                                                        <td class="severity-percent" data-severity="6"
+                                                            style="width:50%">0.0%</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-6 ">
+                        <div class="x_panel tile fixed_height_320 overflow_hidden">
+                            <div class="x_title">
+                                <h2>Percentage Severity</h2>
+                                <ul class="nav navbar-right panel_toolbox">
+                                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                                </ul>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="x_content" style="height: 100%; margin-top: -30px;">
+                                <div id="gauge_1" style="height: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-6 ">
+                        <div class="x_panel tile fixed_height_320 overflow_hidden">
+                            <div class="x_title">
+                                <h2>Priority</h2>
+                                <ul class="nav navbar-right panel_toolbox">
+                                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                                </ul>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="x_content" style="height: 100%; margin-top: -30px;">
+                                <div id="gauge_2" style="height: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="chart_container">
+    <div class="col-md-6 col-sm-6">
+        <div class="x_panel tile">
+            <div class="x_title">
+                <h2 id="title_featureRaw"></h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                    <li class="dropdown"></li>
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <button type="button" class="btn btn-primary" onclick="resetZoom(line_chart1)">Reset Zoom</button>
+                <div id="custom-tooltip0"
+                    style=" position: absolute; background: white; border: 1px solid black; padding: 10px; border-radius: 5px; pointer-events: auto; display: none; z-index: 1000; ">
+                </div>
+                <canvas id="chart_data0" style="width: 100%; height: 400px"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-sm-6">
+        <div class="x_panel tile">
+            <div class="x_title">
+                <h2>Parameter Trending Data</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                    <li class="dropdown"></li>
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <button type="button" class="btn btn-primary" onclick="resetZoom(line_chart2)">Reset Zoom</button>
+                <canvas id="chart_data1" style="width: 100%; height: 400px"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 col-sm-12">
+        <div class="x_panel tile">
+            <div class="x_title">
+                <h2>Correlate Parameter</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                    <li class="dropdown"></li>
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <form id="correlationForm">
+                    <div class="checkbox-list" id="checkboxContainer"> </div>
+                    <br>
+                    <button type="submit" class="btn btn-primary">Show</button>
+                </form>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="correlateChartContainer"></div>
+
+<div class="row">
+    <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="max-width: 80%;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Popup</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img src="{% static 'img/output2.png' %}" class="img-fluid mx-auto d-block">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.js"
+    integrity="sha512-mh+AjlD3nxImTUGisMpHXW03gE6F4WdQyvuFRkjecwuWLwD2yCijw4tKA3NsEFpA1C3neiKhGXPSIGSfCYPMlQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+    let end_date;
+    let start_date;
+    let idx_sensor;
+
+    const datepicker_callback = function (start, end, label) {
+        var url = new URL(window.location.href);
+        var params = url.searchParams;
+
+        params.set('start_date', start.format("YYYY-MM-DDTHH:mm:ss"));
+        params.set('end_date', end.format("YYYY-MM-DDTHH:mm:ss"));
+
+        window.location.href = `${url.pathname}?${params.toString()}`;
+    };
+
+
+    function severity2color(severity) {
+        const norm = (severity - 1) / 5; // Normalize severity to range [0,1]
+        const colorScale = d3.scaleLinear()
+            .domain([0, 0.5, 1]) // Normalized values
+            .range(["green", "yellow", "red"]); // Corresponding colors
+
+        return colorScale(norm); // Return the mapped color
+    }
+
+    let correlate_chart = [];
+    let line_chart1;
+    let line_chart2;
+    let gaugeSeverityChart;
+    var severityCounts = {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0
+    };
+
+    $(document).ready(function () {
+        var url = new URL(window.location.href);
+        var urlParams = new URLSearchParams(url.search);
+
+        if (urlParams.has('start_date')) {
+            end_date = moment.utc(urlParams.get('end_date')).format("YYYY-MM-DDTHH:mm:ss");
+            start_date = moment.utc(urlParams.get('start_date')).format("YYYY-MM-DDTHH:mm:ss");
+        } else {
+            end_date = nowDateMoment.format("YYYY-MM-DDTHH:mm:ss");
+            start_date = nowDateMoment.subtract(29, 'days').format("YYYY-MM-DDTHH:mm:ss");
+        }
+
+        $('#reportrange_right span').html(moment.utc(start_date).format('MMMM D, YYYY') + ' - ' + moment.utc(end_date).format('MMMM D, YYYY'));
+        $('#reportrange_right').daterangepicker(dateRangeOptions1, datepicker_callback);
+
+        idx_sensor = urlParams.get('feat_id');
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: "/api/advisory_detail/" + idx_sensor,
+            data: { feat_id: idx_sensor, start_date: start_date, end_date: end_date, feat_correlate: urlParams.get('feat_correlate') },
+            success: function (data) {
+                const selectedIndices_correlate = new Set(
+                    urlParams.get('feat_correlate')?.split(',').map(x => parseInt(x.trim())).filter(n => !isNaN(n)) || []
+                );
+                const checkboxContainer = document.getElementById('checkboxContainer');
+
+                var count = 0;
+                data.correlation_nowparam.forEach((item) => {
+                    const correlatedFeature = Object.keys(item)[0];
+                    const value = item[correlatedFeature];
+                    const index = featureSet.indexOf(correlatedFeature);
+
+                    if (index !== -1) {
+                        var mustCheck = "";
+                        if (selectedIndices_correlate.has(index)) {
+                            mustCheck = "checked";
+                            document.getElementById('correlateChartContainer').innerHTML += `                            <div class="col-md-12 col-sm-12">
+                                <div class="x_panel tile">
+                                    <div class="x_title">
+                                        <h2 id="title_featureRaw">${correlatedFeature}</h2>
+                                        <ul class="nav navbar-right panel_toolbox">
+                                            <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                                            <li class="dropdown"></li>
+                                        </ul>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                    <div class="x_content">
+                                        <button type="button" class="btn btn-primary" onclick="resetZoom(correlate_chart[${count}])">Reset Zoom</button>
+                                        <div id="custom-tooltip0"
+                                            style=" position: absolute; background: white; border: 1px solid black; padding: 10px; border-radius: 5px; pointer-events: auto; display: none; z-index: 1000; ">
+                                        </div>
+                                        <canvas id="correlate_chart_data${count}" style="width: 100%; height: 400px"></canvas>
+                                    </div>
+                                </div>
+                            </div>`
+                                count += 1;
+                        }
+                        checkboxContainer.innerHTML += `<div class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="checkbox" name="features_corr" id="chk_${index}" value="${index}" ${mustCheck}>
+                                                            <label class="form-check-label" for="chk_${index}">${correlatedFeature} (corr: ${value})</label>
+                                                        </div>`
+
+                                                        
+                    }
+                });
+
+                const parsedShutdowns = data.shutdown_periods.map(([start, end]) => [new Date(start), new Date(end)]);
+                document.getElementById("title_featureRaw").innerText = featureSet[data.feat_id];
+
+                let current_sensor_data = [];
+                let current_trending_data = [];
+                let current_severity_data = [];
+                let current_severity_color_data = [];
+                let current_max = -999999;
+
+                for (var i = 0; i < data['data_timestamp'].length; i++) {
+                    if (current_max < data['sensor_datas'][i]) {
+                        current_max = data['sensor_datas'][i]
+                    }
+                    current_sensor_data.push({
+                        x: data['data_timestamp'][i], y: data['sensor_datas'][i]
+                    })
+                    current_trending_data.push({
+                        x: data['data_timestamp'][i], y: percentage2severity(data['severity_trending_datas'][i])
+                    })
+                }
+
+                current_max = current_max * 1.03
+                for (var i = 0; i < data['data_timestamp'].length; i++) {
+                    const timestamp = new Date(data['data_timestamp'][i]);
+                    const isInShutdown = parsedShutdowns.some(([start, end]) => timestamp >= start && timestamp <= end);
+
+                    if (isInShutdown) {
+                        continue;
+                    }
+
+                    if (data['severity_trending_datas'][i] >= 5) {
+                        var severity = percentage2severity(data['severity_trending_datas'][i]);
+                        severityCounts[severity]++;
+                        current_severity_data.push({
+                            x: data['data_timestamp'][i], y: current_max, severity_value: data['severity_trending_datas'][i]
+                        })
+                        current_severity_color_data.push(severity2color(severity))
+                    }
+                }
+
+
+
+                setTimeout(() => {
+                    var totalCount = current_severity_data.length
+                    document.querySelectorAll('.severity-percent').forEach(td => {
+                        var level = td.getAttribute('data-severity');
+                        var count = severityCounts[level] || 0;
+                        var percentage = totalCount > 0 ? ((count / totalCount) * 100).toFixed(1) : 0;
+                        td.textContent = percentage + '%'//count //percentage + '%';
+                    });
+
+                    // ==========================
+                    // Featured Counter, Seaverity level, Dkk
+                    // ==========================
+                    try {
+                        gaugeSeverityChartOptions.series[0].data[0].value = percentage2severity(current_severity_data[current_severity_data.length - 1]['severity_value']);
+                    } catch (error) {
+                        console.log(error)
+                        gaugeSeverityChartOptions.series[0].data[0].value = 0;
+                    }
+
+                    gaugeSeverityChart = echarts.init(document.getElementById('gauge_1'), null, {
+                        renderer: 'canvas',
+                    });
+                    gaugeSeverityChart.setOption(gaugeSeverityChartOptions);
+                    window.addEventListener('resize', gaugeSeverityChart.resize);
+
+                    gaugeSeverityChartOptions.series[0].data[0].value = 2;
+                    gaugeSeverityChartOptions.series[0].data[0].name = "Priority Level";
+                    gaugeSeverityChart2 = echarts.init(document.getElementById('gauge_2'), null, {
+                        renderer: 'canvas',
+                    });
+                    gaugeSeverityChart2.setOption(gaugeSeverityChartOptions);
+                    window.addEventListener('resize', gaugeSeverityChart2.resize);
+
+                    // canvasDoughnut
+                    var chart_doughnut = new Chart(document.getElementById(`canvasDoughnut`).getContext('2d'), {
+                        type: 'doughnut',
+                        tooltipFillColor: "rgba(51, 51, 51, 0.55)",
+                        data: {
+                            labels: [
+                                "1",
+                                "2",
+                                "3",
+                                "4",
+                                "5",
+                                "6"
+                            ],
+                            datasets: [{
+                                data: Object.values(severityCounts),
+                                backgroundColor: [
+                                    "#00ff00",
+                                    "#aaff00",
+                                    "#ffff00",
+                                    "#ffaa00",
+                                    "#ff5500",
+                                    "#ff0000"
+                                ],
+                                hoverBackgroundColor: [
+                                    "#00ff00",
+                                    "#aaff00",
+                                    "#ffff00",
+                                    "#ffaa00",
+                                    "#ff5500",
+                                    "#ff0000"
+                                ]
+                            }]
+                        },
+                        options: {
+                            legend: false,
+                            responsive: false,
+                            plugins: {
+                                legend: {
+                                    display: false,
+                                }
+                            }
+
+                        }
+                    });
+
+                    // ==========================
+                    // Severity Chart
+                    // ==========================
+                    const annotations = {};
+                    data.shutdown_periods.forEach((range, index) => {
+                        annotations[`shutdown_${index}`] = {
+                            type: 'box',
+                            xMin: range[0],
+                            xMax: range[1],
+                            backgroundColor: 'rgba(255, 99, 132, 0.25)',
+                            borderWidth: 0
+                        };
+                    });
+
+                    var ctx = document.getElementById(`chart_data0`).getContext('2d');
+                    line_chart1 = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            datasets: [{
+                                label: featureSet[idx_sensor],
+                                data: current_sensor_data,
+                                borderColor: 'blue',
+                                backgroundColor: 'transparent',
+                                tension: 0.4,
+                                pointBackgroundColor: 'transparent',
+                                pointRadius: 0,
+                                pointHoverRadius: 0,
+                                parsing: {
+                                    xAxisKey: 'x',
+                                    yAxisKey: 'y'
+                                }
+                            }, {
+                                label: 'Severity',
+                                type: 'scatter',
+                                data: current_severity_data,
+                                pointBackgroundColor: current_severity_color_data,
+                                pointRadius: 5,
+                                tension: 0
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            scales: {
+                                x: xChartLineFormat,
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: unitSet[idx_sensor]
+                                    }
+                                }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    enabled: false,
+                                },
+                                annotation: {
+                                    annotations: annotations
+                                },
+                                zoom: zoomPluginsLineConfig
+                            },
+                            onClick: (event, elements) => {
+                                if (elements.length > 0) {
+                                    const datasetIndex = elements[0].datasetIndex;
+                                    if (datasetIndex === 1) {
+                                        var tooltipEl = document.getElementById(`custom-tooltip0`);
+
+                                        const index = elements[0].index;
+                                        const pointData = current_severity_data[index];
+                                        const meta = line_chart1.getDatasetMeta(1);
+                                        const point = meta.data[index];
+                                        const canvasRect = line_chart1.canvas.getBoundingClientRect();
+                                        const clickedData = line_chart1.data.datasets[datasetIndex].data[index];
+
+                                        // Get pixel coordinates
+                                        const xScale = line_chart1.scales.x;
+                                        const yScale = line_chart1.scales.y;
+                                        const xPx = xScale.getPixelForValue(new Date(clickedData.x));
+                                        const yPx = yScale.getPixelForValue(clickedData.y);
+
+                                        // Position tooltip div
+                                        tooltipEl.innerHTML = `Time: ${pointData.x}<br>Severity Percentage: ${pointData.severity_value}<br>
+                                                                <button class="btn btn-primary btn-sm mt-2" onclick="openModal()">See Detail</button>`;
+
+                                        tooltipEl.style.left = `${xPx + line_chart1.canvas.offsetLeft}px`;
+                                        tooltipEl.style.top = `${yPx + line_chart1.canvas.offsetTop - 30}px`;
+                                        tooltipEl.style.display = 'block';
+                                    }
+                                } else {
+                                    document.getElementById(`custom-tooltip0`).style.display = 'none';
+                                }
+                            }
+                        }
+                    });
+
+                    // ==========================
+                    // Trending Chart
+                    // ==========================
+                    var ctx2 = document.getElementById(`chart_data1`).getContext('2d');
+                    line_chart2 = new Chart(ctx2, {
+                        type: 'line',
+                        data: {
+                            datasets: [{
+                                label: featureSet[idx_sensor],
+                                data: current_trending_data,
+                                borderColor: 'blue',
+                                backgroundColor: 'transparent',
+                                tension: 0.4,
+                                pointBackgroundColor: 'transparent',
+                                pointRadius: 0,
+                                pointHoverRadius: 0,
+                                parsing: {
+                                    xAxisKey: 'x',
+                                    yAxisKey: 'y'
+                                }
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            scales: {
+                                x: xChartLineFormat,
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: "Percentage Levels"
+                                    },
+                                    min: 0,
+                                    max: 7
+                                }
+                            },
+                            plugins: {
+                                tooltip: {
+                                    enabled: false,
+                                },
+                                annotation: {
+                                    annotations: annotations
+                                },
+                                zoom: zoomPluginsLineConfig
+                            },
+                        }
+                    });
+
+                    var current_correlateArrray = urlParams.get('feat_correlate')?.split(',').map(x => parseInt(x.trim())).filter(n => !isNaN(n)) || []
+                    
+                    for (let index = 0; index < current_correlateArrray.length; index++) {
+                        var now_sensorIndex = current_correlateArrray[index]
+                        let current_sensor_data = [];
+                        for (var i = 0; i < data['data_timestamp'].length; i++) {
+                            current_sensor_data.push({
+                                x: data['data_timestamp'][i], y: data.correlate_sensor_datas[i][index]
+                            })
+                        }
+                        
+                        var ctx = document.getElementById(`correlate_chart_data${index}`).getContext('2d');
+                        correlate_chart.push(new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                datasets: [{
+                                    label: featureSet[now_sensorIndex],
+                                    data: current_sensor_data,
+                                    borderColor: 'blue',
+                                    backgroundColor: 'transparent',
+                                    tension: 0.4,
+                                    pointBackgroundColor: 'transparent',
+                                    pointRadius: 0,
+                                    pointHoverRadius: 0,
+                                    parsing: {
+                                        xAxisKey: 'x',
+                                        yAxisKey: 'y'
+                                    }
+                                }]
+                            },
+                            options: {
+                                responsive: false,
+                                scales: {
+                                    x: xChartLineFormat,
+                                    y: {
+                                        title: {
+                                            display: true,
+                                            text: unitSet[now_sensorIndex]
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    tooltip: {
+                                        enabled: false,
+                                    },
+                                    annotation: {
+                                    annotations: annotations
+                                },
+                                    zoom: zoomPluginsLineConfig
+                                },
+                                onClick: (event, elements) => {
+                                    if (elements.length > 0) {
+                                        const datasetIndex = elements[0].datasetIndex;
+                                        if (datasetIndex === 1) {
+                                            var now_idx_sensor = parseInt(event.native.target.id.replace('chart_data', ''));
+                                            var tooltipEl = document.getElementById(`custom-tooltip${now_idx_sensor}`);
+
+                                            const index = elements[0].index;
+                                            const pointData = severity_data[now_idx_sensor][index];
+                                            const meta = chart_array[now_idx_sensor].getDatasetMeta(1);
+                                            const point = meta.data[index];
+                                            const canvasRect = chart_array[now_idx_sensor].canvas.getBoundingClientRect();
+
+                                            const clickedData = chart_array[now_idx_sensor].data.datasets[datasetIndex].data[index];
+
+
+                                            // Get pixel coordinates
+                                            const xScale = chart_array[now_idx_sensor].scales.x;
+                                            const yScale = chart_array[now_idx_sensor].scales.y;
+                                            const xPx = xScale.getPixelForValue(new Date(clickedData.x));
+                                            const yPx = yScale.getPixelForValue(clickedData.y);
+
+                                            // Position tooltip div
+                                            tooltipEl.innerHTML = `Time: ${pointData.x}<br>Severity Percentage: ${pointData.severity_value}<br>
+<button class="btn btn-primary btn-sm mt-2" onclick="openModal()">See Detail</button>`;
+
+                                            tooltipEl.style.left = `${xPx + chart_array[now_idx_sensor].canvas.offsetLeft}px`;
+                                            tooltipEl.style.top = `${yPx + chart_array[now_idx_sensor].canvas.offsetTop - 30}px`;
+                                            tooltipEl.style.display = 'block';
+                                        }
+
+                                    } else {
+                                        var now_idx_sensor = parseInt(event.native.target.id.replace('chart_data', ''));
+                                        var tooltipEl = document.getElementById(`custom-tooltip${now_idx_sensor}`);
+                                        tooltipEl.style.display = 'none';
+                                    }
+                                }
+                            }
+                        }));
+                    }
+                    // let current_sensor_data = [];
+                    // let current_severity_data = [];
+                    // let current_severity_color_data = [];
+                    // let current_max = -999999;
+
+                    // for (var i = 0; i < data['df_timestamp'].length; i++) {
+                    //     if (current_max < data['sensor_datas'][i][index]) {
+                    //         current_max = data['sensor_datas'][i][index]
+                    //     }
+                    //     current_sensor_data.push({
+                    //         x: data['df_timestamp'][i], y: data['sensor_datas'][i][index]
+                    //     })
+                    // }
+
+                    console.log(data.correlate_sensor_datas[0])
+
+                }, 500);
+            }
+        });
+    });
+
+
+    function resetZoom(chart_object) {
+        chart_object.resetZoom();
+    }
+
+    function openModal() {
+        var modal = new bootstrap.Modal(document.getElementById('myModal'));
+        modal.show();
+    }
+
+    document.getElementById('correlationForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const selected = Array.from(document.querySelectorAll('input[name="features_corr"]:checked'))
+            .map(cb => cb.value)
+            .join(',');
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('feat_correlate', selected);
+        window.location.href = url.toString(); // reload with updated param
+    });
+
+    //window.addEventListener('resize', gaugeSeverityChart.resize);
+</script>
+{% endblock %}

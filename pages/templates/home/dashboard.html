@@ -18,119 +18,210 @@
         z-index: 1000;
     }
 </style>
+<style>
+    .custom_button_status {
+        /* height: 5vh; */
+        font-size: 0.7rem;
+        /* border-radius: 5px; */
+        /* border-color: black;
+        border-width: 2px; */
+    }
+
+    .box_withborder {
+        border-radius: 5px;
+        border-color: black;
+        border-width: 2px;
+    }
+
+    .sparkline {
+        width: 110px;
+        height: 20px;
+    }
+</style>
+
+<!-- <div class="row">
+    <div class="col-md-12">
+        <div class="">
+            <div class="x_content">
+                <div class="row">
+                    <div class="animated flipInY col-lg-3 col-md-3 col-sm-6  ">
+                        <div class="tile-stats">
+                            <div class="icon"><i class="fa fa-caret-square-o-right"></i>
+                            </div>
+                            <div class="count">3124</div>
+
+                            <h3>TBA</h3>
+                            <p>Lorem ipsum psdea itgum rixt.</p>
+                        </div>
+                    </div>
+                    <div class="animated flipInY col-lg-3 col-md-3 col-sm-6  ">
+                        <div class="tile-stats">
+                            <div class="icon"><i class="fa fa-comments-o"></i>
+                            </div>
+                            <div class="count">3245</div>
+
+                            <h3>TBA</h3>
+                            <p>Lorem ipsum psdea itgum rixt.</p>
+                        </div>
+                    </div>
+                    <div class="animated flipInY col-lg-3 col-md-3 col-sm-6  ">
+                        <div class="tile-stats">
+                            <div class="icon"><i class="fa fa-sort-amount-desc"></i>
+                            </div>
+                            <div class="count">6154</div>
+
+                            <h3>TBA</h3>
+                            <p>Lorem ipsum psdea itgum rixt.</p>
+                        </div>
+                    </div>
+                    <div class="animated flipInY col-lg-3 col-md-3 col-sm-6  ">
+                        <div class="tile-stats">
+                            <div class="icon"><i class="fa fa-check-square-o"></i>
+                            </div>
+                            <div class="count">5123</div>
+
+                            <h3>TBA</h3>
+                            <p>Lorem ipsum psdea itgum rixt.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> -->
 
 <div class="row" id="chart_container">
-    <div class="col-md-6 col-sm-12">
+    <div class="col-lg-7 col-md-7 col-sm-12">
         <div class="x_panel tile">
-            <div class="x_title">
-                <h2>Severity Chart</h2>
-                <div class="clearfix"></div>
-            </div>
             <div class="x_content">
-                <canvas id="barChart" style="width: 100%; height: 500px"></canvas>
+                <div class="position-relative">
+                    <img src="{% static 'img/main_hydro2.png' %}" style="max-width: 100%;height: 85vh">
+                    <div id="sensor_point2" class="position-absolute" style="display: none;"></div>
+                    <div id="sensor_point1" class="position-absolute"></div>
+                    <div id="sensor_point3" class="position-absolute"></div>
+                    <div id="sensor_point4" class="position-absolute"></div>
+                    <div id="sensor_point5" class="position-absolute"></div>
+                    <div id="sensor_point6" class="position-absolute"></div>
+                    <div id="sensor_point7" class="position-absolute"></div>
+                    <div id="sensor_point8" class="position-absolute"></div>
+                    <div id="sensor_point9" class="position-absolute"></div>
+                    <div id="sensor_point10" class="position-absolute"></div>
+                    <div id="sensor_point11" class="position-absolute"></div>
+                    <div id="sensor_point12" class="position-absolute"></div>
+                    <div id="sensor_point13" class="position-absolute"></div>
+                    <div id="sensor_point14" class="position-absolute"></div>
+                    <div id="sensor_point15" class="position-absolute"></div>
+                    <div id="sensor_point16" class="position-absolute"></div>
+                    <div id="sensor_point17" class="position-absolute"></div>
+                    <div id="sensor_point18" class="position-absolute"></div>
+                    <div id="sensor_point19" class="position-absolute"></div>
+                    <div id="sensor_point20" class="position-absolute"></div>
+                    <div id="sensor_point21" class="position-absolute"></div>
+                    <div id="sensor_point22" class="position-absolute"></div>
+                    <div id="sensor_point23" class="position-absolute"></div>
+                    <div id="sensor_point24" class="position-absolute"></div>
+                    <div id="sensor_point25" class="position-absolute"></div>
+                    <div id="sensor_point26" class="position-absolute"></div>
+                    <div id="sensor_point27" class="position-absolute"></div>
+                    <div id="sensor_point28" class="position-absolute"></div>
+                    <div id="sensor_point29" class="position-absolute"></div>
+                    <div id="sensor_point30" class="position-absolute"></div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-sm-12">
-        <div class="x_panel tile">
-            <div class="x_title">
-                <h2>Severity Chart</h2>
-                <div class="clearfix"></div>
+    <div class="col-lg-5 col-md-5 col-sm-12">
+        <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <div class="x_panel tile">
+                    <div>
+                        <h2>Condition Based Monitoring System<br>Plant - LGS1</h2>
+                    </div>
+                </div>
             </div>
-            <div class="x_content">
-                <!-- <canvas id="barChart" style="width: 100%; height: 500px"></canvas> -->
+            <div class="col-lg-6 col-md-6 col-sm-6">
+                <div class="x_panel tile">
+                    <div>
+                        <img src="{% static 'img/operation_mode_dummy.jpeg' %}" style="width: 100%">
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-6">
+                <div class="x_panel tile">
+                    <div>
+                        <img src="{% static 'img/operation_zone_dummy.jpeg' %}" style="max-width: 100%">
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <div class="x_content">
+                    <table id="example" class="table table-bordered" style="width:100%; background-color: white;">
+                        <thead>
+                            <tr>
+                                <th>Assets Name</th>
+                                <th>Priority</th>
+                                <th>Severity</th>
+                                <th>Sensor Sparkline</th>
+                                <th>Severity Counter</th>
+                            </tr>
+                        </thead>
+                        <tbody id="advisory_maintable">
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-<div class="row" id="chart_container">
-    <div class="col-md-6 col-sm-12">
-        <div class="x_panel tile">
-            <div class="x_title">
-                <h2>Original vs Prediction Sensor Data</h2>
-                <div class="clearfix"></div>
-            </div>
-            <div class="x_content">
-                <canvas id="lineChart1" style="width: 100%; height: 300px"></canvas>
-                <canvas id="lineChart2" style="width: 100%; height: 300px"></canvas>
-                <canvas id="lineChart3" style="width: 100%; height: 300px"></canvas>
-                <canvas id="lineChart4" style="width: 100%; height: 300px"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-sm-12">
-        <div class="x_panel tile">
-            <div class="x_title">
-                <h2>Loss and Threshold</h2>
-                <div class="clearfix"></div>
-            </div>
-            <div class="x_content">
-                <canvas id="losslineChart1" style="width: 100%; height: 300px"></canvas>
-                <canvas id="losslineChart2" style="width: 100%; height: 300px"></canvas>
-                <canvas id="losslineChart3" style="width: 100%; height: 300px"></canvas>
-                <canvas id="losslineChart4" style="width: 100%; height: 300px"></canvas>
-            </div>
-        </div>
-    </div>
 
-    <!-- <div class="col-md-12 col-sm-12">
-        <div class="x_panel tile fixed_height_320">
-            <div class="x_title">
-                <h2>Reactive Power</h2>
-                <ul class="nav navbar-right panel_toolbox">
-                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-                    <li class="dropdown"></li>
-                    <li><a class="close-link"><i class="fa fa-close"></i></a>
-                    </li>
-                </ul>
-                <div class="clearfix"></div>
-            </div>
-            <div class="x_content">
-                <button onclick="resetZoom()">Reset Zoom</button>
-                <div id="custom-tooltip1"></div>
-                <canvas id="chart_data1" style="width: 100%; height: 200px"></canvas>
-            </div>
-        </div>
-    </div> -->
+    </div>
 </div>
 
 <div class="row">
-    <!-- <div class="col-md-12 col-sm-12 ">
-        <div class="dashboard_graph">
-            <div class="row x_title">
-                <div class="col-md-6">
-                    <h3>Sensor Parameters</h3>
-                </div>
-                <div class="col-md-6">
-                </div>
-            </div>
-            <div class="col-md-12 col-sm-12" style="width: 100%; height: 200px;"></div>
-        </div>
-    </div> -->
-
-    <!-- Bootstrap Modal -->
-    <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog" style="max-width: 80%;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Popup</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <img src="{% static 'img/output2.png' %}" class="img-fluid mx-auto d-block">
-                </div>
+    <div class="col-md-12 col-sm-12">
+        <div class="x_panel tile">
+            <div class="x_content">
+                <p>Last Update sakjdhakjsdhas, Will be Update in sajdkaskljdhjsa, Last Calculation: <span
+                        id="last_calcdate"></span></p>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    function percentage2severity(value) {
-        return (value >= 0 && value < 5) ? 1 :
-            (value >= 5 && value < 20) ? 2 :
-                (value >= 20 && value < 40) ? 3 :
-                    (value >= 40 && value < 75) ? 4 :
-                        (value >= 75 && value <= 100) ? 5 : 6;
+    const sensorPoints = [
+        { id: 'sensor_point1', top: 0, left: 0, name: "Active Power" },
+        { id: 'sensor_point2', top: 0, left: 0, name: "Reac Power" },
+        { id: 'sensor_point3', top: 7, left: 0, name: "Governor Speed" },
+        { id: 'sensor_point4', top: 8, left: 73, name: "UGB X displacement" },
+        { id: 'sensor_point5', top: 15, left: 73, name: "UGB Y displacement" },
+        { id: 'sensor_point6', top: 52, left: 63, name: "LGB X displacement" },
+        { id: 'sensor_point7', top: 59, left: 63, name: "LGB Y displacement" },
+        { id: 'sensor_point8', top: 71, left: 68, name: "TGB X displacement" },
+        { id: 'sensor_point9', top: 78, left: 68, name: "TGB Y displacement" },
+        { id: 'sensor_point10', top: 20.5, left: 0, name: "Stator winding Temp 13" },
+        { id: 'sensor_point11', top: 26, left: 0, name: "Stator winding Temp 14" },
+        { id: 'sensor_point12', top: 32, left: 0, name: "Stator winding Temp 15" },
+        { id: 'sensor_point13', top: 38, left: 82, name: "Surface Air Cooler Air Outlet Temp" },
+        { id: 'sensor_point14', top: 45, left: 82, name: "Surface Air Cooler Water Inlet Temp" },
+        { id: 'sensor_point15', top: 52, left: 82, name: "Surface Air Cooler Water Outlet Temp" },
+        { id: 'sensor_point16', top: 38, left: 1, name: "Stator core Temp" },
+        { id: 'sensor_point17', top: 7.5, left: 24, name: "UGB metal Temp" },
+        { id: 'sensor_point18', top: 47, left: 15, name: "LGB metal Temp 1" },
+        { id: 'sensor_point19', top: 54, left: 15, name: "LGB metal Temp 2" },
+        { id: 'sensor_point20', top: 60, left: 16, name: "LGB oil Temp" },
+        { id: 'sensor_point21', top: 81, left: 16.5, name: "Penstock Flow" },
+        { id: 'sensor_point22', top: 88, left: 17, name: "Turbine flow" },
+        { id: 'sensor_point23', top: 7.5, left: 60, name: "UGB CW flow" },
+        { id: 'sensor_point24', top: 40, left: 63, name: "LGB CW flow" },
+        { id: 'sensor_point25', top: 22, left: 85, name: "Generator CW flow" },
+        { id: 'sensor_point26', top: 177, left: 11.5, name: "Governor Penstock Press" },
+        { id: 'sensor_point27', top: 73, left: 15.5, name: "Penstock pressure" },
+        { id: 'sensor_point28', top: 191, left: 10.5, name: "Opening Wicked Gate" },
+        { id: 'sensor_point29', top: 0, left: 24, name: "UGB Oil Contaminant" },
+        { id: 'sensor_point30', top: 205, left: 9.5, name: "Gen Thrust Bearing Oil Contaminant" }
+    ];
+
+    function percentageToWidth(severity) {
+        return (severity / 6) * 100;
     }
 
     function severity2color(severity) {
@@ -140,6 +231,21 @@
             .range(["green", "yellow", "red"]); // Corresponding colors
 
         return colorScale(norm); // Return the mapped color
+    }
+
+    function parseData_fromserver(data) {
+        const timestamps = data.df_timestamp;
+        const predictions = data.y_pred_send;
+        const originalData = data.df_feature_send;
+
+        const severityData = data.counter_feature_s2
+        const severityLabels = Object.keys(severityData);
+        const severityValues = severityLabels.map(label => severityData[label].severity);
+        const severityCounts = severityLabels.map(label => parseInt(severityData[label].count) + "%");
+
+        const colors = severityValues.map(value => severity2color(value));
+
+        return [timestamps, predictions, originalData, severityData, severityLabels, severityValues, severityCounts, colors]
     }
 
     let chart_array = [];
@@ -152,268 +258,184 @@
         $.ajax({
             type: "GET",
             dataType: "json",
-            data: { start_date: start_date, end_date: end_date},
+            data: { start_date: start_date, end_date: end_date },
             url: "/api/severity_plot",
             success: function (data) {
-                const timestamps = data.df_timestamp;
-                const predictions = data.y_pred_send;
-                const originalData = data.df_feature_send;
-
-                const severityData = data.counter_feature_s2
-                const severityLabels = Object.keys(severityData);
-                const severityValues = severityLabels.map(label => severityData[label].severity);
-                const severityCounts = severityLabels.map(label => parseInt(severityData[label].count) + "%");
-
-                const colors = severityValues.map(value => severity2color(value));
-
-                // Line Charts
-                severityLabels.slice(0, 4).forEach((feature, idx) => {
-                    chart_array[idx].data.labels = timestamps
-                    chart_array[idx].data.datasets[0] = { label: "Original", data: originalData.map(row => row[idx]), borderColor: "red", fill: false },
-                        { label: "Prediction", data: predictions.map(row => row[idx]), borderColor: "blue", fill: false }
-                    chart_array[idx].update();
-                });
+                [timestamps, predictions, originalData, severityData,
+                    severityLabels, severityValues, severityCounts, colors] = parseData_fromserver(data)
 
                 // Bar Chart 
-                barchart.data.labels = severityLabels
-                barchart.data.datasets[0] = { label: "Severity", data: severityValues, backgroundColor: colors, count: severityCounts }
-                barchart.update();
+                // barchart.data.labels = severityLabels
+                // barchart.data.datasets[0] = { label: "Severity", data: severityValues, backgroundColor: colors, count: severityCounts }
+                // barchart.update();
             }
         });
     }
 
     $(document).ready(function () {
+        document.body.style.overflowY = 'hidden';
+
         var end_date = nowDateMoment.format("YYYY-MM-DDTHH:mm:ss");
         var start_date = nowDateMoment.subtract(2, 'hours').format("YYYY-MM-DDTHH:mm:ss");
 
         $.ajax({
             type: "GET",
             dataType: "json",
-            url: "/api/severity_plot",
-            data: { start_date: start_date, end_date: end_date},
+            url: "/api/panel_summary",
+            data: { start_date: start_date, end_date: end_date },
             success: function (data) {
-                const timestamps = data.df_timestamp;
-                const predictions = data.y_pred_send;
-                const originalData = data.df_feature_send;
-                const lossData = data.loss_send;
+                document.getElementById("last_calcdate").innerText = data.last_timestamp.replace("T", " ");
+                console.log(data)
+                // data = {
+                //     'last_timestamp': last_timestamp,
+                //     'last_sensor_featname': last_sensor_featname,
+                //     'sensor_featname': sensor_featname,
+                //     'last_severity_featname': last_severity_featname,
+                //     'sever_featname': sever_featname,
+                //     'ordered_feature_name': ordered_feature_name,
+                //     'sever_count_featname': sever_count_featname
+                // }
 
-                const severityData = data.counter_feature_s2
-                const severityLabels = Object.keys(severityData);
-                const severityValues = severityLabels.map(label => severityData[label].severity);
-                const severityCounts = severityLabels.map(label => parseInt(severityData[label].count) + "%");
+                // [timestamps, predictions, originalData, severityData,
+                //     severityLabels, severityValues, severityCounts, colors] = parseData_fromserver(data)
 
-                const colors = severityValues.map(value => severity2color(value));
+                for (const [i, p] of sensorPoints.entries()) {
+                    const el = document.getElementById(p.id);
+                    var current_sensor_value = data.last_sensor_featname[featureSet[i]];
+                    var current_severity_value = data.last_severity_featname[featureSet[i]];
+                    var current_unit = unitSet[i];
+                    el.innerHTML = `<div class="btn custom_button_status" onclick="window.open('/advisory/chart?feat_id=${i}','_blank')">
+                                                    ${p.name} | <span class="badge" style="background-color: ${severity2color(current_severity_value)}">${current_severity_value}</span> <span class="badge bg-secondary">${percentage2severity(current_severity_value)}</span><br> 
+                                                    <span class="badge bg-dark text-light box_withborder">${current_sensor_value} ${current_unit}</span>`
+                    if (current_severity_value > 1) {
+                        el.innerHTML += `<span class="position-absolute translate-middle p-2 bg-danger border border-light rounded-circle" style="top:7%; left: 5%; background-color: ${severity2color(current_severity_value)}">
+                                           <span class="visually-hidden">Warnings</span></span>`
+                    }
+                    el.innerHTML += "</div>"
 
-                // Line Charts
-                severityLabels.slice(0, 4).forEach((feature, idx) => {
-                    chart_array.push(new Chart(document.getElementById(`lineChart${idx + 1}`).getContext('2d'), {
-                        type: 'line',
-                        data: {
-                            labels: timestamps,
-                            datasets: [{ label: "Original", data: originalData.map(row => row[idx]), borderColor: "red", fill: false },
-                            { label: "Prediction", data: predictions.map(row => row[idx]), borderColor: "blue", fill: false }]
-                        },
-                        options: {
-                            responsive: true,
-                            animation: { duration: 500 },
-                            plugins: { legend: { display: true }, title: { display: true, text: feature } },
-                            scales: {
-                                x: xChartLineFormat,
-                                y: {
-                                    title: {
-                                        display: true,
-                                        text: unitSet[featureSet.indexOf(feature)]
-                                    }
-                                }
-                            }
-                        }
-                    }));
+                    el.style.top = `${p.top}%`;
+                    el.style.left = `${p.left}%`;
+                    el.style.right = `${p.right}%`;
+                    el.style.zIndex = percentage2severity(current_severity_value);
+                }
 
-                    var thresholdHighArray = new Array(timestamps.length).fill(data.thr_now_model[idx]);
-                    chart_array.push(new Chart(document.getElementById(`losslineChart${idx + 1}`).getContext('2d'), {
-                        type: 'line',
-                        data: {
-                            labels: timestamps,
-                            datasets: [{ label: "Loss", data: lossData.map(row => row[idx]), borderColor: "red", fill: false },
-                            { label: "Threshold", data: thresholdHighArray, borderColor: "blue", fill: false }]
-                        },
-                        options: {
-                            responsive: true,
-                            animation: { duration: 500 },
-                            plugins: { legend: { display: true }, title: { display: true, text: feature } },
-                            annotation: {
-                                annotations: [{
-                                    type: 'line',
-                                    mode: 'horizontal',
-                                    scaleID: 'y-axis-0',
-                                    value: 5,
-                                    borderColor: 'rgb(75, 192, 192)',
-                                    borderWidth: 4,
-                                    label: {
-                                        enabled: false,
-                                        content: 'Test label'
-                                    }
+                document.getElementById("advisory_maintable").innerHTML = ""
+                for (var i = 0; i < data.ordered_feature_name.length; i++) {
+                    var now_key = data.ordered_feature_name[i];
+                    var now_value = data.last_severity_featname[now_key];
+
+                    document.getElementById("advisory_maintable").innerHTML += `
+                        <tr>
+                            <td>${now_key}</td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25"
+                                        aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" style="width: ${percentageToWidth(now_value)}%; background-color: ${severity2color(now_value)}" aria-valuenow="${now_value}"
+                                        aria-valuemin="0" aria-valuemax="6"></div>
+                                </div>
+                            </td>
+                            <td><canvas id="sparkline_${i}" class="sparkline"></canvas></td>
+                            <td><canvas id="barchart_${i}" class="sparkline"></canvas></td>
+                        </tr>`
+                }
+
+                setTimeout(() => {
+                    new DataTable('#example', {
+                        paging: false,
+                        info: false,
+                        searchPanes: false,
+                        searching: false,
+                        order: [[2, 'asc']]
+                    });
+
+                    for (var i = 0; i < data.ordered_feature_name.length; i++) {
+                        var now_key = data.ordered_feature_name[i];
+                        var dataPoints_raw = data.sensor_featname[now_key];
+                        var dataPoints_count = data.sever_count_featname[now_key];
+
+                        const ctx1 = document.getElementById(`sparkline_${i}`).getContext('2d');
+                        new Chart(ctx1, {
+                            type: 'line',
+                            data: {
+                                labels: dataPoints_raw.map((_, i) => i + 1),
+                                datasets: [{
+                                    data: dataPoints_raw,
+                                    borderColor: '#4CAF50',
+                                    fill: false,
+                                    borderWidth: 1,
+                                    pointRadius: 0,
+                                    tension: 0.3
                                 }]
                             },
-                            scales: {
-                                x: xChartLineFormat,
-                                y: {
-                                    title: {
+                            options: {
+                                responsive: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: { enabled: false }
+                                },
+                                scales: {
+                                    x: { display: false },
+                                    y: { display: false }
+                                }
+                            }
+                        });
+
+                        const labels_count = Object.keys(dataPoints_count);
+                        const values_count = labels_count.map(key => dataPoints_count[key]);
+                        const barColors_count = labels_count.map(key => severity2color(parseInt(key)));
+
+                        const ctx2 = document.getElementById(`barchart_${i}`).getContext('2d');
+                        new Chart(ctx2, {
+                            type: 'bar',
+                            data: {
+                                labels: labels_count,
+                                datasets: [{
+                                    data: values_count,
+                                    backgroundColor: barColors_count,
+                                    borderRadius: 2
+                                }]
+                            },
+                            options: {
+                                responsive: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: { enabled: false }
+                                },
+                                scales: {
+                                    x: {
                                         display: true,
-                                        text: unitSet[featureSet.indexOf(feature)]
+                                        offset: false,
+                                        ticks: {
+                                            font: { size: 7 },
+                                            padding: 0,
+                                            color: "#333"
+                                        },
+                                        grid: { display: false },
+                                        title: { display: false }
+                                    },
+                                    y: {
+                                        display: true,
+                                        grid: { display: true },
+                                        ticks: { display: true }
                                     }
                                 }
                             }
-                        },
-                    }));
-                });
+                        });
 
-                // Bar Chart
-                barchart = new Chart(document.getElementById("barChart").getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: severityLabels,
-                        datasets: [{
-                            label: "Severity",
-                            data: severityValues,
-                            count: severityCounts,
-                            backgroundColor: colors
-                        }]
-                    },
-                    options: {
-                        responsive: false,
-                        indexAxis: 'y',
-                        animation: { duration: 500 },
-                        scales: {
-                            x: { suggestedMin: 0, suggestedMax: 7, grid: { display: true, } }
-                        },
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: { enabled: true },
-                            datalabels: {
-                                anchor: 'center',
-                                align: 'center',
-                                color: 'white',
-                                font: { weight: 'bold' },
-                                formatter: (value, context) => {
-                                    return context.dataset.count[context.dataIndex];
-                                }
-                            }
-                        },
-                        onClick: (event, elements) => {
-                            if (elements.length > 0) {
-                                const index = elements[0].index;
-                                const selectedFeature = severityLabels[index];
-                                alert(`You clicked on ${selectedFeature}`);
-                            }
-                        }
-                    },
-                    plugins: [ChartDataLabels]
-                });
+                    }
+                }, 500);
             }
         });
 
         setInterval(() => {
-            updateChart();
+            location.reload();
+            //updateChart();
         }, 5 * 60 * 1000);
     });
-
-    // Reset Zoom Button
-    function resetZoom(index_chart) {
-        chart_array[index_chart].resetZoom();
-    }
-</script>
-<script>
-
-
-    // const maxY = Math.max(...data.map(d => d.y));
-    // const flatY = maxY * 1.03;
-    // const flatData = data.map(d => ({ x: d.x, y: flatY }));
-
-    // const clickableIndexes = [0, 2, 4, 6, 8]; // Only these indexes will be clickable
-
-    // const tooltipEl = document.getElementById('custom-tooltip');
-
-    // const chart = new Chart(ctx, {
-    //     type: 'line',
-    //     data: {
-    //         datasets: [{
-    //             label: 'Line Chart',
-    //             data: data,
-    //             borderColor: 'blue',
-    //             backgroundColor: 'transparent',
-    //             tension: 0.4,
-    //             pointBackgroundColor: (ctx) => clickableIndexes.includes(ctx.dataIndex) ? 'red' : 'transparent',
-    //             pointRadius: (ctx) => clickableIndexes.includes(ctx.dataIndex) ? 5 : 0,
-    //             pointHoverRadius: (ctx) => clickableIndexes.includes(ctx.dataIndex) ? 7 : 0,
-    //             parsing: {
-    //                 xAxisKey: 'x',
-    //                 yAxisKey: 'y'
-    //             }
-    //         }, {
-    //             label: 'Flat Scatter',
-    //             type: 'scatter',
-    //             data: flatData,
-    //             borderColor: 'green',
-    //             backgroundColor: 'green',
-    //             pointRadius: 5,
-    //             tension: 0
-    //         }]
-    //     },
-    //     options: {
-    //         responsive: true,
-    //         scales: {
-    //             x: {
-    //                 type: 'time',
-    //                 time: {
-    //                     unit: 'minute'
-    //                 },
-    //                 title: {
-    //                     display: true,
-    //                     text: 'Timestamp'
-    //                 }
-    //             },
-    //             y: {
-    //                 title: {
-    //                     display: true,
-    //                     text: 'Value'
-    //                 }
-    //             }
-    //         },
-    //         plugins: {
-    //             tooltip: {
-    //                 enabled: false,
-    //             }
-    //         },
-    //         onClick: (event, elements) => {
-    //             if (elements.length > 0) {
-    //                 const index = elements[0].index;
-    //                 if (!clickableIndexes.includes(index)) return;
-
-    //                 const pointData = data[index];
-    //                 const meta = chart.getDatasetMeta(0);
-    //                 const point = meta.data[index];
-    //                 const canvasRect = chart.canvas.getBoundingClientRect();
-
-    //                 tooltipEl.innerHTML = `Time: ${pointData.x}<br>Value: ${pointData.y}<br>
-    //                     <button class="btn btn-primary btn-sm mt-2" onclick="openModal()">Open Modal</button>`;
-
-    //                 const left = point.x;
-    //                 const top = point.y - tooltipEl.offsetHeight - 10;
-
-    //                 tooltipEl.style.left = left + 'px';
-    //                 tooltipEl.style.top = top + 'px';
-    //                 tooltipEl.style.display = 'block';
-    //             } else {
-    //                 tooltipEl.style.display = 'none';
-    //             }
-    //         }
-    //     }
-    // });
-
-    function openModal() {
-        var modal = new bootstrap.Modal(document.getElementById('myModal'));
-        modal.show();
-    }
 </script>
 {% endblock %}
