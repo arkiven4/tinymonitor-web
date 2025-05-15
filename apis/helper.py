@@ -176,6 +176,35 @@ def process_shutdownTimestamp(data_timestamp, sensor_datas):
         shutdown_periods.append((start_time, end_time))
     
     return shutdown_periods
+
+def process_operationZone(start_date, end_date, db_name="data.db", table_name="sensor_data"):
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+
+    query = f"""
+    SELECT
+    CASE
+        WHEN "Active_Power" < 1 AND "Governor_speed_actual" < 1 THEN 'Shutdown'
+        WHEN "Active_Power" < 3 AND "Governor_speed_actual" < 250 THEN 'Warming'
+        WHEN "Active_Power" < 3 AND "Governor_speed_actual" > 250 THEN 'No Load'
+        WHEN "Active_Power" >= 1 AND "Active_Power" < 20 AND "Governor_speed_actual" > 250 THEN 'Low Load'
+        WHEN "Active_Power" >= 20 AND "Active_Power" < 40 AND "Governor_speed_actual" > 250 THEN 'Rough Zone'
+        WHEN "Active_Power" >= 40 AND "Active_Power" < 50 AND "Governor_speed_actual" > 250 THEN 'Part Load'
+        WHEN "Active_Power" >= 50 AND "Active_Power" < 65 AND "Governor_speed_actual" > 250 THEN 'Efficient Load'
+        WHEN "Active_Power" >= 65 AND "Governor_speed_actual" > 250 THEN 'High Load'
+        ELSE 'Undefined'
+    END AS Label,
+    COUNT(*) AS Count
+    FROM {table_name}
+    WHERE timestamp BETWEEN ? AND ?
+    GROUP BY Label
+    ORDER BY Count DESC
+    """
+
+    cursor.execute(query, (start_date, end_date))
+    results = cursor.fetchall()
+    return results
+
 #########################################################
 #
 # Main Function For Web
