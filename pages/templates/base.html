@@ -21,6 +21,15 @@
         rel="stylesheet">
     <link href="{% static 'css/vendors/dataTables/dataTables.dataTables.min.css' %}" rel="stylesheet">
     <link href="{% static 'css/custom.min.css' %}" rel="stylesheet">
+    <style>
+        .resetZoom {
+            position: absolute;
+            top: 1vh;
+            left: 4vw;
+            z-index: 10;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body class="nav-sm">
@@ -47,6 +56,7 @@
             <script src="{% static 'js/vendors/others/chartjs-adapter-moment@1.0.0.js' %}"></script>
             <script src="{% static 'js/vendors/others/chartjs-plugin-zoom.min.js' %}"></script>
             <script src="{% static 'js/vendors/others/chartjs-plugin-datalabels@2.0.0.js' %}"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-autocolors"></script>
             <script
                 src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.1.0/chartjs-plugin-annotation.min.js"
                 integrity="sha512-8MntMizyPIYkcjoDkYqgrQOuWOZsp92zlZ9d7M2RCG0s1Zua8H215p2PdsxS7qg/4hLrHrdPsZgVZpXheHYT+Q=="
@@ -56,6 +66,9 @@
             <script src="{% static 'js/custom.js' %}"></script>
 
             <script>
+                // const autocolors = window['chartjs-plugin-autocolors'];
+                // Chart.register(autocolors);
+
                 const featureSet = [
                     "Active Power", "Reactive Power", "Governor speed actual", "UGB X displacement", "UGB Y displacement",
                     "LGB X displacement", "LGB Y displacement", "TGB X displacement",

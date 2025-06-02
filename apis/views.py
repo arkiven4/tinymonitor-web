@@ -13,7 +13,7 @@ def panel_summary(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
 
-    last_timestamp, last_sensor_featname, sensor_featname, last_severity_featname, sever_featname, ordered_feature_name, sever_count_featname = helper_fun.get_PanelSummary(
+    last_timestamp, last_sensor_featname, sensor_featname, last_severity_featname, sever_featname, ordered_feature_name, sever_count_featname, priority_parameter = helper_fun.get_PanelSummary(
         start_date, end_date)
 
     data = {
@@ -23,11 +23,26 @@ def panel_summary(request):
         'last_severity_featname': last_severity_featname,
         'sever_featname': sever_featname,
         'ordered_feature_name': ordered_feature_name,
-        'sever_count_featname': sever_count_featname
+        'sever_count_featname': sever_count_featname,
+        'priority_parameter': priority_parameter
     }
 
     return Response(data, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+def zone_distribution(request):
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    operation_mode, operation_zone = helper_fun.get_OperationDistribution(
+        start_date, end_date)
+
+    data = {
+        'operation_mode': dict(operation_mode),
+        'operation_zone': dict(operation_zone),
+    }
+
+    return Response(data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def severity_plot(request):
@@ -70,13 +85,16 @@ def advisory_table(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
 
-    last_timestamp, last_severity_featname, sever_1week_featname, sever_count_featname = helper_fun.get_advisoryTable(
+    last_timestamp, last_severity_featname, sever_1week_featname, sever_count_featname, severity_counter_overyear, priority_parameter = helper_fun.get_advisoryTable(
         start_date, end_date)
+  
     data = {
         'last_timestamp': last_timestamp,
         'last_severity_featname': last_severity_featname,
         'sever_1week_featname': sever_1week_featname,
-        'sever_count_featname': sever_count_featname
+        'sever_count_featname': sever_count_featname,
+        'severity_counter_overyear': severity_counter_overyear,
+        'priority_parameter': priority_parameter
     }
     return Response(data, status=status.HTTP_200_OK)
 
@@ -92,7 +110,7 @@ def advisory_detail(request, feat_id=0, minusdays=7):
     except ValueError:
         feat_correlate = []
 
-    data_timestamp, severity_trending_datas, sensor_datas, shutdown_periods, correlation_nowparam, correlate_sensor_datas = helper_fun.get_advisoryDetail(
+    data_timestamp, severity_trending_datas, sensor_datas, shutdown_periods, correlation_nowparam, correlate_sensor_datas, correlate_trending_datas = helper_fun.get_advisoryDetail(
         start_date, end_date, feat_id, feat_correlate)
     data = {
         'feat_id': feat_id,
@@ -102,5 +120,6 @@ def advisory_detail(request, feat_id=0, minusdays=7):
         'shutdown_periods': shutdown_periods,
         'correlation_nowparam': correlation_nowparam,
         'correlate_sensor_datas': correlate_sensor_datas,
+        'correlate_trending_datas': correlate_trending_datas
     }
     return Response(data, status=status.HTTP_200_OK)

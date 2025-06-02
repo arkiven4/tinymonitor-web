@@ -44,8 +44,10 @@
                             <th>Priority</th>
                             <th>Severity</th>
                             <th>Severity Count</th>
-                            <th>Advisory Messages</th>
                             <th>Last Data Collection</th>
+                            <th>Anomaly Count</th>
+                            <th>First Anomaly Date</th>
+                            <th>Advisory Messages</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -57,8 +59,10 @@
                             <th>Priority</th>
                             <th>Severity</th>
                             <th>Severity Count</th>
-                            <th>Advisory Messages</th>
                             <th>Last Data Collection</th>
+                            <th>Anomaly Count</th>
+                            <th>First Anomaly Date</th>
+                            <th>Advisory Messages</th>
                             <th>Action</th>
                         </tr>
                     </tfoot>
@@ -82,6 +86,15 @@
         return colorScale(norm); // Return the mapped color
     }
 
+    function percentage2color(severity) {
+        const norm = severity / 100; // Normalize severity to range [0,1]
+        const colorScale = d3.scaleLinear()
+            .domain([0, 0.5, 1]) // Normalized values
+            .range(["green", "yellow", "red"]); // Corresponding colors
+
+        return colorScale(norm); // Return the mapped color
+    }
+
     $(document).ready(function () {
         var end_date = nowDateMoment.format("YYYY-MM-DDTHH:mm:ss");
         var start_date = nowDateMoment.subtract(2, 'hours').format("YYYY-MM-DDTHH:mm:ss");
@@ -92,17 +105,18 @@
             url: "/api/advisory_table",
             data: { start_date: start_date, end_date: end_date },
             success: function (data) {
-                console.log(data.sever_count_featname)
+                console.log(data.priority_parameter)
+
                 document.getElementById("advisory_maintable").innerHTML = ""
                 for (let [key, value] of Object.entries(data.last_severity_featname)) {
-                    // console.log(data.sever_count_featname[key]);
+                    console.log()
                     document.getElementById("advisory_maintable").innerHTML += `
                         <tr>
                             <td>${key}</td>
                             <td>
                                 <div class="progress">
-                                    <div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25"
-                                        aria-valuemin="0" aria-valuemax="100"></div>
+                                    <div class="progress-bar" role="progressbar" style="width: ${data.priority_parameter[key]}%; background-color: ${percentage2color(data.priority_parameter[key])}" aria-valuenow="${data.priority_parameter[key]}"
+                                        aria-valuemin="0" aria-valuemax="100"></div> 
                                 </div>
                             </td>
                             <td>
@@ -112,9 +126,10 @@
                                 </div>
                             </td>
                             <td><canvas id="barchart_${key.replace(" ", "_")}" class="sparkline"></canvas></td>
-                            <td>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum
-                                has been</td>
-                            <td>${data.last_timestamp}</td>
+                            <td>${data.last_timestamp.replace("T", " ")}</td>
+                            <td>${data.severity_counter_overyear[key.replace(/ /g, "_")].count_above_5}</td>
+                            <td>${data.severity_counter_overyear[key.replace(/ /g, "_")].first_timestamp.replace("T", " ")}</td>
+                            <td>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been</td>
                             <td><button class="btn btn-primary" onclick="window.open('/advisory/chart?feat_id=${featureSet.indexOf(key)}','_blank')">Chart</button></td>
                         </tr>`
                 }

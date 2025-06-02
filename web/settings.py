@@ -38,8 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "django_browser_reload",
-    'rest_framework'
+    'rest_framework'    
 ]
 
 MIDDLEWARE = [
@@ -50,8 +49,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
+
+if DEBUG:
+    INSTALLED_APPS = INSTALLED_APPS + ["django_browser_reload"]
+    MIDDLEWARE = MIDDLEWARE + ["django_browser_reload.middleware.BrowserReloadMiddleware"]
 
 ROOT_URLCONF = 'web.urls'
 
@@ -127,5 +129,10 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
-#MONITORINGDB_PATH = "D:\\ITSTeam\\DTAAD\\"
-MONITORINGDB_PATH = ""
+if DEBUG:
+    MONITORINGDB_PATH = ""
+else:
+    MONITORINGDB_PATH = "D:\\ITSTeam\\DTAAD\\"
+
+###### Custom Var
+USE_REAL_TIME = True

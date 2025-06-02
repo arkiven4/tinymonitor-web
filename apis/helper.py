@@ -7,6 +7,8 @@ from tqdm import tqdm
 import matplotlib.dates as mdates
 from datetime import datetime, timedelta
 from collections import Counter
+from statsmodels.tsa.seasonal import seasonal_decompose
+from scipy.stats import spearmanr
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
@@ -177,6 +179,48 @@ def process_shutdownTimestamp(data_timestamp, sensor_datas):
     
     return shutdown_periods
 
+def fetch_column_threshold_counts(start_date, db_name="data.db", table_name="sensor_data", threshold=5):
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+
+    # Get current year start and end
+    start_date = datetime.strptime(start_date, "%Y-%m-%dT%H:%M:%S")
+    year = start_date.year
+    start_of_year = f"{year}-01-01 00:00:00"
+    end_of_year = f"{year}-12-31 23:59:59"
+
+    # Get column names, skip 'timestamp' column
+    cursor.execute(f"PRAGMA table_info({table_name})")
+    columns = [row[1] for row in cursor.fetchall() if row[1].lower() != "timestamp"][1:]
+
+    result = {}
+    for col in columns:
+        # 1. Find first timestamp in the year where the column > threshold
+        cursor.execute(f"""
+            SELECT timestamp FROM {table_name}
+            WHERE "{col}" > ? AND timestamp BETWEEN ? AND ?
+            ORDER BY timestamp ASC LIMIT 1
+        """, (threshold, start_of_year, end_of_year))
+        first = cursor.fetchone()
+
+        if not first:
+            result[col] = {"first_timestamp": None, "count_above_5": 0}
+            continue
+
+        first_timestamp = first[0]
+
+        # 2. Count how many values are > threshold from that timestamp to end of year
+        cursor.execute(f"""
+            SELECT COUNT(*) FROM {table_name}
+            WHERE "{col}" > ? AND timestamp BETWEEN ? AND ?
+        """, (threshold, first_timestamp, end_of_year))
+        count = cursor.fetchone()[0]
+
+        result[col] = {"first_timestamp": first_timestamp, "count_above_5": count}
+
+    conn.close()
+    return result
+
 def process_operationZone(start_date, end_date, db_name="data.db", table_name="sensor_data"):
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
@@ -192,7 +236,7 @@ def process_operationZone(start_date, end_date, db_name="data.db", table_name="s
         WHEN "Active_Power" >= 40 AND "Active_Power" < 50 AND "Governor_speed_actual" > 250 THEN 'Part Load'
         WHEN "Active_Power" >= 50 AND "Active_Power" < 65 AND "Governor_speed_actual" > 250 THEN 'Efficient Load'
         WHEN "Active_Power" >= 65 AND "Governor_speed_actual" > 250 THEN 'High Load'
-        ELSE 'Undefined'
+        ELSE 'Shutdown'
     END AS Label,
     COUNT(*) AS Count
     FROM {table_name}
@@ -204,6 +248,41 @@ def process_operationZone(start_date, end_date, db_name="data.db", table_name="s
     cursor.execute(query, (start_date, end_date))
     results = cursor.fetchall()
     return results
+
+def process_operationMode(start_date, end_date, db_name="data.db", table_name="sensor_data"):
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+
+    query = f"""
+    SELECT Grid_Selection, COUNT(*) as Count
+    FROM {table_name}
+    WHERE timestamp BETWEEN ? AND ?
+    GROUP BY Grid_Selection
+    ORDER BY Grid_Selection
+    """
+
+    cursor.execute(query, (start_date, end_date))
+    results = cursor.fetchall()
+
+    #results = [item for item in results if item[0] in (0.0, 1.0)]
+    results = [
+        ("Grid" if val == 0.0 else "Furnace", count)
+        for val, count in results if val in (0.0, 1.0)
+    ]
+    return results
+
+def hampel_filter(series, window_size=3, n_sigmas=3):
+    new_series = series.copy()
+    k = 1.4826  # scale factor for Gaussian distribution
+    n = len(series)
+
+    for i in range(window_size, n - window_size):
+        window = series[i - window_size:i + window_size + 1]
+        median = np.median(window)
+        mad = k * np.median(np.abs(window - median))
+        if np.abs(series[i] - median) > n_sigmas * mad:
+            new_series[i] = median
+    return new_series
 
 #########################################################
 #
@@ -252,53 +331,38 @@ def get_PanelSummary(start_date=None, end_date=None):
         sever_count_featname[feature_name] = {int(k): v for k, v in temp_severity_counts.items()}
 
     ordered_feature_name = list(dict(sorted(last_severity_featname.items(), key=lambda item: item[1], reverse=True)).keys())[:5]
-    return data_timestamp[-1], last_sensor_featname, sensor_featname, last_severity_featname, sever_featname, ordered_feature_name, sever_count_featname
 
-    # threshold_percentages = {}
-    # threshold_percentages_sorted = {}
-    # for idx_model, (model_name) in enumerate(model_array):
-    #     now_fetched = fetch_between_dates(end_dateLate.strftime("%Y-%m-%dT%H:%M:%S"), end_date, settings.MONITORINGDB_PATH + "db/threshold_data.db", model_name)[-1, 2:]
+    # Try Priority
+    start_dateLate = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S") - timedelta(days=30)
+    severity_trending_datas = fetch_between_dates(start_dateLate, end_date, "db/severity_trendings.db", "severity_trendings")
+    sensor_datas = fetch_between_dates(start_dateLate, end_date, "db/severity_trendings.db", "original_sensor")
+    data_timestamp = sensor_datas[:, 1]
+    severity_trending_datas = severity_trending_datas[:, 2:].astype(float)
+    sensor_datas = sensor_datas[:, 2:].astype(float)
+    priority_parameter = {}
+    datetime_index = pd.to_datetime(data_timestamp)
+    for idx, feature_name in enumerate(feature_set):
+        series = pd.Series(severity_trending_datas[:, idx], index=datetime_index)
+        series = series.asfreq('15min')
+        result = seasonal_decompose(series, model='additive', period=96 * 2)
+        trend = result.trend.dropna()
+        x = np.arange(len(trend))
+        corr, _ = spearmanr(x, trend)
+        if np.isnan(corr) or np.isinf(corr):
+            corr = 0
+        if corr <= 0:
+            priority_parameter[feature_name] = float((corr + 1) * 25)
+        else:
+            priority_parameter[feature_name] = float(25 + corr * 75)
 
-    #     threshold_pass = {}
-    #     for idx_sensor, sensor_thre in enumerate(now_fetched):
-    #         threshold_pass[feature_set[idx_sensor]] = float(sensor_thre)
+    return data_timestamp[-1], last_sensor_featname, sensor_featname, last_severity_featname, sever_featname, ordered_feature_name, sever_count_featname, priority_parameter
 
-    #     threshold_percentages_sorted[idx_model] = dict(sorted(threshold_pass.items(), key=lambda item: item[1], reverse=True)[:10])
-    #     threshold_percentages[idx_model] = threshold_pass
+def get_OperationDistribution(start_date=None, end_date=None):
+    operation_mode = process_operationMode(start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "additional_original_data")
+    operation_zone = process_operationZone(start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "original_data")
 
-    # temp_original_data = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "original_data")
-    # df_timestamp, df_feature = temp_original_data[:, 1], temp_original_data[:, 2:].astype(np.float16)
+    return operation_mode, operation_zone
 
-    # temp_ypreds = {}
-    # for idx_model, (model_name) in enumerate(model_array):
-    #     temp_ypreds[idx_model] = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/pred_data.db", model_name)[:, 2:].astype(np.float16)
-
-    # counter_feature_s2, counter_feature_plot = calc_counterPercentage(threshold_percentages_sorted)
-    # df_feature_send = []
-    # y_pred_send = []
-    # loss_send = []
-    # thr_now_model = []
-
-    # feature_index_list = [feature_set.index(feat_name) for feat_name in list(counter_feature_s2.keys())]
-    # for idx, (feature_index_now) in enumerate(feature_index_list[:4]):
-    #     model_idx_highest = counter_feature_plot[feature_set[feature_index_now]]
-
-    #     y_true, _, _ = normalize3(df_feature, min_a, max_a)
-    #     y_pred, _, _ = normalize3(temp_ypreds[model_idx_highest], min_a, max_a)
-
-    #     loss = denormalize3((y_true - y_pred) ** 2, min_a, max_a)
-    #     model_thr_temp = denormalize3(model_thr[model_array[model_idx_highest]], min_a, max_a)
-
-    #     loss_send.append(loss[:, feature_index_now])
-    #     thr_now_model.append(float(model_thr_temp[feature_index_now]))
-
-    #     df_feature_send.append(temp_ypreds[model_idx_highest][:, feature_index_now])
-    #     y_pred_send.append(df_feature[:, feature_index_now])
-
-    # df_feature_send = np.vstack(df_feature_send).T
-    # y_pred_send = np.vstack(y_pred_send).T
-    # loss_send = np.vstack(loss_send).T
-    return counter_feature_s2, df_timestamp, df_feature_send, y_pred_send, loss_send, thr_now_model
 
 def get_SeverityNLoss(start_date=None, end_date=None):
     end_dateLate = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S") - timedelta(minutes=30)
@@ -422,6 +486,31 @@ def get_sensorNtrend(start_date, end_date):
     return data_timestamp, severity_trending_datas, sensor_datas
 
 def get_advisoryTable(start_date, end_date): # 2529
+    # Try Priority
+    start_dateLate = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S") - timedelta(days=30)
+    severity_trending_datas = fetch_between_dates(start_dateLate, end_date, "db/severity_trendings.db", "severity_trendings")
+    sensor_datas = fetch_between_dates(start_dateLate, end_date, "db/severity_trendings.db", "original_sensor")
+    data_timestamp = sensor_datas[:, 1]
+    severity_trending_datas = severity_trending_datas[:, 2:].astype(float)
+    sensor_datas = sensor_datas[:, 2:].astype(float)
+    for i in range(len(feature_set)):
+        severity_trending_datas[:, i] = hampel_filter(severity_trending_datas[:, i], window_size=93, n_sigmas=3)
+    priority_parameter = {}
+    datetime_index = pd.to_datetime(data_timestamp)
+    for idx, feature_name in enumerate(feature_set):
+        series = pd.Series(severity_trending_datas[:, idx], index=datetime_index)
+        series = series.asfreq('15min')
+        result = seasonal_decompose(series, model='additive', period=96 * 2)
+        trend = result.trend.dropna()
+        x = np.arange(len(trend))
+        corr, _ = spearmanr(x, trend)
+        if np.isnan(corr) or np.isinf(corr):
+            corr = 0
+        if corr <= 0:
+            priority_parameter[feature_name] = float((corr + 1) * 25)
+        else:
+            priority_parameter[feature_name] = float(25 + corr * 75)
+        
     raw_trending_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
     raw_trending_datas = raw_trending_datas[::-1]
     data_timestamp = raw_trending_datas[:, 1]
@@ -429,6 +518,8 @@ def get_advisoryTable(start_date, end_date): # 2529
 
     vectorized_func = np.vectorize(percentage2severity)
     severity_level_datas = vectorized_func(severity_trending_datas)
+
+    severity_counter_overyear = fetch_column_threshold_counts(start_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings", threshold=5)
 
     sever_1week_featname = {}
     sever_featname = {}
@@ -444,7 +535,7 @@ def get_advisoryTable(start_date, end_date): # 2529
 
     last_severity_featname = dict(sorted(sever_featname.items(), key=lambda item: item[1], reverse=True))
     sever_1week_featname = order_objects_by_keys(sever_1week_featname.copy(), last_severity_featname.keys())
-    return data_timestamp[-1], last_severity_featname, sever_1week_featname, sever_count_featname
+    return data_timestamp[-1], last_severity_featname, sever_1week_featname, sever_count_featname, severity_counter_overyear, priority_parameter
 
 
 def get_advisoryDetail(start_date, end_date, sensor_id, feat_correlate):
@@ -466,6 +557,7 @@ def get_advisoryDetail(start_date, end_date, sensor_id, feat_correlate):
 
     correlation_nowparam = correlation_param[feature_set[sensor_id]]
     correlate_sensor_datas = sensor_datas[:, feat_correlate].astype(float)
+    correlate_trending_datas = severity_trending_datas[:, feat_correlate].astype(float)
 
-    return data_timestamp, selected_severity_trending_datas, selected_sensor_datas, shutdown_periods, correlation_nowparam, correlate_sensor_datas
+    return data_timestamp, selected_severity_trending_datas, selected_sensor_datas, shutdown_periods, correlation_nowparam, correlate_sensor_datas, correlate_trending_datas
     

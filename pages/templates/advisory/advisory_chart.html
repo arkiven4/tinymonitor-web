@@ -25,14 +25,29 @@
         border: 1px solid #ccc;
         padding: 10px;
     }
+
+    .x_content {
+        padding: 0 3px 0 !important;
+        clear: both !important;
+        margin-top: 0px !important;
+    }
 </style>
+<!-- <style>
+    div.dt-container div.dt-layout-row {
+        margin: 0 !important;
+    }
+
+    .nav-sm .container.body .right_col {
+        padding: 0 !important;
+    }
+</style> -->
 <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.css"
     integrity="sha512-rBi1cGvEdd3NmSAQhPWId5Nd6QxE8To4ADjM2a6n0BrqQdisZ/RPUlm0YycDzvNL1HHAh1nKZqI0kSbif+5upQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 <div class="row" id="chart_container">
-    <div class="col-md-12 col-sm-12">
+    <div class="col-md-12 col-sm-12 px-0">
         <div class="x_panel tile">
             <div id="reportrange_right" class="pull-left"
                 style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
@@ -42,13 +57,12 @@
         </div>
     </div>
 </div>
-
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-12 px-0">
         <div class="">
             <div class="x_content">
                 <div class="row">
-                    <div class="col-lg-4 col-md-4 col-sm-6 ">
+                    <div class="col-lg-4 col-md-4 col-sm-6 px-0">
                         <div class="x_panel tile fixed_height_320 overflow_hidden">
                             <div class="x_title">
                                 <h2>Percentage Distribution</h2>
@@ -136,7 +150,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-4 col-sm-6 ">
+                    <div class="col-lg-4 col-md-4 col-sm-6 px-0">
                         <div class="x_panel tile fixed_height_320 overflow_hidden">
                             <div class="x_title">
                                 <h2>Percentage Severity</h2>
@@ -150,7 +164,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-4 col-sm-6 ">
+                    <div class="col-lg-4 col-md-4 col-sm-6 px-0">
                         <div class="x_panel tile fixed_height_320 overflow_hidden">
                             <div class="x_title">
                                 <h2>Priority</h2>
@@ -171,7 +185,7 @@
 </div>
 
 <div class="row" id="chart_container">
-    <div class="col-md-6 col-sm-6">
+    <div class="col-md-12 col-sm-12 px-0">
         <div class="x_panel tile">
             <div class="x_title">
                 <h2 id="title_featureRaw"></h2>
@@ -182,7 +196,8 @@
                 <div class="clearfix"></div>
             </div>
             <div class="x_content">
-                <button type="button" class="btn btn-primary" onclick="resetZoom(line_chart1)">Reset Zoom</button>
+                <button type="button" class="resetZoom" onclick="resetZoom(line_chart1)"><i class="fa fa-search-minus"
+                        aria-hidden="true"></i></button>
                 <div id="custom-tooltip0"
                     style=" position: absolute; background: white; border: 1px solid black; padding: 10px; border-radius: 5px; pointer-events: auto; display: none; z-index: 1000; ">
                 </div>
@@ -190,7 +205,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-6 col-sm-6">
+    <div class="col-md-12 col-sm-12 px-0">
         <div class="x_panel tile">
             <div class="x_title">
                 <h2>Parameter Trending Data</h2>
@@ -201,7 +216,8 @@
                 <div class="clearfix"></div>
             </div>
             <div class="x_content">
-                <button type="button" class="btn btn-primary" onclick="resetZoom(line_chart2)">Reset Zoom</button>
+                <button type="button" class="resetZoom" onclick="resetZoom(line_chart2)"><i class="fa fa-search-minus"
+                        aria-hidden="true"></i></button>
                 <canvas id="chart_data1" style="width: 100%; height: 400px"></canvas>
             </div>
         </div>
@@ -209,7 +225,7 @@
 </div>
 
 <div class="row">
-    <div class="col-md-12 col-sm-12">
+    <div class="col-md-12 col-sm-12 px-0">
         <div class="x_panel tile">
             <div class="x_title">
                 <h2>Correlate Parameter</h2>
@@ -223,7 +239,7 @@
                 <form id="correlationForm">
                     <div class="checkbox-list" id="checkboxContainer"> </div>
                     <br>
-                    <button type="submit" class="btn btn-primary">Show</button>
+                    <button type="submit" class="btn btn-primary">Set</button>
                 </form>
                 <div class="clearfix"></div>
             </div>
@@ -231,7 +247,51 @@
     </div>
 </div>
 
-<div class="row" id="correlateChartContainer"></div>
+<div class="row" id="correlateChartContainer">
+    <div class="col-md-12 col-sm-12">
+        <div class="x_panel tile">
+            <div class="x_title">
+                <h2 id="title_featureRaw">Raw Sensor Data Correlated Feature</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                    <li class="dropdown"></li>
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <button type="button" class="resetZoom" onclick="resetZoom(line_chart3)"><i class="fa fa-search-minus"
+                        aria-hidden="true"></i></button>
+                <div id="custom-tooltip0"
+                    style=" position: absolute; background: white; border: 1px solid black; padding: 10px; border-radius: 5px; pointer-events: auto; display: none; z-index: 1000; ">
+                </div>
+                <canvas id="correlate_chart_data0" style="width: 100%; height: 700px"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="correlateChartContainer">
+    <div class="col-md-12 col-sm-12">
+        <div class="x_panel tile">
+            <div class="x_title">
+                <h2 id="title_featureRaw">Trending Correlated Feature</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                    <li class="dropdown"></li>
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <button type="button" class="resetZoom" onclick="resetZoom(line_chart4)"><i class="fa fa-search-minus"
+                        aria-hidden="true"></i></button>
+                <div id="custom-tooltip0"
+                    style=" position: absolute; background: white; border: 1px solid black; padding: 10px; border-radius: 5px; pointer-events: auto; display: none; z-index: 1000; ">
+                </div>
+                <canvas id="correlate_chart_data1" style="width: 100%; height: 700px"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="row">
     <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -280,6 +340,8 @@
     let correlate_chart = [];
     let line_chart1;
     let line_chart2;
+    let line_chart3;
+    let line_chart4;
     let gaugeSeverityChart;
     var severityCounts = {
         1: 0,
@@ -312,51 +374,6 @@
             url: "/api/advisory_detail/" + idx_sensor,
             data: { feat_id: idx_sensor, start_date: start_date, end_date: end_date, feat_correlate: urlParams.get('feat_correlate') },
             success: function (data) {
-                const selectedIndices_correlate = new Set(
-                    urlParams.get('feat_correlate')?.split(',').map(x => parseInt(x.trim())).filter(n => !isNaN(n)) || []
-                );
-                const checkboxContainer = document.getElementById('checkboxContainer');
-
-                var count = 0;
-                data.correlation_nowparam.forEach((item) => {
-                    const correlatedFeature = Object.keys(item)[0];
-                    const value = item[correlatedFeature];
-                    const index = featureSet.indexOf(correlatedFeature);
-
-                    if (index !== -1) {
-                        var mustCheck = "";
-                        if (selectedIndices_correlate.has(index)) {
-                            mustCheck = "checked";
-                            document.getElementById('correlateChartContainer').innerHTML += `                            <div class="col-md-12 col-sm-12">
-                                <div class="x_panel tile">
-                                    <div class="x_title">
-                                        <h2 id="title_featureRaw">${correlatedFeature}</h2>
-                                        <ul class="nav navbar-right panel_toolbox">
-                                            <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-                                            <li class="dropdown"></li>
-                                        </ul>
-                                        <div class="clearfix"></div>
-                                    </div>
-                                    <div class="x_content">
-                                        <button type="button" class="btn btn-primary" onclick="resetZoom(correlate_chart[${count}])">Reset Zoom</button>
-                                        <div id="custom-tooltip0"
-                                            style=" position: absolute; background: white; border: 1px solid black; padding: 10px; border-radius: 5px; pointer-events: auto; display: none; z-index: 1000; ">
-                                        </div>
-                                        <canvas id="correlate_chart_data${count}" style="width: 100%; height: 400px"></canvas>
-                                    </div>
-                                </div>
-                            </div>`
-                                count += 1;
-                        }
-                        checkboxContainer.innerHTML += `<div class="form-check form-check-inline">
-                                                            <input class="form-check-input" type="checkbox" name="features_corr" id="chk_${index}" value="${index}" ${mustCheck}>
-                                                            <label class="form-check-label" for="chk_${index}">${correlatedFeature} (corr: ${value})</label>
-                                                        </div>`
-
-                                                        
-                    }
-                });
-
                 const parsedShutdowns = data.shutdown_periods.map(([start, end]) => [new Date(start), new Date(end)]);
                 document.getElementById("title_featureRaw").innerText = featureSet[data.feat_id];
 
@@ -374,7 +391,7 @@
                         x: data['data_timestamp'][i], y: data['sensor_datas'][i]
                     })
                     current_trending_data.push({
-                        x: data['data_timestamp'][i], y: percentage2severity(data['severity_trending_datas'][i])
+                        x: data['data_timestamp'][i], y: data['severity_trending_datas'][i]
                     })
                 }
 
@@ -397,7 +414,54 @@
                     }
                 }
 
+                // ==========================
+                // Featured Counter, Seaverity level, Dkk
+                // ==========================
+                const selectedIndices_correlate = new Set(
+                    urlParams.get('feat_correlate')?.split(',').map(x => parseInt(x.trim())).filter(n => !isNaN(n)) || []
+                );
+                const checkboxContainer = document.getElementById('checkboxContainer');
 
+                var count = 0;
+                data.correlation_nowparam.forEach((item) => {
+                    const correlatedFeature = Object.keys(item)[0];
+                    const value = item[correlatedFeature];
+                    const index = featureSet.indexOf(correlatedFeature);
+
+                    if (index !== -1) {
+                        var mustCheck = "";
+                        if (selectedIndices_correlate.has(index)) {
+                            mustCheck = "checked";
+                            // document.getElementById('correlateChartContainer').innerHTML += `
+                            // <div class="col-md-12 col-sm-12">
+                            //     <div class="x_panel tile">
+                            //         <div class="x_title">
+                            //             <h2 id="title_featureRaw">${correlatedFeature}</h2>
+                            //             <ul class="nav navbar-right panel_toolbox">
+                            //                 <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                            //                 <li class="dropdown"></li>
+                            //             </ul>
+                            //             <div class="clearfix"></div>
+                            //         </div>
+                            //         <div class="x_content">
+                            //             <button type="button" class="btn btn-primary" onclick="resetZoom(correlate_chart[${count}])">Reset Zoom</button>
+                            //             <div id="custom-tooltip0"
+                            //                 style=" position: absolute; background: white; border: 1px solid black; padding: 10px; border-radius: 5px; pointer-events: auto; display: none; z-index: 1000; ">
+                            //             </div>
+                            //             <canvas id="correlate_chart_data${count}" style="width: 100%; height: 400px"></canvas>
+                            //         </div>
+                            //     </div>
+                            // </div>`
+                            // count += 1;
+                        }
+
+                        // Check Checkbox
+                        checkboxContainer.innerHTML += `<div class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="checkbox" name="features_corr" id="chk_${index}" value="${index}" ${mustCheck}>
+                                                            <label class="form-check-label" for="chk_${index}">${correlatedFeature} (corr: ${value})</label>
+                                                        </div>`
+                    }
+                });
 
                 setTimeout(() => {
                     var totalCount = current_severity_data.length
@@ -529,6 +593,9 @@
                                 }
                             },
                             plugins: {
+                                legend: {
+                                    display: false
+                                },
                                 tooltip: {
                                     enabled: false,
                                 },
@@ -600,13 +667,16 @@
                                 y: {
                                     title: {
                                         display: true,
-                                        text: "Percentage Levels"
+                                        text: "Severity Percentage (%)"
                                     },
                                     min: 0,
-                                    max: 7
+                                    max: 100
                                 }
                             },
                             plugins: {
+                                legend: {
+                                    display: false
+                                },
                                 tooltip: {
                                     enabled: false,
                                 },
@@ -619,111 +689,222 @@
                     });
 
                     var current_correlateArrray = urlParams.get('feat_correlate')?.split(',').map(x => parseInt(x.trim())).filter(n => !isNaN(n)) || []
-                    
+
+                    let obj_correlateTrendData = [
+                        {
+                            label: featureSet[idx_sensor],
+                            data: current_trending_data,
+                            tension: 0.4
+                        },
+                    ]
+                    let obj_correlateData = [
+                        {
+                            label: featureSet[idx_sensor],
+                            data: current_sensor_data,
+                            unit: unitSet[idx_sensor],
+                            yAxisID: 'y1'
+                        },
+                    ]
+                    let yIndexObj = {
+                        y1: {
+                            type: 'linear',
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: unitSet[idx_sensor],
+                            }
+                        }
+                    }
+
                     for (let index = 0; index < current_correlateArrray.length; index++) {
-                        var now_sensorIndex = current_correlateArrray[index]
-                        let current_sensor_data = [];
+                        var now_correSensorIndex = current_correlateArrray[index]
+                        let current_correlateSensorData = [];
+                        let current_correlateTrendingData = [];
                         for (var i = 0; i < data['data_timestamp'].length; i++) {
-                            current_sensor_data.push({
+                            current_correlateSensorData.push({
                                 x: data['data_timestamp'][i], y: data.correlate_sensor_datas[i][index]
                             })
+                            current_correlateTrendingData.push({
+                                x: data['data_timestamp'][i], y: data.correlate_trending_datas[i][index]
+                            })
                         }
-                        
-                        var ctx = document.getElementById(`correlate_chart_data${index}`).getContext('2d');
-                        correlate_chart.push(new Chart(ctx, {
-                            type: 'line',
-                            data: {
-                                datasets: [{
-                                    label: featureSet[now_sensorIndex],
-                                    data: current_sensor_data,
-                                    borderColor: 'blue',
-                                    backgroundColor: 'transparent',
-                                    tension: 0.4,
-                                    pointBackgroundColor: 'transparent',
-                                    pointRadius: 0,
-                                    pointHoverRadius: 0,
-                                    parsing: {
-                                        xAxisKey: 'x',
-                                        yAxisKey: 'y'
-                                    }
-                                }]
-                            },
-                            options: {
-                                responsive: false,
-                                scales: {
-                                    x: xChartLineFormat,
-                                    y: {
-                                        title: {
-                                            display: true,
-                                            text: unitSet[now_sensorIndex]
-                                        }
-                                    }
+                        var current_CorrelateSensorUnit = unitSet[now_correSensorIndex];
+
+                        var count_yAxis = 0;
+                        for (const element of obj_correlateData) {
+                            if (element['unit'] == current_CorrelateSensorUnit) {
+                                count_yAxis = 1;
+                                break
+                            }
+                        }
+                        if (count_yAxis == 0) {
+                            count_yAxis = Object.keys(yIndexObj).length + 1
+                            yIndexObj['y' + count_yAxis.toString()] = {
+                                type: 'linear',
+                                position: 'right',
+                                offset: true,
+                                title: {
+                                    display: true,
+                                    text: current_CorrelateSensorUnit
                                 },
-                                plugins: {
-                                    tooltip: {
-                                        enabled: false,
-                                    },
-                                    annotation: {
-                                    annotations: annotations
-                                },
-                                    zoom: zoomPluginsLineConfig
-                                },
-                                onClick: (event, elements) => {
-                                    if (elements.length > 0) {
-                                        const datasetIndex = elements[0].datasetIndex;
-                                        if (datasetIndex === 1) {
-                                            var now_idx_sensor = parseInt(event.native.target.id.replace('chart_data', ''));
-                                            var tooltipEl = document.getElementById(`custom-tooltip${now_idx_sensor}`);
-
-                                            const index = elements[0].index;
-                                            const pointData = severity_data[now_idx_sensor][index];
-                                            const meta = chart_array[now_idx_sensor].getDatasetMeta(1);
-                                            const point = meta.data[index];
-                                            const canvasRect = chart_array[now_idx_sensor].canvas.getBoundingClientRect();
-
-                                            const clickedData = chart_array[now_idx_sensor].data.datasets[datasetIndex].data[index];
-
-
-                                            // Get pixel coordinates
-                                            const xScale = chart_array[now_idx_sensor].scales.x;
-                                            const yScale = chart_array[now_idx_sensor].scales.y;
-                                            const xPx = xScale.getPixelForValue(new Date(clickedData.x));
-                                            const yPx = yScale.getPixelForValue(clickedData.y);
-
-                                            // Position tooltip div
-                                            tooltipEl.innerHTML = `Time: ${pointData.x}<br>Severity Percentage: ${pointData.severity_value}<br>
-<button class="btn btn-primary btn-sm mt-2" onclick="openModal()">See Detail</button>`;
-
-                                            tooltipEl.style.left = `${xPx + chart_array[now_idx_sensor].canvas.offsetLeft}px`;
-                                            tooltipEl.style.top = `${yPx + chart_array[now_idx_sensor].canvas.offsetTop - 30}px`;
-                                            tooltipEl.style.display = 'block';
-                                        }
-
-                                    } else {
-                                        var now_idx_sensor = parseInt(event.native.target.id.replace('chart_data', ''));
-                                        var tooltipEl = document.getElementById(`custom-tooltip${now_idx_sensor}`);
-                                        tooltipEl.style.display = 'none';
-                                    }
+                                grid: {
+                                    drawOnChartArea: false,
                                 }
                             }
-                        }));
+                        }
+                        obj_correlateData.push({
+                            label: featureSet[now_correSensorIndex],
+                            data: current_correlateSensorData,
+                            unit: unitSet[now_correSensorIndex],
+                            yAxisID: 'y' + count_yAxis.toString()
+                        })
+                        obj_correlateTrendData.push({
+                            label: featureSet[now_correSensorIndex],
+                            data: current_correlateTrendingData,
+                            cubicInterpolationMode: 'monotone'
+                        })
                     }
-                    // let current_sensor_data = [];
-                    // let current_severity_data = [];
-                    // let current_severity_color_data = [];
-                    // let current_max = -999999;
+                    const chartColors = Chart.defaults.color;
+                    obj_correlateData.forEach((ds, index) => {
+                        if (!ds.borderColor) {
+                            const hue = (index * 47) % 360; // use a prime-ish number to spread hues
+                            ds.borderColor = `hsl(${hue}, 70%, 50%)`;
+                        }
+                    });
 
-                    // for (var i = 0; i < data['df_timestamp'].length; i++) {
-                    //     if (current_max < data['sensor_datas'][i][index]) {
-                    //         current_max = data['sensor_datas'][i][index]
-                    //     }
-                    //     current_sensor_data.push({
-                    //         x: data['df_timestamp'][i], y: data['sensor_datas'][i][index]
-                    //     })
-                    // }
 
-                    console.log(data.correlate_sensor_datas[0])
+                    Object.keys(yIndexObj).forEach(axisID => {
+                        const dataset = obj_correlateData.find(ds => ds.yAxisID === axisID);
+                        if (dataset && dataset.borderColor) {
+                            yIndexObj[axisID].ticks = { color: dataset.borderColor };
+                        }
+                    });
+                    yIndexObj['x'] = xChartLineFormat
+                    line_chart3 = new Chart(document.getElementById('correlate_chart_data0').getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            datasets: obj_correlateData
+                        },
+                        options: {
+                            responsive: false,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false,
+                            },
+                            stacked: false,
+                            scales: yIndexObj,
+                            plugins: {
+                                legend: {
+                                    display: true
+                                },
+                                tooltip: {
+                                    enabled: true,
+                                },
+                                annotation: {
+                                    annotations: annotations
+                                },
+                                zoom: zoomPluginsLineConfig
+                            },
+                            onClick: (event, elements) => {
+                                if (elements.length > 0) {
+                                    const datasetIndex = elements[0].datasetIndex;
+                                    if (datasetIndex === 1) {
+                                        var tooltipEl = document.getElementById(`custom-tooltip0`);
 
+                                        const index = elements[0].index;
+                                        const pointData = current_severity_data[index];
+                                        const meta = line_chart1.getDatasetMeta(1);
+                                        const point = meta.data[index];
+                                        const canvasRect = line_chart1.canvas.getBoundingClientRect();
+                                        const clickedData = line_chart1.data.datasets[datasetIndex].data[index];
+
+                                        // Get pixel coordinates
+                                        const xScale = line_chart1.scales.x;
+                                        const yScale = line_chart1.scales.y;
+                                        const xPx = xScale.getPixelForValue(new Date(clickedData.x));
+                                        const yPx = yScale.getPixelForValue(clickedData.y);
+
+                                        // Position tooltip div
+                                        tooltipEl.innerHTML = `Time: ${pointData.x}<br>Severity Percentage: ${pointData.severity_value}<br>
+                                                                <button class="btn btn-primary btn-sm mt-2" onclick="openModal()">See Detail</button>`;
+
+                                        tooltipEl.style.left = `${xPx + line_chart1.canvas.offsetLeft}px`;
+                                        tooltipEl.style.top = `${yPx + line_chart1.canvas.offsetTop - 30}px`;
+                                        tooltipEl.style.display = 'block';
+                                    }
+                                } else {
+                                    document.getElementById(`custom-tooltip0`).style.display = 'none';
+                                }
+                            }
+                        },
+                    });
+
+                    line_chart4 = new Chart(document.getElementById('correlate_chart_data1').getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            datasets: obj_correlateTrendData
+                        },
+                        options: {
+                            responsive: false,
+                            scales: {
+                                x: xChartLineFormat,
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: "Severity Percentage (%)"
+                                    },
+                                    min: 0,
+                                    max: 100
+                                }
+                            },
+                            stacked: false,
+                            plugins: {
+                                legend: {
+                                    display: true
+                                },
+                                tooltip: {
+                                    enabled: true,
+                                },
+                                annotation: {
+                                    annotations: annotations
+                                },
+                                zoom: zoomPluginsLineConfig
+                            },
+                            onClick: (event, elements) => {
+                                if (elements.length > 0) {
+                                    const datasetIndex = elements[0].datasetIndex;
+                                    if (datasetIndex === 1) {
+                                        var tooltipEl = document.getElementById(`custom-tooltip0`);
+
+                                        const index = elements[0].index;
+                                        const pointData = current_severity_data[index];
+                                        const meta = line_chart1.getDatasetMeta(1);
+                                        const point = meta.data[index];
+                                        const canvasRect = line_chart1.canvas.getBoundingClientRect();
+                                        const clickedData = line_chart1.data.datasets[datasetIndex].data[index];
+
+                                        // Get pixel coordinates
+                                        const xScale = line_chart1.scales.x;
+                                        const yScale = line_chart1.scales.y;
+                                        const xPx = xScale.getPixelForValue(new Date(clickedData.x));
+                                        const yPx = yScale.getPixelForValue(clickedData.y);
+
+                                        // Position tooltip div
+                                        tooltipEl.innerHTML = `Time: ${pointData.x}<br>Severity Percentage: ${pointData.severity_value}<br>
+                                                                <button class="btn btn-primary btn-sm mt-2" onclick="openModal()">See Detail</button>`;
+
+                                        tooltipEl.style.left = `${xPx + line_chart1.canvas.offsetLeft}px`;
+                                        tooltipEl.style.top = `${yPx + line_chart1.canvas.offsetTop - 30}px`;
+                                        tooltipEl.style.display = 'block';
+                                    }
+                                } else {
+                                    document.getElementById(`custom-tooltip0`).style.display = 'none';
+                                }
+                            }
+                        },
+                    });
+
+                    console.log(obj_correlateData)
                 }, 500);
             }
         });
