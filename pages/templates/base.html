@@ -13,13 +13,11 @@
 
     <title>{% block title %}{% endblock %}</title>
 
-    <!-- <link href="{% static 'css/vendors/bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet"> -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="{% static 'css/vendors/bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
     <link href="{% static 'css/vendors/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
-    <link href="{% static 'css/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css' %}"
-        rel="stylesheet">
+    <link href="{% static 'css/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css' %}" rel="stylesheet">
     <link href="{% static 'css/vendors/dataTables/dataTables.dataTables.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/vendors/others/daterangepicker.min.css' %}" rel="stylesheet">
     <link href="{% static 'css/custom.min.css' %}" rel="stylesheet">
     <style>
         .resetZoom {
@@ -45,10 +43,7 @@
 
 
             <script src="{% static 'js/vendors/jquery/dist/jquery.min.js' %}"></script>
-            <!-- <script src="{% static 'js/vendors/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script> -->
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-                integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-                crossorigin="anonymous"></script>
+            <script src="{% static 'js/vendors/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
             <script src="{% static 'js/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js' %}"></script>
             <script src="{% static 'js/vendors/dataTables/dataTables.min.js' %}"></script>
             <script src="{% static 'js/vendors/others/moment.min.js' %}"></script>
@@ -56,12 +51,9 @@
             <script src="{% static 'js/vendors/others/chartjs-adapter-moment@1.0.0.js' %}"></script>
             <script src="{% static 'js/vendors/others/chartjs-plugin-zoom.min.js' %}"></script>
             <script src="{% static 'js/vendors/others/chartjs-plugin-datalabels@2.0.0.js' %}"></script>
-            <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-autocolors"></script>
-            <script
-                src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.1.0/chartjs-plugin-annotation.min.js"
-                integrity="sha512-8MntMizyPIYkcjoDkYqgrQOuWOZsp92zlZ9d7M2RCG0s1Zua8H215p2PdsxS7qg/4hLrHrdPsZgVZpXheHYT+Q=="
-                crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-            <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+            <script src="{% static 'js/vendors/others/chartjs-plugin-annotation.min.js' %}"></script>
+            <script src="{% static 'js/vendors/others/chartjs-plugin-autocolors.js' %}"></script>
+            <script src="{% static 'js/vendors/others/echarts.min.js' %}"></script>
             <script src="{% static 'js/vendors/others/d3.min.js' %}"></script>
             <script src="{% static 'js/custom.js' %}"></script>
 
