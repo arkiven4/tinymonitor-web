@@ -51,9 +51,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-if DEBUG:
-    INSTALLED_APPS = INSTALLED_APPS + ["django_browser_reload"]
-    MIDDLEWARE = MIDDLEWARE + ["django_browser_reload.middleware.BrowserReloadMiddleware"]
+#INSTALLED_APPS = INSTALLED_APPS + ["django_browser_reload"]
+#MIDDLEWARE = MIDDLEWARE + ["django_browser_reload.middleware.BrowserReloadMiddleware"]
 
 ROOT_URLCONF = 'web.urls'
 
@@ -129,10 +128,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
-if DEBUG:
-    MONITORINGDB_PATH = ""
-else:
-    MONITORINGDB_PATH = "D:\\ITSTeam\\DTAAD\\"
+#MONITORINGDB_PATH = ""
+MONITORINGDB_PATH = "D:\\ITSTeam\\NewGen\cbm_vale-main\\"
 
 ###### Custom Var
 USE_REAL_TIME = True
