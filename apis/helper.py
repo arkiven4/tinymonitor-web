@@ -357,14 +357,15 @@ def get_PanelSummary(start_date=None, end_date=None):
             else:
                 priority_parameter[feature_name] = float(25 + corr * 75)
         else:
-            priority_parameter[feature_name] = float(10)
+            priority_parameter[feature_name] = float(1)
 
     return data_timestamp[-1], last_sensor_featname, sensor_featname, last_severity_featname, sever_featname, ordered_feature_name, sever_count_featname, priority_parameter
 
 def get_OperationDistribution(start_date=None, end_date=None):
     operation_mode = process_operationMode(start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "additional_original_data")
     operation_zone = process_operationZone(start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "original_data")
-
+    print(operation_mode)
+    print(operation_zone)
     return operation_mode, operation_zone
 
 
@@ -517,7 +518,7 @@ def get_advisoryTable(start_date, end_date): # 2529
             else:
                 priority_parameter[feature_name] = float(25 + corr * 75)
         else:
-            priority_parameter[feature_name] = float(10)
+            priority_parameter[feature_name] = float(1)
         
     raw_trending_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
     raw_trending_datas = raw_trending_datas[::-1]
