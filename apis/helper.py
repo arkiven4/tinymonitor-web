@@ -204,7 +204,7 @@ def fetch_column_threshold_counts(start_date, db_name="data.db", table_name="sen
         first = cursor.fetchone()
 
         if not first:
-            result[col] = {"first_timestamp": None, "count_above_5": 0}
+            result[col] = {"first_timestamp": "2011-01-01T00:00:00", "count_above_5": 0}
             continue
 
         first_timestamp = first[0]
@@ -215,7 +215,7 @@ def fetch_column_threshold_counts(start_date, db_name="data.db", table_name="sen
             WHERE "{col}" > ? AND timestamp BETWEEN ? AND ?
         """, (threshold, first_timestamp, end_of_year))
         count = cursor.fetchone()[0]
-
+        
         result[col] = {"first_timestamp": first_timestamp, "count_above_5": count}
 
     conn.close()
@@ -334,8 +334,8 @@ def get_PanelSummary(start_date=None, end_date=None):
 
     # Try Priority
     start_dateLate = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S") - timedelta(days=30)
-    severity_trending_datas = fetch_between_dates(start_dateLate, end_date, "db/severity_trendings.db", "severity_trendings")
-    sensor_datas = fetch_between_dates(start_dateLate, end_date, "db/severity_trendings.db", "original_sensor")
+    severity_trending_datas = fetch_between_dates(start_dateLate, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
+    sensor_datas = fetch_between_dates(start_dateLate, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor")
     data_timestamp = sensor_datas[:, 1]
     severity_trending_datas = severity_trending_datas[:, 2:].astype(float)
     sensor_datas = sensor_datas[:, 2:].astype(float)
@@ -343,17 +343,21 @@ def get_PanelSummary(start_date=None, end_date=None):
     datetime_index = pd.to_datetime(data_timestamp)
     for idx, feature_name in enumerate(feature_set):
         series = pd.Series(severity_trending_datas[:, idx], index=datetime_index)
-        series = series.asfreq('15min')
-        result = seasonal_decompose(series, model='additive', period=96 * 2)
-        trend = result.trend.dropna()
-        x = np.arange(len(trend))
-        corr, _ = spearmanr(x, trend)
-        if np.isnan(corr) or np.isinf(corr):
-            corr = 0
-        if corr <= 0:
-            priority_parameter[feature_name] = float((corr + 1) * 25)
+        if len(series) >= 400:
+            series = series[~series.index.duplicated(keep='first')]
+            series = series.asfreq('15min').ffill()
+            result = seasonal_decompose(series, model='additive', period=96 * 2)
+            trend = result.trend.dropna()
+            x = np.arange(len(trend))
+            corr, _ = spearmanr(x, trend)
+            if np.isnan(corr) or np.isinf(corr):
+                corr = 0
+            if corr <= 0:
+                priority_parameter[feature_name] = float((corr + 1) * 25)
+            else:
+                priority_parameter[feature_name] = float(25 + corr * 75)
         else:
-            priority_parameter[feature_name] = float(25 + corr * 75)
+            priority_parameter[feature_name] = float(10)
 
     return data_timestamp[-1], last_sensor_featname, sensor_featname, last_severity_featname, sever_featname, ordered_feature_name, sever_count_featname, priority_parameter
 
@@ -488,8 +492,8 @@ def get_sensorNtrend(start_date, end_date):
 def get_advisoryTable(start_date, end_date): # 2529
     # Try Priority
     start_dateLate = datetime.strptime(end_date, "%Y-%m-%dT%H:%M:%S") - timedelta(days=30)
-    severity_trending_datas = fetch_between_dates(start_dateLate, end_date, "db/severity_trendings.db", "severity_trendings")
-    sensor_datas = fetch_between_dates(start_dateLate, end_date, "db/severity_trendings.db", "original_sensor")
+    severity_trending_datas = fetch_between_dates(start_dateLate, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
+    sensor_datas = fetch_between_dates(start_dateLate, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor")
     data_timestamp = sensor_datas[:, 1]
     severity_trending_datas = severity_trending_datas[:, 2:].astype(float)
     sensor_datas = sensor_datas[:, 2:].astype(float)
@@ -499,17 +503,21 @@ def get_advisoryTable(start_date, end_date): # 2529
     datetime_index = pd.to_datetime(data_timestamp)
     for idx, feature_name in enumerate(feature_set):
         series = pd.Series(severity_trending_datas[:, idx], index=datetime_index)
-        series = series.asfreq('15min')
-        result = seasonal_decompose(series, model='additive', period=96 * 2)
-        trend = result.trend.dropna()
-        x = np.arange(len(trend))
-        corr, _ = spearmanr(x, trend)
-        if np.isnan(corr) or np.isinf(corr):
-            corr = 0
-        if corr <= 0:
-            priority_parameter[feature_name] = float((corr + 1) * 25)
+        if len(series) >= 400:
+            series = series[~series.index.duplicated(keep='first')]
+            series = series.asfreq('15min').ffill()
+            result = seasonal_decompose(series, model='additive', period=96 * 2)
+            trend = result.trend.dropna()
+            x = np.arange(len(trend))
+            corr, _ = spearmanr(x, trend)
+            if np.isnan(corr) or np.isinf(corr):
+                corr = 0
+            if corr <= 0:
+                priority_parameter[feature_name] = float((corr + 1) * 25)
+            else:
+                priority_parameter[feature_name] = float(25 + corr * 75)
         else:
-            priority_parameter[feature_name] = float(25 + corr * 75)
+            priority_parameter[feature_name] = float(10)
         
     raw_trending_datas = fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
     raw_trending_datas = raw_trending_datas[::-1]

@@ -1,0 +1,2 @@
+django-browser-reload
+statsmodels
