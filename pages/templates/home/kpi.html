@@ -723,22 +723,22 @@
                     /////////////////////////////// DUMMY
 
                     const ctx1 = document.getElementById('stackedChart').getContext('2d');
-                    const labels1 = ['Plant A', 'Plant B', 'Plant C'];
+                    const labels1 = ['2022', '2023'];
                     const colorPalette1 = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'];
                     const datasets1 = [
                         {
-                            label: 'Metric 1',
-                            data: [20, 35, 30],
+                            label: 'CD',
+                            data: [2, 2],
                             backgroundColor: colorPalette1[0]
                         },
                         {
-                            label: 'Metric 2',
-                            data: [15, 25, 20],
+                            label: 'CR',
+                            data: [1, 2],
                             backgroundColor: colorPalette1[1]
                         },
                         {
-                            label: 'Metric 3',
-                            data: [10, 5, 15],
+                            label: 'PV',
+                            data: [1, 4],
                             backgroundColor: colorPalette1[2]
                         }
                     ];
@@ -765,7 +765,7 @@
                                     beginAtZero: true,
                                     title: {
                                         display: true,
-                                        text: 'Metric Value'
+                                        text: 'Number Of Event'
                                     }
                                 }
                             }
