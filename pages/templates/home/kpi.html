@@ -1,0 +1,1111 @@
+<!-- templates/index.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Advisory Details - Vale Dash{% endblock %}
+
+{% block content %}
+
+<style>
+    #custom-tooltip {
+        position: absolute;
+        background: white;
+        border: 1px solid black;
+        padding: 10px;
+        border-radius: 5px;
+        pointer-events: auto;
+        display: none;
+        z-index: 1000;
+    }
+</style>
+<style>
+    .checkbox-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+
+    .x_content {
+        padding: 0 3px 0 !important;
+        clear: both !important;
+        margin-top: 0px !important;
+    }
+
+    .resetZoom {
+        position: absolute;
+        top: 8vh;
+        left: 4vw;
+        z-index: 10;
+        cursor: pointer;
+    }
+
+    /* .sparkline {
+        width: 110px;
+        height: 20px;
+    } */
+</style>
+<!-- <style>
+    div.dt-container div.dt-layout-row {
+        margin: 0 !important;
+    }
+
+    .nav-sm .container.body .right_col {
+        padding: 0 !important;
+    }
+</style> -->
+<div class="row" id="chart_container">
+    <div class="col-md-12 col-sm-12 px-0">
+        <div class="x_panel tile">
+            <div id="reportrange_right" class="pull-left"
+                style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                <i class="fa fa-calendar"></i>
+                <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="">
+            <div class="x_content">
+                <div class="row">
+                    <div class="col-lg-3 col-md-3 col-sm-6 px-0">
+                        <div class="x_panel tile" style="height: 420px;">
+                            <div class="x_title">
+                                <h2>OEE</h2>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="x_content" style="height: 100%;">
+                                <div id="gauge_oee" style="height: 50%;"></div>
+                                <canvas id="sparkline_oee" class="sparkline" style="width: 100%; height: 20%;"></canvas>
+                                <div style="height: 10%;">
+                                    <hr>
+                                    <p>Perviously Period: <span id="prev_oee">100%</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-6 px-0">
+                        <div class="x_panel tile" style="height: 420px;">
+                            <div class="x_title">
+                                <h2>Physical Availability</h2>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="x_content" style="height: 100%;">
+                                <div id="gauge_phy_avail" style="height: 50%;"></div>
+                                <canvas id="sparkline_phy_avail" class="sparkline"
+                                    style="width: 100%; height: 20%;"></canvas>
+                                <div style="height: 10%;">
+                                    <hr>
+                                    <p>Perviously Period: <span id="prev_phy_avail">100%</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-6 px-0">
+                        <div class="x_panel tile" style="height: 420px;">
+                            <div class="x_title">
+                                <h2>Performance</h2>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="x_content" style="height: 100%;">
+                                <div id="gauge_performance" style="height: 50%;"></div>
+                                <canvas id="sparkline_performance" class="sparkline"
+                                    style="width: 100%; height: 20%;"></canvas>
+                                <div style="height: 10%;">
+                                    <hr>
+                                    <p>Perviously Period: <span id="prev_performance">100%</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-6 px-0">
+                        <div class="x_panel tile" style="height: 420px;">
+                            <div class="x_title">
+                                <h2>Utilization of Availability</h2>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="x_content" style="height: 100%;">
+                                <div id="gauge_uo_Avail" style="height: 50%;"></div>
+                                <canvas id="sparkline_uo_Avail" class="sparkline"
+                                    style="width: 100%; height: 20%;"></canvas>
+                                <div style="height: 10%;">
+                                    <hr>
+                                    <p>Perviously Period: <span id="prev_uo_Avail">100%</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="">
+            <div class="x_content">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 px-0">
+                        <div class="x_panel tile" style="height: 420px;">
+                            <div class="x_title">
+                                <h2>Power Production</h2>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="x_content" style="height: 100%;">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 col-sm-8">
+        <div class="x_panel tile">
+            <div class="x_title">
+                <h2 id="title_featureRaw">KPI Overview</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                    <li class="dropdown"></li>
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <div class="container mt-4">
+                    <div id="kpiProgressBarsByMetric" class="row"></div>
+                </div>
+                <!-- <canvas id="load_stackBar"></canvas> -->
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-4 px-0">
+        <div class="x_panel tile">
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-6">
+                    <canvas id="operation_modeChart1" style="width: 100%; height: 270px;"></canvas>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-6">
+                    <canvas id="operation_modeChart2" style="width: 100%; height: 270px;"></canvas>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-6">
+                    <canvas id="operation_modeChart3" style="width: 100%; height: 270px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 col-sm-8">
+        <div class="x_panel tile">
+            <div class="x_title">
+                <h2 id="title_featureRaw">KPI Trend</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                    <li class="dropdown"></li>
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <form id="checkboxContainer">
+                </form>
+                <button type="button" class="resetZoom" onclick="resetZoom(line_chart1)"><i class="fa fa-search-minus"
+                        aria-hidden="true"></i></button>
+                <div id="custom-tooltip0"
+                    style=" position: absolute; background: white; border: 1px solid black; padding: 10px; border-radius: 5px; pointer-events: auto; display: none; z-index: 1000; ">
+                </div>
+                <canvas id="kpi_trend_chart" style="width: 100%; height: 400px"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 col-sm-4 px-0">
+        <div class="x_panel tile">
+            <div class="x_title">
+                <h2 id="title_featureRaw">Number of Event</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                    <li class="dropdown"></li>
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <canvas id="stackedChart" style="width: 100%; height: 410px"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.js"
+    integrity="sha512-mh+AjlD3nxImTUGisMpHXW03gE6F4WdQyvuFRkjecwuWLwD2yCijw4tKA3NsEFpA1C3neiKhGXPSIGSfCYPMlQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+    let end_date;
+    let start_date;
+    let idx_sensor;
+
+    const datepicker_callback = function (start, end, label) {
+        var url = new URL(window.location.href);
+        var params = url.searchParams;
+
+        params.set('start_date', start.format("YYYY-MM-DDTHH:mm:ss"));
+        params.set('end_date', end.format("YYYY-MM-DDTHH:mm:ss"));
+
+        window.location.href = `${url.pathname}?${params.toString()}`;
+    };
+
+
+    function severity2color(severity) {
+        const norm = (severity - 1) / 5; // Normalize severity to range [0,1]
+        const colorScale = d3.scaleLinear()
+            .domain([0, 0.5, 1]) // Normalized values
+            .range(["green", "yellow", "red"]); // Corresponding colors
+
+        return colorScale(norm); // Return the mapped color
+    }
+
+    const colorPalette = [
+        'red', 'blue', 'green', 'orange', 'purple', 'teal', 'gold', 'brown'
+    ];
+
+    let correlate_chart = [];
+    let line_chart1;
+    let line_chart2;
+    let line_chart3;
+    let line_chart4;
+    let gaugeSeverityChart;
+    var severityCounts = {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0
+    };
+
+    const kpi_key = ["oee", "phy_avail", "performance", "uo_Avail"]
+    const kpi_labels = ["OEE", "Physical Availability", "Performance", "Utilization of Availability"]
+    function getColorClassByValue(value) {
+        if (value < 20) return "bg-danger";         // dark red
+        if (value < 40) return "bg-danger-subtle";  // red
+        if (value < 60) return "bg-warning";        // orange
+        if (value < 80) return "bg-warning-subtle"; // dark yellow
+        return "bg-success";                        // green
+    }
+    var gaugeSeverityChartOptionsKPI = {
+        responsive: false,
+        maintainAspectRatio: false,
+        series: [
+            {
+                type: 'gauge',
+                center: ['50%', '70%'],
+                startAngle: 200,
+                endAngle: -20,
+                min: 0,
+                max: 100,
+                splitNumber: 8,
+                itemStyle: {
+                    color: '#FFAB91'
+                },
+                progress: {
+                    show: true,
+                    width: 30
+                },
+                pointer: {
+                    show: false
+                },
+                axisLine: {
+                    lineStyle: {
+                        width: 30
+                    }
+                },
+                axisTick: {
+                    distance: -45,
+                    splitNumber: 5,
+                    lineStyle: {
+                        width: 2,
+                        color: '#999'
+                    }
+                },
+                splitLine: {
+                    distance: -52,
+                    length: 14,
+                    lineStyle: {
+                        width: 3,
+                        color: '#999'
+                    }
+                },
+                axisLabel: {
+                    distance: -20,
+                    color: '#999',
+                    fontSize: 13
+                },
+                anchor: {
+                    show: false
+                },
+                title: {
+                    show: false
+                },
+                detail: {
+                    valueAnimation: true,
+                    width: '60%',
+                    lineHeight: 40,
+                    borderRadius: 8,
+                    offsetCenter: [0, '-15%'],
+                    fontSize: 20,
+                    fontWeight: 'bolder',
+                    formatter: '{value} %',
+                    color: 'inherit'
+                },
+                data: [
+                    {
+                        value: 20
+                    }
+                ]
+            }
+        ]
+    };
+
+
+    function getColorFromValue(value) {
+        const colorMap = [
+            [0.16, '#ff0000'],
+            [0.32, '#ff5500'],
+            [0.48, '#ffaa00'],
+            [0.64, '#e5e500'],
+            [0.80, '#99e500'],
+            [1.00, '#00cc00']
+        ];
+
+        for (let i = 0; i < colorMap.length; i++) {
+            if (value <= colorMap[i][0]) {
+                return colorMap[i][1];
+            }
+        }
+        return colorMap[colorMap.length - 1][1];
+    }
+
+    var kpiDatasets = [];
+
+    $(document).ready(function () {
+        var url = new URL(window.location.href);
+        var urlParams = new URLSearchParams(url.search);
+
+        if (urlParams.has('start_date')) {
+            end_date = moment.utc(urlParams.get('end_date')).format("YYYY-MM-DDTHH:mm:ss");
+            start_date = moment.utc(urlParams.get('start_date')).format("YYYY-MM-DDTHH:mm:ss");
+        } else {
+            end_date = nowDateMoment.format("YYYY-MM-DDTHH:mm:ss");
+            start_date = nowDateMoment.subtract(29, 'days').format("YYYY-MM-DDTHH:mm:ss");
+        }
+
+        $('#reportrange_right span').html(moment.utc(start_date).format('MMMM D, YYYY') + ' - ' + moment.utc(end_date).format('MMMM D, YYYY'));
+        $('#reportrange_right').daterangepicker(dateRangeOptions1, datepicker_callback);
+
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: "/api/kpi",
+            data: { start_date: start_date, end_date: end_date },
+            success: function (data) {
+                console.log(data)
+                const keysToAverage = ['oee', 'phy_avail', 'performance', 'uo_Avail'];
+                const keysToSum = ['aux_0', 'aux_1'];
+
+                // Use lgs1 timestamps as the base
+                const timestamps = data.lgs1.timestamp;
+                const combinedData = {
+                    data_timestamp: timestamps,
+                    oee: [],
+                    phy_avail: [],
+                    performance: [],
+                    uo_Avail: [],
+                    aux_0: [],
+                    aux_1: []
+                };
+
+                for (let i = 0; i < timestamps.length; i++) {
+                    for (const key of keysToAverage) {
+                        const avg = (
+                            data.lgs1[key][i] +
+                            data.lgs2[key][i] +
+                            data.lgs3[key][i]
+                        ) / 3;
+                        combinedData[key].push(avg);
+                    }
+
+                    for (const key of keysToSum) {
+                        const sum = (
+                            data.lgs1[key][i] +
+                            data.lgs2[key][i] +
+                            data.lgs3[key][i]
+                        );
+                        combinedData[key].push(sum);
+                    }
+                }
+
+                for (const key in combinedData) {
+                    if (key === 'data_timestamp') continue;
+                    combinedData[key] = combinedData[key].map(v => Math.round(v * 100) / 100);
+                }
+
+                setTimeout(() => {
+                    const checkboxContainer = document.getElementById('checkboxContainer');
+                    for (let index = 0; index < kpi_key.length; index++) {
+                        const nowKPIKey = kpi_key[index];
+                        document.getElementById("prev_" + nowKPIKey).innerHTML = (combinedData[nowKPIKey][combinedData[nowKPIKey].length - 2] * 100) + "%";
+                        gaugeSeverityChartOptionsKPI.series[0].data[0].value = combinedData[nowKPIKey][combinedData[nowKPIKey].length - 1] * 100;
+                        gaugeSeverityChartOptionsKPI.series[0].itemStyle.color = getColorFromValue(combinedData[nowKPIKey][combinedData[nowKPIKey].length - 1]);
+
+                        gaugeSeverityChart = echarts.init(document.getElementById('gauge_' + nowKPIKey), null, {
+                            renderer: 'canvas',
+                        });
+                        gaugeSeverityChart.setOption(gaugeSeverityChartOptionsKPI);
+                        window.addEventListener('resize', gaugeSeverityChart.resize);
+
+                        const color = colorPalette[index % colorPalette.length];
+                        kpiDatasets.push({
+                            label: kpi_labels[index],
+                            data: combinedData[nowKPIKey].map((v, i) => v * 100),
+                            borderColor: color,
+                            backgroundColor: Chart.helpers.color(color).alpha(0.2).rgbString()
+                        })
+
+                        var mustCheck = "";
+                        if (index == 0) {
+                            mustCheck = "checked";
+                        }
+                        checkboxContainer.innerHTML += `<div class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="checkbox" name="dataset" id="chk_${index}" value="${index}" ${mustCheck}>
+                                                            <label class="form-check-label" for="chk_${index}">${kpi_labels[index]}</label>
+                                                        </div>`
+
+                        const ctx1 = document.getElementById(`sparkline_${nowKPIKey}`).getContext('2d');
+                        new Chart(ctx1, {
+                            type: 'line',
+                            data: {
+                                labels: combinedData[nowKPIKey].map((_, i) => i + 1),
+                                datasets: [{
+                                    data: combinedData[nowKPIKey],
+                                    borderColor: '#4CAF50',
+                                    fill: true,
+                                    borderWidth: 1,
+                                    pointRadius: 0,
+                                    tension: 0.3
+                                }]
+                            },
+                            options: {
+                                responsive: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: { enabled: false }
+                                },
+                                scales: {
+                                    x: { display: false },
+                                    y: { display: false }
+                                }
+                            }
+                        });
+                    }
+
+                    var ctx2 = document.getElementById(`kpi_trend_chart`).getContext('2d');
+                    line_chart1 = new Chart(ctx2, {
+                        type: 'line',
+                        data: {
+                            labels: combinedData.data_timestamp,
+                            datasets: [kpiDatasets[0]]
+                        },
+                        options: {
+                            responsive: false,
+                            scales: {
+                                x: xChartLineFormat,
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: "Severity Percentage (%)"
+                                    },
+                                    min: 0,
+                                    max: 120
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: true
+                                },
+                                tooltip: {
+                                    enabled: false,
+                                },
+                                zoom: zoomPluginsLineConfig
+                            },
+                        }
+                    });
+
+                    //////////////////////////
+                    var aux0_mean = data.lgs1.aux_0.reduce((a, b) => a + b, 0) / data.lgs1.aux_0.length;
+                    var aux1_mean = data.lgs1.aux_1.reduce((a, b) => a + b, 0) / data.lgs1.aux_1.length;
+
+                    new Chart(document.getElementById('operation_modeChart1').getContext('2d'), {
+                        type: 'pie',
+                        data: {
+                            labels: ['Grid', 'Furnace'],
+                            datasets: [{
+                                data: [aux0_mean, aux1_mean],
+                                backgroundColor: ['#4CAF50', '#FF5252'],
+                                hoverOffset: 4
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'LGS 1',
+                                    font: {
+                                        size: 12
+                                    }
+                                },
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        font: {
+                                            size: 10
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            const value = context.raw;
+                                            const total = context.chart._metasets[0].data.reduce((a, b) => a + b, 0);
+                                            const percentage = ((value / total) * 100).toFixed(1);
+                                            return `${context.label}: ${value.toFixed(1)} (${percentage}%)`;
+                                        }
+                                    }
+                                },
+                                datalabels: {
+                                    formatter: (value, context) => {
+                                        const data = context.chart.data.datasets[0].data;
+                                        const total = data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return percentage + '%';
+                                    },
+                                    color: '#fff',
+                                    font: {
+                                        weight: 'bold',
+                                        size: 10
+                                    }
+                                }
+                            }
+                        },
+                        plugins: [ChartDataLabels]
+                    });
+
+                    var aux0_mean = data.lgs2.aux_0.reduce((a, b) => a + b, 0) / data.lgs2.aux_0.length;
+                    var aux1_mean = data.lgs2.aux_1.reduce((a, b) => a + b, 0) / data.lgs2.aux_1.length;
+                    new Chart(document.getElementById('operation_modeChart2').getContext('2d'), {
+                        type: 'pie',
+                        data: {
+                            labels: ['Grid', 'Furnace'],
+                            datasets: [{
+                                data: [aux0_mean, aux1_mean],
+                                backgroundColor: ['#4CAF50', '#FF5252'],
+                                hoverOffset: 4
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'LGS 2',
+                                    font: {
+                                        size: 12
+                                    }
+                                },
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        font: {
+                                            size: 10
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            const value = context.raw;
+                                            const total = context.chart._metasets[0].data.reduce((a, b) => a + b, 0);
+                                            const percentage = ((value / total) * 100).toFixed(1);
+                                            return `${context.label}: ${value.toFixed(1)} (${percentage}%)`;
+                                        }
+                                    }
+                                },
+                                datalabels: {
+                                    formatter: (value, context) => {
+                                        const data = context.chart.data.datasets[0].data;
+                                        const total = data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return percentage + '%';
+                                    },
+                                    color: '#fff',
+                                    font: {
+                                        weight: 'bold',
+                                        size: 10
+                                    }
+                                }
+                            }
+                        },
+                        plugins: [ChartDataLabels]
+                    });
+
+                    var aux0_mean = data.lgs3.aux_0.reduce((a, b) => a + b, 0) / data.lgs3.aux_0.length;
+                    var aux1_mean = data.lgs3.aux_1.reduce((a, b) => a + b, 0) / data.lgs3.aux_1.length;
+                    new Chart(document.getElementById('operation_modeChart3').getContext('2d'), {
+                        type: 'pie',
+                        data: {
+                            labels: ['Grid', 'Furnace'],
+                            datasets: [{
+                                data: [aux0_mean, aux1_mean],
+                                backgroundColor: ['#4CAF50', '#FF5252'],
+                                hoverOffset: 4
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'LGS 3',
+                                    font: {
+                                        size: 12
+                                    }
+                                },
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        font: {
+                                            size: 10
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            const value = context.raw;
+                                            const total = context.chart._metasets[0].data.reduce((a, b) => a + b, 0);
+                                            const percentage = ((value / total) * 100).toFixed(1);
+                                            return `${context.label}: ${value.toFixed(1)} (${percentage}%)`;
+                                        }
+                                    }
+                                },
+                                datalabels: {
+                                    formatter: (value, context) => {
+                                        const data = context.chart.data.datasets[0].data;
+                                        const total = data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return percentage + '%';
+                                    },
+                                    color: '#fff',
+                                    font: {
+                                        weight: 'bold',
+                                        size: 10
+                                    }
+                                }
+                            }
+                        },
+                        plugins: [ChartDataLabels]
+                    });
+
+                    /////////////////////////////// DUMMY
+
+                    const ctx1 = document.getElementById('stackedChart').getContext('2d');
+                    const labels1 = ['Plant A', 'Plant B', 'Plant C'];
+                    const colorPalette1 = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'];
+                    const datasets1 = [
+                        {
+                            label: 'Metric 1',
+                            data: [20, 35, 30],
+                            backgroundColor: colorPalette1[0]
+                        },
+                        {
+                            label: 'Metric 2',
+                            data: [15, 25, 20],
+                            backgroundColor: colorPalette1[1]
+                        },
+                        {
+                            label: 'Metric 3',
+                            data: [10, 5, 15],
+                            backgroundColor: colorPalette1[2]
+                        }
+                    ];
+
+                    const stackedChart = new Chart(ctx1, {
+                        type: 'bar',
+                        data: {
+                            labels: labels1,
+                            datasets: datasets1
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'top'
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    stacked: true
+                                },
+                                y: {
+                                    stacked: true,
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Metric Value'
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+
+                    /////////////// LOLOPLSAD{Okas[pdokas]}
+                    const kpiProgressContainer = document.getElementById("kpiProgressBarsByMetric");
+
+                    const kpiMetrics = [
+                        { key: "oee", label: "OEE", color: "bg-success" },
+                        { key: "phy_avail", label: "Physical Availability", color: "bg-info" },
+                        { key: "performance", label: "Performance", color: "bg-warning" },
+                        { key: "uo_Avail", label: "Utilization of Availability", color: "bg-warning" }
+                    ];
+
+                    const lgsUnits = ["lgs1", "lgs2", "lgs3"];
+
+
+                    kpiMetrics.forEach(metric => {
+                        const section = document.createElement("div");
+                        section.className = "col-lg-3 col-md-3 col-sm-6 px-0";
+
+                        section.innerHTML = `
+                            <div class="x_panel tile" style="height: 320px;">                
+                            <div class="x_title">
+                                <h2>${metric.label}</h2>
+                                <div class="clearfix"></div>
+                            </div>
+                            <div class="x_content" id="progress_${metric.key}" style="height: 100%;">
+                            </div></div>`;
+
+                        const wrapper = section.querySelector(`#progress_${metric.key}`);
+
+                        lgsUnits.forEach(unit => {
+                            const unitData = data[unit];
+                            if (!unitData || !unitData[metric.key]) return;
+
+                            const latestIndex = unitData.timestamp.length - 1;
+                            const value = Math.round(unitData[metric.key][latestIndex] * 100);
+
+                            const bar = document.createElement("div");
+                            bar.classList.add("mb-2");
+                            bar.innerHTML = `
+                                <div class="d-flex justify-content-between">
+                                    <strong>${unit.toUpperCase()}</strong>
+                                    <span>${value}%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar ${getColorClassByValue(value)}" role="progressbar"
+                                        style="width: ${value}%;" aria-valuenow="${value}" aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                </div>`;
+                            wrapper.appendChild(bar);
+                        });
+
+                        kpiProgressContainer.appendChild(section);
+                    });
+
+
+                }, 500);
+            }
+        });
+
+        // $.ajax({
+        //     type: "GET",
+        //     dataType: "json",
+        //     url: "/api/zone_distribution",
+        //     data: { start_date: start_date, end_date: end_date },
+        //     success: function (data) {
+        //         setTimeout(() => {
+        //             new Chart(document.getElementById('operation_zoneChart').getContext('2d'), {
+        //                 type: 'pie',
+        //                 data: {
+        //                     labels: Object.keys(data.operation_zone),
+        //                     datasets: [{
+        //                         data: Object.values(data.operation_zone),
+        //                         hoverOffset: 4
+        //                     }]
+        //                 },
+        //                 options: {
+        //                     responsive: false,
+        //                     plugins: {
+        //                         title: {
+        //                             display: true,
+        //                             text: 'Load Distribution for the Year',
+        //                             font: {
+        //                                 size: 10
+        //                             },
+        //                         },
+        //                         legend: {
+        //                             position: 'bottom',
+        //                             labels: {
+        //                                 font: {
+        //                                     size: 10
+        //                                 }
+        //                             }
+        //                         },
+        //                         tooltip: {
+        //                             callbacks: {
+        //                                 label: function (context) {
+        //                                     const value = context.raw;
+        //                                     const total = context.chart._metasets[0].total;
+        //                                     const percentage = ((value / total) * 100).toFixed(1);
+        //                                     return `${context.label}: ${value} (${percentage}%)`;
+        //                                 }
+        //                             }
+        //                         },
+        //                         datalabels: {
+        //                             formatter: (value, context) => {
+        //                                 const data = context.chart.data.datasets[0].data;
+        //                                 const total = data.reduce((a, b) => a + b, 0);
+        //                                 const percentage = ((value / total) * 100).toFixed(1);
+        //                                 return percentage + '%';
+        //                             },
+        //                             color: '#fff',
+        //                             font: {
+        //                                 weight: 'bold',
+        //                                 size: 10
+        //                             }
+        //                         }
+        //                     }
+        //                 },
+        //                 plugins: [ChartDataLabels]
+        //             });
+
+        //             new Chart(document.getElementById('operation_modeChart').getContext('2d'), {
+        //                 type: 'pie',
+        //                 data: {
+        //                     labels: Object.keys(data.operation_mode),
+        //                     datasets: [{
+        //                         data: Object.values(data.operation_mode),
+        //                         hoverOffset: 4
+        //                     }]
+        //                 },
+        //                 options: {
+        //                     responsive: false,
+
+        //                     plugins: {
+        //                         title: {
+        //                             display: true,
+        //                             text: 'Mode Operation Distribution for the Year',
+        //                             font: {
+        //                                 size: 10
+        //                             },
+        //                         },
+        //                         legend: {
+        //                             position: 'bottom',
+        //                             labels: {
+        //                                 font: {
+        //                                     size: 10
+        //                                 }
+        //                             }
+        //                         },
+        //                         tooltip: {
+        //                             callbacks: {
+        //                                 label: function (context) {
+        //                                     const value = context.raw;
+        //                                     const total = context.chart._metasets[0].total;
+        //                                     const percentage = ((value / total) * 100).toFixed(1);
+        //                                     return `${context.label}: ${value} (${percentage}%)`;
+        //                                 }
+        //                             }
+        //                         },
+        //                         datalabels: {
+        //                             formatter: (value, context) => {
+        //                                 const data = context.chart.data.datasets[0].data;
+        //                                 const total = data.reduce((a, b) => a + b, 0);
+        //                                 const percentage = ((value / total) * 100).toFixed(1);
+        //                                 return percentage + '%';
+        //                             },
+        //                             color: '#fff',
+        //                             font: {
+        //                                 weight: 'bold',
+        //                                 size: 10
+        //                             }
+        //                         }
+        //                     }
+        //                 },
+        //                 plugins: [ChartDataLabels]
+        //             });
+        //         }, 500);
+        //     }
+        // });
+
+        // const codeToColor = {
+        //     2: 'gray',
+        //     3: 'green',
+        //     4: 'orange',
+        //     5: 'brown',
+        //     6: 'steelblue'
+        // };
+        // const codeToLabel = {
+        //     2: 'No Load',
+        //     3: 'Low Load',
+        //     4: 'Rough Zone',
+        //     5: 'Part Load',
+        //     6: 'Efficient Load'
+        // };
+
+        // $.ajax({
+        //     type: "GET",
+        //     dataType: "json",
+        //     url: "/api/zone_distributionTimeline",
+        //     data: { start_date: start_date, end_date: end_date },
+        //     success: function (data) {
+        //         var data_timestamp = data.data_timestamp;
+        //         var loadStatus = data.load_datas;
+        //         var gridStatus = data.grid_datas;
+
+        // const colorsLoad = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b'];
+        // const colorsGrid = ['#d62728', '#2ca02c'];
+        // const lineColors = ['#3366cc', '#dc3912', '#ff9900', '#109618'];
+
+        // // // Get the index of the dominant category (argmax) for each timestep
+        // // const loadStatus = load_datas.map(row => {
+        // //     const arr = Array.from(row);  // ensure it's iterable
+        // //     return arr.indexOf(Math.max(...arr));
+        // // });
+        // // const gridStatus = grid_datas.map(row => {
+        // //     const arr = Array.from(row);
+        // //     return arr.indexOf(Math.max(...arr));
+        // // });
+        // const labelNames = [
+        //     'Shutdown',
+        //     'Warming',
+        //     'No Load',
+        //     'Low Load',
+        //     'Rough Zone',
+        //     'Part Load',
+        //     'Efficient Load',
+        //     'High Load',
+        //     'Undefined'
+        // ];
+
+        // const loadStatusLabels = loadStatus.map(code => labelNames[code] || 'Unknown');
+        // const lineDatasets = loadStatusLabels.map((label, i) => ({
+        //     label,
+        //     data: Array.from({ length: data_timestamp.length }, () => Math.random() * 50 + 50),
+        //     borderColor: lineColors[i],
+        //     backgroundColor: lineColors[i],
+        //     yAxisID: 'y',
+        //     tension: 0.3
+        // }));
+
+        // const statusPlugin = {
+        //     id: 'statusBars',
+        //     beforeDatasetDraw(chart, args, options) {
+        //         const { ctx, chartArea, scales } = chart;
+        //         const { top, bottom, left, right } = chartArea;
+        //         const width = (right - left) / data_timestamp.length;
+        //         const height = 20;
+
+        //         for (let i = 0; i < data_timestamp.length; i++) {
+        //             const x = left + i * width;
+        //             // Load Status bar (top)
+        //             ctx.fillStyle = colorsLoad[loadStatus[i]];
+        //             ctx.fillRect(x, top - 40, width, height);
+
+        //             // Grid Status bar (under it)
+        //             ctx.fillStyle = colorsGrid[gridStatus[i]];
+        //             ctx.fillRect(x, top - 20, width, height);
+        //         }
+
+        //         // Optional labels
+        //         ctx.fillStyle = "#000";
+        //         ctx.font = "12px sans-serif";
+        //         ctx.fillText("Load", left - 30, top - 25);
+        //         ctx.fillText("Grid", left - 30, top - 5);
+        //     }
+        // };
+
+        // new Chart(document.getElementById("load_stackBar"), {
+        //     type: "line",
+        //     data: {
+        //         labels: data_timestamp,
+        //         datasets: lineDatasets
+        //     },
+        //     options: {
+        //         responsive: true,
+        //         maintainAspectRatio: false,
+        //         plugins: {
+        //             title: {
+        //                 display: true,
+        //                 text: "OEE / PA / Performance / UoA"
+        //             },
+        //             legend: {
+        //                 position: 'bottom'
+        //             }
+        //         },
+        //         layout: {
+        //             padding: {
+        //                 top: 50
+        //             }
+        //         },
+        //         scales: {
+        //             y: {
+        //                 min: 0,
+        //                 max: 100,
+        //                 title: {
+        //                     display: true,
+        //                     text: "%"
+        //                 }
+        //             },
+        //             x: {
+        //                 title: {
+        //                     display: true,
+        //                     text: "Timestamp"
+        //                 },
+        //                 ticks: {
+        //                     autoSkip: false
+        //                 }
+        //             }
+        //         }
+        //     },
+        //     plugins: [statusPlugin]
+        // });
+
+        //     }
+        // })
+
+    });
+
+
+    function resetZoom(chart_object) {
+        chart_object.resetZoom();
+    }
+
+    function openModal() {
+        var modal = new bootstrap.Modal(document.getElementById('myModal'));
+        modal.show();
+    }
+
+    document.getElementById('checkboxContainer').addEventListener('change', function () {
+        const checked = Array.from(document.querySelectorAll('input[name="dataset"]:checked'))
+            .map(cb => parseInt(cb.value));
+        line_chart1.data.datasets = checked.map(i => kpiDatasets[i]);
+        line_chart1.update();
+    });
+    //window.addEventListener('resize', gaugeSeverityChart.resize);
+</script>
+{% endblock %}

@@ -6,6 +6,9 @@ def index(request):
 def dashboard(request):
     return render(request, "home/dashboard.html", {})
 
+def kpi(request):
+    return render(request, "home/kpi.html", {})
+
 def advisory(request):
     return render(request, "advisory/advisory.html", {})
 

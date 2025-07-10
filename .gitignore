@@ -1,3 +1,9 @@
 __pycache__
 *.db
 .vscode
+data_csv
+db
+db_bak
+db_prod
+staticfiles
+kpi2024.csv

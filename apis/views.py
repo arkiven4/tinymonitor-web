@@ -45,6 +45,41 @@ def zone_distribution(request):
     return Response(data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
+def zone_distributionTimeline(request):
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    data_timestamp, load_datas, grid_datas = helper_fun.get_OperationDistributionTimeline(
+        start_date, end_date)
+
+    data = {
+        'data_timestamp': data_timestamp,
+        'load_datas': load_datas,
+        'grid_datas': grid_datas,
+    }
+
+    return Response(data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def kpi(request):
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    kpi_datas = helper_fun.get_KPIData(
+        start_date, end_date)
+
+    # data = {
+    #     'oee': oee,
+    #     # 'phy_avail': phy_avail,
+    #     # 'performance': performance,
+    #     # 'uo_Avail': uo_Avail,
+    #     # 'data_timestamp': data_timestamp,
+    # }
+    return Response(kpi_datas, status=status.HTTP_200_OK)
+    
+
+
+@api_view(['GET'])
 def severity_plot(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')

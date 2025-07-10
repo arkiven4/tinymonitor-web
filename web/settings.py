@@ -37,12 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    #"whitenoise.runserver_nostatic", // If Debug
     'django.contrib.staticfiles',
     'rest_framework'    
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -50,9 +52,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
-#INSTALLED_APPS = INSTALLED_APPS + ["django_browser_reload"]
-#MIDDLEWARE = MIDDLEWARE + ["django_browser_reload.middleware.BrowserReloadMiddleware"]
 
 ROOT_URLCONF = 'web.urls'
 
@@ -74,6 +73,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'web.wsgi.application'
 
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -120,6 +124,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATIC_URL = 'static/'
 
 # Default primary key field type
@@ -128,8 +133,9 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
-#MONITORINGDB_PATH = ""
-MONITORINGDB_PATH = "D:\\ITSTeam\\NewGen\cbm_vale-main\\"
-
 ###### Custom Var
-USE_REAL_TIME = True
+if DEBUG:
+    INSTALLED_APPS = INSTALLED_APPS + ["django_browser_reload"]
+    MIDDLEWARE = MIDDLEWARE + ["django_browser_reload.middleware.BrowserReloadMiddleware"]
+    MONITORINGDB_PATH = ""
+#MONITORINGDB_PATH = "D:\\ITSTeam\\NewGen\cbm_vale-main\\"
