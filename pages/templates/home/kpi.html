@@ -584,11 +584,11 @@
                     var total_hpd = data.plant.hpd.reduce((sum, value) => sum + value, 0);
                     var average_hpd = data.plant.hpd.length > 0 ? total_hpd / data.plant.hpd.length : 0;
 
-                    document.getElementById("lp_total").innerText = total_lpd.toFixed(2);
-                    document.getElementById("lp_average").innerText = average_lpd.toFixed(2);
+                    document.getElementById("lp_total").innerText = total_lpd.toFixed(2) + " MWh";
+                    document.getElementById("lp_average").innerText = average_lpd.toFixed(2) + " MWh";
 
-                    document.getElementById("hp_total").innerText = total_hpd.toFixed(2);
-                    document.getElementById("hp_average").innerText = average_hpd.toFixed(2);
+                    document.getElementById("hp_total").innerText = total_hpd.toFixed(2) + " MWh";
+                    document.getElementById("hp_average").innerText = average_hpd.toFixed(2) + " MWh";
 
                     new Chart(document.getElementById(`power_prod1`).getContext('2d'), {
                         type: 'line',
