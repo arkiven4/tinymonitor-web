@@ -153,7 +153,41 @@
                                 <div class="clearfix"></div>
                             </div>
                             <div class="x_content" style="height: 100%;">
-
+                                <div class="row">
+                                    <div class="col-lg-6 col-md-6 col-sm-6 px-0">
+                                        <div class="x_panel tile" style="height: 420px;">
+                                            <div class="x_title">
+                                                <h2>Larona Power</h2>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                            <div class="x_content" style="height: 100%;">
+                                                <h2 style="text-align: center;">Total</h2>
+                                                <h2 style="text-align: center;" id="lp_total"></h2>
+                                                <h2 style="text-align: center;">Average</h2>
+                                                <h2 style="text-align: center;" id="lp_average"></h2>
+                                                <hr>
+                                                <canvas id="power_prod1" style="width: 100%; height: 60px;"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-6 px-0">
+                                        <div class="x_panel tile" style="height: 420px;">
+                                            <div class="x_title">
+                                                <h2>Hydro Power</h2>
+                                                <div class="clearfix"></div>
+                                            </div>
+                                            <div class="x_content" style="height: 100%;">
+                                                <h2 style="text-align: center;">Total</h2>
+                                                <h2 style="text-align: center;" id="hp_total"></h2>
+                                                <h2 style="text-align: center;">Average</h2>
+                                                <h2 style="text-align: center;" id="hp_average"></h2>
+                                                <hr>
+                                                <canvas id="power_prod2" style="width: 100%; height: 60px;"></canvas>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -526,7 +560,7 @@
                                 y: {
                                     title: {
                                         display: true,
-                                        text: "Severity Percentage (%)"
+                                        text: "Percentage (%)"
                                     },
                                     min: 0,
                                     max: 120
@@ -541,6 +575,70 @@
                                 },
                                 zoom: zoomPluginsLineConfig
                             },
+                        }
+                    });
+
+                    ///////////////////////////
+                    var total_lpd = data.plant.lpd.reduce((sum, value) => sum + value, 0);
+                    var average_lpd = data.plant.lpd.length > 0 ? total_lpd / data.plant.lpd.length : 0;
+                    var total_hpd = data.plant.hpd.reduce((sum, value) => sum + value, 0);
+                    var average_hpd = data.plant.hpd.length > 0 ? total_hpd / data.plant.hpd.length : 0;
+
+                    document.getElementById("lp_total").innerText = total_lpd.toFixed(2);
+                    document.getElementById("lp_average").innerText = average_lpd.toFixed(2);
+
+                    document.getElementById("hp_total").innerText = total_hpd.toFixed(2);
+                    document.getElementById("hp_average").innerText = average_hpd.toFixed(2);
+
+                    new Chart(document.getElementById(`power_prod1`).getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: data.plant.lpd.map((_, i) => i + 1),
+                            datasets: [{
+                                data: data.plant.lpd,
+                                borderColor: '#4CAF50',
+                                fill: true,
+                                borderWidth: 1,
+                                pointRadius: 0,
+                                tension: 0.3
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { enabled: false }
+                            },
+                            scales: {
+                                x: { display: false },
+                                y: { display: false }
+                            }
+                        }
+                    });
+
+                    new Chart(document.getElementById(`power_prod2`).getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: data.plant.hpd.map((_, i) => i + 1),
+                            datasets: [{
+                                data: data.plant.hpd,
+                                borderColor: '#4CAF50',
+                                fill: true,
+                                borderWidth: 1,
+                                pointRadius: 0,
+                                tension: 0.3
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { enabled: false }
+                            },
+                            scales: {
+                                x: { display: false },
+                                y: { display: false }
+                            }
                         }
                     });
 
