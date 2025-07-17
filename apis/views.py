@@ -64,9 +64,10 @@ def zone_distributionTimeline(request):
 def kpi(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
+    tags = request.GET.get('tags').split(",") or None
 
     kpi_datas = helper_fun.get_KPIData(
-        start_date, end_date)
+        start_date, end_date, tags)
 
     # data = {
     #     'oee': oee,

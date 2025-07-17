@@ -168,12 +168,12 @@ def get_OperationDistributionTimeline(start_date=None, end_date=None):
     return df['Timestap'].values, df['Load Code'].values, grid_datas
 
 
-def get_KPIData(start_date=None, end_date=None):
-    units = ['lgs1', 'lgs2', 'lgs3']
-    kpi_results = {}
+def get_KPIData(start_date=None, end_date=None, units=None):
+    if units == None:
+        units = ['LGS1', 'LGS2', 'LGS3', 'BGS1', 'BGS2', 'KGS1', 'KGS2']
 
+    kpi_results = {}
     for unit in units:
-        # Fetch data from each LGS table
         kpi_data = commons.fetch_between_dates(
             start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", unit
         )
@@ -201,23 +201,28 @@ def get_KPIData(start_date=None, end_date=None):
 
     # Fetch plant-wide data (lpd, hpd, ahpa)
     plant_data = commons.fetch_between_dates(
-        start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", "plant"
+        start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", "PowerProd"
     )
 
     if plant_data is not None and len(plant_data) > 0:
         timestamps = plant_data[:, 1]
         lpd = plant_data[:, 2].astype(float)
         hpd = plant_data[:, 3].astype(float)
-        ahpa = plant_data[:, 4].astype(float)
+        bpd = plant_data[:, 4].astype(float)
+        ahpa = plant_data[:, 5].astype(float)
         
         plant_values = {
             'timestamp': timestamps,
             'lpd': lpd,
             'hpd': hpd,
+            'bpd': bpd,
             'ahpa': ahpa,
         }
 
         kpi_results['plant'] = plant_values
+
+    with open(settings.MONITORINGDB_PATH + "db/number_of_event.pickle", 'rb') as handle:
+        kpi_results['noe'] = pickle.load(handle)
 
     return kpi_results
 
