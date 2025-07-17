@@ -6,7 +6,6 @@ import numpy as np
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 
-from tokenizers import PreTokenizedString
 from tqdm import tqdm
 from datetime import datetime, timedelta
 from collections import Counter
