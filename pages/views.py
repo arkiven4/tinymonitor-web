@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.conf import settings
 import pandas as pd
 import pickle
 
@@ -24,7 +25,7 @@ def kpi_updatenoe(request):
             df['Year'] = df['Start Date'].dt.year
             category_counts = df.groupby(['Year', 'Category']).size().unstack(fill_value=0)
             final_data = {'years': list(category_counts.index), 'data': [ { 'label': col, 'data': category_counts[col].tolist(), } for i, col in enumerate(category_counts.columns) ]}
-            with open('db/number_of_event.pickle', 'wb') as handle:
+            with open(settings.MONITORINGDB_PATH + 'db/number_of_event.pickle', 'wb') as handle:
                 pickle.dump(final_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
             return JsonResponse({'message': 'File read successfully', 'type': 'success'})
@@ -42,5 +43,6 @@ def advisory_chart(request):
 def charts(request):
     return render(request, "charts/charts.html", {})
 
-def settings(request):
+
+def settings_page(request):
     return render(request, "settings/settings.html", {})

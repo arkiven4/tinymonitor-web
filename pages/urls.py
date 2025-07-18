@@ -9,5 +9,5 @@ urlpatterns = [
     path("advisory/", views.advisory, name="advisory"),
     path("advisory/chart", views.advisory_chart, name="advisory_chart"),
     path("charts/", views.charts, name="charts"),
-    path("settings/", views.settings, name="settings"),
+    path("settings/", views.settings_page, name="settings"),
 ]
