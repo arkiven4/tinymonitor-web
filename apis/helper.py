@@ -167,7 +167,7 @@ def get_OperationDistributionTimeline(start_date=None, end_date=None):
     return df['Timestap'].values, df['Load Code'].values, grid_datas
 
 
-def get_KPIData(start_date=None, end_date=None, units=None):
+def get_KPIData(start_date=None, end_date=None, units=None, noe_metric="noe"):
     if units == None:
         units = ['LGS1', 'LGS2', 'LGS3', 'BGS1', 'BGS2', 'KGS1', 'KGS2']
 
@@ -205,23 +205,35 @@ def get_KPIData(start_date=None, end_date=None, units=None):
 
     if plant_data is not None and len(plant_data) > 0:
         timestamps = plant_data[:, 1]
-        lpd = plant_data[:, 2].astype(float)
-        hpd = plant_data[:, 3].astype(float)
-        bpd = plant_data[:, 4].astype(float)
-        ahpa = plant_data[:, 5].astype(float)
-        
+        hpd = plant_data[:, 2].astype(float)
+        ahpa = plant_data[:, 3].astype(float)
+        lpd = plant_data[:, 4].astype(float)
+        bpd = plant_data[:, 5].astype(float)
+        kpd = plant_data[:, 6].astype(float)
+
         plant_values = {
             'timestamp': timestamps,
-            'lpd': lpd,
             'hpd': hpd,
-            'bpd': bpd,
             'ahpa': ahpa,
+            'lpd': lpd,
+            'bpd': bpd,
+            'kpd': kpd,
         }
 
         kpi_results['plant'] = plant_values
 
-    with open(settings.MONITORINGDB_PATH + "db/number_of_event.pickle", 'rb') as handle:
-        kpi_results['noe'] = pickle.load(handle)
+    loaded_df = pd.read_pickle(settings.MONITORINGDB_PATH + "db/number_of_event.pickle")
+    #loaded_df = loaded_df[(loaded_df['Start'] >= pd.to_datetime(start_date)) & (loaded_df['Start'] <= pd.to_datetime(end_date))]
+    loaded_df = loaded_df[loaded_df['Plant'].isin(units)]
+    loaded_df['Duration'] = loaded_df['End'] - loaded_df['Start']
+    loaded_df['Duration_hours'] = np.round(loaded_df['Duration'].dt.total_seconds() / 3600,2)
+    
+    if noe_metric == 'noe':
+        groupen_df1 = loaded_df.groupby(['Plant', 'Category']).size().unstack(fill_value=0)
+        kpi_results['noe'] = {'data': groupen_df1, 'labels': groupen_df1.index}
+    else:
+        groupen_df2 = loaded_df.groupby(['Plant', 'Category'])['Duration_hours'].sum().unstack(fill_value=0)
+        kpi_results['noe'] = {'data': groupen_df2, 'labels': groupen_df2.index}
 
     return kpi_results
 

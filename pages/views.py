@@ -21,13 +21,9 @@ def kpi_updatenoe(request):
         uploaded_file = request.FILES['file']
         try:
             df = pd.read_excel(uploaded_file)
-            df['Start Date'] = pd.to_datetime(df['Start Date'])
-            df['Year'] = df['Start Date'].dt.year
-            category_counts = df.groupby(['Year', 'Category']).size().unstack(fill_value=0)
-            final_data = {'years': list(category_counts.index), 'data': [ { 'label': col, 'data': category_counts[col].tolist(), } for i, col in enumerate(category_counts.columns) ]}
-            with open(settings.MONITORINGDB_PATH + 'db/number_of_event.pickle', 'wb') as handle:
-                pickle.dump(final_data, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
+            df['Start'] = pd.to_datetime(df['Start Date'] + ' ' + df['Start Time'])
+            df['End'] = pd.to_datetime(df['End Date'] + ' ' + df['End Time'])
+            df.to_pickle(settings.MONITORINGDB_PATH + 'db/number_of_event.pickle')
             return JsonResponse({'message': 'File read successfully', 'type': 'success'})
         except Exception as e:
             return JsonResponse({'message': f'Error reading file: {str(e)}', 'type': 'danger'})
