@@ -65,9 +65,10 @@ def kpi(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     tags = request.GET.get('tags').split(",") or None
+    noe_metric = request.GET.get('noe_metric') or "noe"
 
     kpi_datas = helper_fun.get_KPIData(
-        start_date, end_date, tags)
+        start_date, end_date, tags, noe_metric)
 
     # data = {
     #     'oee': oee,

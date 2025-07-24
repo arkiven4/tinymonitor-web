@@ -1,9 +1,7 @@
 <!-- templates/index.html -->
 {% extends 'base.html' %}
 {% load static %}
-
 {% block title %}Advisory Details - Vale Dash{% endblock %}
-
 {% block content %}
 
 <style>
@@ -38,6 +36,10 @@
         z-index: 10;
         cursor: pointer;
     }
+
+    body {
+        overflow: hidden;
+    }
 </style>
 <div class="row" id="chart_container">
     <div class="col-md-12 col-sm-12 px-0">
@@ -69,7 +71,6 @@
                     };
 
                     const checkboxes = document.querySelectorAll('input[name="plant"]');
-
                     function getURLTags() {
                         const params = new URLSearchParams(window.location.search);
                         const tagString = params.get("tag");
@@ -113,80 +114,61 @@
                     checkboxes.forEach(cb => cb.addEventListener("change", updateURLWithTags));
                 </script>
             </div>
-
         </div>
     </div>
 </div>
 
 <div class="row">
-    <div class="col-md-8">
-        <div class="">
-            <div class="x_content">
-                <div class="row">
-                    <div class="col-lg-3 col-md-3 col-sm-6 px-0">
-                        <div class="x_panel tile" style="height: 420px;">
-                            <div class="x_title">
-                                <h2>OEE</h2>
-                                <div class="clearfix"></div>
-                            </div>
-                            <div class="x_content" style="height: 100%;">
-                                <div id="gauge_oee" style="height: 50%;"></div>
-                                <canvas id="sparkline_oee" class="sparkline" style="width: 100%; height: 20%;"></canvas>
-                                <div style="height: 10%;">
-                                    <hr>
-                                    <p>Perviously Period: <span id="prev_oee">100%</span></p>
-                                </div>
+    <div class="col-md-8 px-0">
+        <div class="x_content">
+            <div class="row">
+                <div class="col-lg-3 col-md-3 col-sm-6 px-0">
+                    <div class="x_panel tile" style="height: 30vh;">
+                        <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
+                            <h2>OEE</h2>
+                            <div id="gauge_oee" style="height: 70%; box-sizing: border-box;"></div>
+                            <canvas id="sparkline_oee" class="sparkline" style="height: 15%; width: 100%;"></canvas>
+                            <div style="height: 5%; margin-top: 5px;">
+                                <p>Previously Period: <span id="prev_oee">100%</span></p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-md-3 col-sm-6 px-0">
-                        <div class="x_panel tile" style="height: 420px;">
-                            <div class="x_title">
-                                <h2>Physical Availability</h2>
-                                <div class="clearfix"></div>
-                            </div>
-                            <div class="x_content" style="height: 100%;">
-                                <div id="gauge_phy_avail" style="height: 50%;"></div>
-                                <canvas id="sparkline_phy_avail" class="sparkline"
-                                    style="width: 100%; height: 20%;"></canvas>
-                                <div style="height: 10%;">
-                                    <hr>
-                                    <p>Perviously Period: <span id="prev_phy_avail">100%</span></p>
-                                </div>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-6 px-0">
+                    <div class="x_panel tile" style="height: 30vh;">
+                        <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
+                            <h2>Physical Availability</h2>
+                            <div id="gauge_phy_avail" style="height: 70%; box-sizing: border-box;"></div>
+                            <canvas id="sparkline_phy_avail" class="sparkline"
+                                style="height: 15%; width: 100%;"></canvas>
+                            <div style="height: 5%; margin-top: 5px;">
+                                <p>Perviously Period: <span id="prev_phy_avail">100%</span></p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-md-3 col-sm-6 px-0">
-                        <div class="x_panel tile" style="height: 420px;">
-                            <div class="x_title">
-                                <h2>Performance</h2>
-                                <div class="clearfix"></div>
-                            </div>
-                            <div class="x_content" style="height: 100%;">
-                                <div id="gauge_performance" style="height: 50%;"></div>
-                                <canvas id="sparkline_performance" class="sparkline"
-                                    style="width: 100%; height: 20%;"></canvas>
-                                <div style="height: 10%;">
-                                    <hr>
-                                    <p>Perviously Period: <span id="prev_performance">100%</span></p>
-                                </div>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-6 px-0">
+                    <div class="x_panel tile" style="height: 30vh;">
+                        <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
+                            <h2>Performance</h2>
+                            <div id="gauge_performance" style="height: 70%; box-sizing: border-box;"></div>
+                            <canvas id="sparkline_performance" class="sparkline"
+                                style="height: 15%; width: 100%;"></canvas>
+                            <div style="height: 5%; margin-top: 5px;">
+                                <p>Perviously Period: <span id="prev_performance">100%</span></p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-md-3 col-sm-6 px-0">
-                        <div class="x_panel tile" style="height: 420px;">
-                            <div class="x_title">
-                                <h2>Utilization of Availability</h2>
-                                <div class="clearfix"></div>
-                            </div>
-                            <div class="x_content" style="height: 100%;">
-                                <div id="gauge_uo_Avail" style="height: 50%;"></div>
-                                <canvas id="sparkline_uo_Avail" class="sparkline"
-                                    style="width: 100%; height: 20%;"></canvas>
-                                <div style="height: 10%;">
-                                    <hr>
-                                    <p>Perviously Period: <span id="prev_uo_Avail">100%</span></p>
-                                </div>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-6 px-0">
+                    <div class="x_panel tile" style="height: 30vh;">
+                        <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
+                            <h2>Utilization of Availability</h2>
+                            <div id="gauge_uo_Avail" style="height: 70%; box-sizing: border-box;"></div>
+                            <canvas id="sparkline_uo_Avail" class="sparkline"
+                                style="height: 15%; width: 100%;"></canvas>
+                            <div style="height: 5%; margin-top: 5px;">
+                                <p>Perviously Period: <span id="prev_uo_Avail">100%</span></p>
                             </div>
                         </div>
                     </div>
@@ -199,60 +181,15 @@
             <div class="x_content">
                 <div class="row">
                     <div class="col-lg-12 col-md-12 col-sm-12 px-0">
-                        <div class="x_panel tile" style="height: 420px;">
-                            <div class="x_title">
-                                <h2>Power Production</h2>
-                                <div class="clearfix"></div>
-                            </div>
+                        <div class="x_panel tile" style="height: 30vh;">
                             <div class="x_content" style="height: 100%;">
-                                <div class="row">
-                                    <div class="col-lg-4 col-md-4 col-sm-4 px-0">
-                                        <div class="x_panel tile" style="height: 420px;border: none !important;">
-                                            <div class="x_title">
-                                                <h2>Larona Power</h2>
-                                                <div class="clearfix"></div>
-                                            </div>
-                                            <div class="x_content" style="height: 100%;">
-                                                <h2 style="text-align: center;">Total</h2>
-                                                <h2 style="text-align: center;" id="lp_total"></h2>
-                                                <h2 style="text-align: center;">Average</h2>
-                                                <h2 style="text-align: center;" id="lp_average"></h2>
-                                                <hr>
-                                                <canvas id="power_prod1" style="width: 100%; height: 60px;"></canvas>
-                                            </div>
-                                        </div>
+                                <h2>Power Production (<span style="text-align: center;" id="hp_total"></span>)</h2>
+                                <div class="row" style="height: 78%;">
+                                    <div class="col-lg-6 col-md-6 col-sm-6 px-0" style="height: 100%;">
+                                        <canvas id="production_powerpie1" style="width: 100%; height: 25vh;"></canvas>
                                     </div>
-                                    <div class="col-lg-4 col-md-4 col-sm-4 px-0">
-                                        <div class="x_panel tile" style="height: 420px;border: none !important;">
-                                            <div class="x_title">
-                                                <h2>Hydro Power</h2>
-                                                <div class="clearfix"></div>
-                                            </div>
-                                            <div class="x_content" style="height: 100%;">
-                                                <h2 style="text-align: center;">Total</h2>
-                                                <h2 style="text-align: center;" id="hp_total"></h2>
-                                                <h2 style="text-align: center;">Average</h2>
-                                                <h2 style="text-align: center;" id="hp_average"></h2>
-                                                <hr>
-                                                <canvas id="power_prod2" style="width: 100%; height: 60px;"></canvas>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-4 col-md-4 col-sm-4 px-0">
-                                        <div class="x_panel tile" style="height: 420px;border: none !important;">
-                                            <div class="x_title">
-                                                <h2>Balabano Power</h2>
-                                                <div class="clearfix"></div>
-                                            </div>
-                                            <div class="x_content" style="height: 100%;">
-                                                <h2 style="text-align: center;">Total</h2>
-                                                <h2 style="text-align: center;" id="bp_total"></h2>
-                                                <h2 style="text-align: center;">Average</h2>
-                                                <h2 style="text-align: center;" id="bp_average"></h2>
-                                                <hr>
-                                                <canvas id="power_prod3" style="width: 100%; height: 60px;"></canvas>
-                                            </div>
-                                        </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-6" style="height: 100%;">
+                                        <canvas id="production_trendchart" style="width: 100%; height: 22vh;"></canvas>
                                     </div>
                                 </div>
                             </div>
@@ -265,95 +202,90 @@
 </div>
 
 <div class="row">
-    <div class="col-md-8 col-sm-8">
-        <div class="x_panel tile">
-            <div class="x_title">
-                <h2 id="title_featureRaw">KPI Overview</h2>
-                <ul class="nav navbar-right panel_toolbox">
-                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-                    <li class="dropdown"></li>
-                </ul>
-                <div class="clearfix"></div>
+    <div class="col-md-8 px-0">
+        <div class="x_content">
+            <div class="row" id="kpiProgressBarsByMetric">
             </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="">
             <div class="x_content">
-                <div class="container">
-                    <div id="kpiProgressBarsByMetric" class="row"></div>
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 px-0">
+                        <div class="x_panel tile" style="height: 30vh;">
+                            <div class="x_content" style="height: 100%;">
+                                <h2>Grid Units</h2>
+                                <div class="row" style="height: 78%;">
+                                    <div class="col-lg-6 col-md-6 col-sm-6 px-0" style="height: 100%;">
+                                        <canvas id="grid_pie1" style="width: 100%; height: 25vh;"></canvas>
+                                    </div>
+                                    <div class="col-lg-6 col-md-6 col-sm-6" style="height: 100%;">
+                                        <canvas id="grid_trendchart" style="width: 100%; height: 22vh;"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <!-- <canvas id="load_stackBar"></canvas> -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 col-sm-8 px-0">
+        <div class="x_panel tile" style="height: 30vh;">
+            <div class="x_content">
+                <div style="display: flex; align-items: center; gap: 10px; justify-content: space-between;">
+                    <h2 style="margin: 0;">KPI Trend</h2>
+                    <button type="button" onclick="resetZoom(line_chart1)"><i class="fa fa-search-minus"
+                            aria-hidden="true"></i></button>
+                    <form id="checkboxContainer" class="d-flex align-items-center gap-2 flex-wrap m-0 p-0"></form>
+                </div>
+
+                <div id="custom-tooltip0"
+                    style=" position: absolute; background: white; border: 1px solid black; padding: 10px; border-radius: 5px; pointer-events: auto; display: none; z-index: 1000; ">
+                </div>
+                <canvas id="kpi_trend_chart" style="width: 100%; height: 25vh"></canvas>
             </div>
         </div>
     </div>
     <div class="col-md-4 col-sm-4 px-0">
-        <div class="x_panel tile">
-            <div class="x_title">
-                <h2 id="title_featureRaw">Number of Event</h2>
-                <ul class="nav navbar-right panel_toolbox">
-                    <li class="dropdown"><a href="{% url 'kpi_updatenoe' %}">Update</a></li>
-                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-                </ul>
-                <div class="clearfix"></div>
-            </div>
+        <div class="x_panel tile" style="height: 30vh;">
             <div class="x_content">
-                <canvas id="stackedChart" style="width: 100%; height: 410px"></canvas>
+                <div style="display: flex; align-items: center; gap: 10px; justify-content: space-between;">
+                    <h2>Number of Event</h2>
+                    <form method="get" style="margin: 0;">
+                        <select id="noe_metric_select" class="form-select">
+                            <option value="noe">Default</option>
+                            <option value="duration">Duration</option>
+                        </select>
+                    </form>
+                    <a class="btn btn-link" href="{% url 'kpi_updatenoe' %}">Update</a>
+                </div>
+                <canvas id="stackedChart" style="width: 100%; height: 23vh"></canvas>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-12 col-sm-12">
-        <div class="x_panel tile">
-            <div class="x_title">
-                <h2 id="title_featureRaw">KPI Trend</h2>
-                <ul class="nav navbar-right panel_toolbox">
-                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-                    <li class="dropdown"></li>
-                </ul>
-                <div class="clearfix"></div>
-            </div>
-            <div class="x_content">
-                <form id="checkboxContainer">
-                </form>
-                <button type="button" class="resetZoom" onclick="resetZoom(line_chart1)"><i class="fa fa-search-minus"
-                        aria-hidden="true"></i></button>
-                <div id="custom-tooltip0"
-                    style=" position: absolute; background: white; border: 1px solid black; padding: 10px; border-radius: 5px; pointer-events: auto; display: none; z-index: 1000; ">
-                </div>
-                <canvas id="kpi_trend_chart" style="width: 100%; height: 400px"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
+<script>
+    const select = document.getElementById('noe_metric_select');
 
-<div class="row">
-    <div class="col-md-12 col-sm-12 px-0">
-        <div class="x_panel tile">
-            <div class="x_title">
-                <h2 id="title_featureRaw">Grid Bar Chart</h2>
-                <ul class="nav navbar-right panel_toolbox">
-                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-                    <li class="dropdown"></li>
-                </ul>
-                <div class="clearfix"></div>
-            </div>
-            <div id="chartContainer_operationmode" class="row">
-                <!-- <div class="col-lg-6 col-md-6 col-sm-6">
-                    <canvas id="operation_modeChart1" style="width: 100%; height: 270px;"></canvas>
-                </div>
-                <div class="col-lg-6 col-md-6 col-sm-6">
-                    <canvas id="operation_modeChart2" style="width: 100%; height: 270px;"></canvas>
-                </div>
-                <div class="col-lg-6 col-md-6 col-sm-6">
-                    <canvas id="operation_modeChart3" style="width: 100%; height: 270px;"></canvas>
-                </div> -->
-            </div>
-        </div>
-    </div>
-</div>
+    // Read current GET parameters
+    const params = new URLSearchParams(window.location.search);
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.js"
-    integrity="sha512-mh+AjlD3nxImTUGisMpHXW03gE6F4WdQyvuFRkjecwuWLwD2yCijw4tKA3NsEFpA1C3neiKhGXPSIGSfCYPMlQ=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    // Set selected option based on current noe_metric
+    const currentValue = params.get('noe_metric') || 'noe';
+    select.value = currentValue;
+
+    // Update URL on change (preserve other GET params)
+    select.addEventListener('change', function () {
+        params.set('noe_metric', this.value);
+        window.location.search = params.toString();
+    });
+</script>
 
 <script>
     let end_date;
@@ -376,7 +308,6 @@
         const colorScale = d3.scaleLinear()
             .domain([0, 0.5, 1]) // Normalized values
             .range(["green", "yellow", "red"]); // Corresponding colors
-
         return colorScale(norm); // Return the mapped color
     }
 
@@ -388,16 +319,6 @@
     let line_chart1;
     let line_chart2;
     let line_chart3;
-    let line_chart4;
-    let gaugeSeverityChart;
-    var severityCounts = {
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0,
-        5: 0,
-        6: 0
-    };
 
     const kpi_key = ["oee", "phy_avail", "performance", "uo_Avail"]
     const kpi_labels = ["OEE", "Physical Availability", "Performance", "Utilization of Availability"]
@@ -408,80 +329,6 @@
         if (value < 80) return "bg-warning-subtle"; // dark yellow
         return "bg-success";                        // green
     }
-    var gaugeSeverityChartOptionsKPI = {
-        responsive: false,
-        maintainAspectRatio: false,
-        series: [
-            {
-                type: 'gauge',
-                center: ['50%', '70%'],
-                startAngle: 200,
-                endAngle: -20,
-                min: 0,
-                max: 100,
-                splitNumber: 8,
-                itemStyle: {
-                    color: '#FFAB91'
-                },
-                progress: {
-                    show: true,
-                    width: 30
-                },
-                pointer: {
-                    show: false
-                },
-                axisLine: {
-                    lineStyle: {
-                        width: 30
-                    }
-                },
-                axisTick: {
-                    distance: -45,
-                    splitNumber: 5,
-                    lineStyle: {
-                        width: 2,
-                        color: '#999'
-                    }
-                },
-                splitLine: {
-                    distance: -52,
-                    length: 14,
-                    lineStyle: {
-                        width: 3,
-                        color: '#999'
-                    }
-                },
-                axisLabel: {
-                    distance: -20,
-                    color: '#999',
-                    fontSize: 13
-                },
-                anchor: {
-                    show: false
-                },
-                title: {
-                    show: false
-                },
-                detail: {
-                    valueAnimation: true,
-                    width: '60%',
-                    lineHeight: 40,
-                    borderRadius: 8,
-                    offsetCenter: [0, '-15%'],
-                    fontSize: 20,
-                    fontWeight: 'bolder',
-                    formatter: '{value} %',
-                    color: 'inherit'
-                },
-                data: [
-                    {
-                        value: 20
-                    }
-                ]
-            }
-        ]
-    };
-
 
     function getColorFromValue(value) {
         const colorMap = [
@@ -524,18 +371,22 @@
             tags = Object.values(tagMap).flat().join(",");
         }
 
+        let noe_metric = urlParams.get('noe_metric');
+        if (!noe_metric) {
+            noe_metric = "noe";
+        }
+
         $.ajax({
             type: "GET",
             dataType: "json",
             url: "/api/kpi",
-            data: { start_date: start_date, end_date: end_date, tags: tags },
+            data: { start_date: start_date, end_date: end_date, tags: tags, noe_metric: noe_metric },
             success: function (data) {
                 console.log(data)
                 const keysToAverage = ['oee', 'phy_avail', 'performance', 'uo_Avail'];
                 const keysToSum = ['aux_0', 'aux_1'];
 
                 const keys_unit = Object.keys(data).filter(key => key !== 'plant' && key !== 'noe');
-                console.log(keys_unit)
                 const timestamps = data[keys_unit[0]].timestamp;
                 const combinedData = {
                     data_timestamp: timestamps,
@@ -590,7 +441,9 @@
                             label: kpi_labels[index],
                             data: combinedData[nowKPIKey].map((v, i) => v * 100),
                             borderColor: color,
-                            backgroundColor: Chart.helpers.color(color).alpha(0.2).rgbString()
+                            backgroundColor: Chart.helpers.color(color).alpha(0.2).rgbString(),
+                            tension: 0.4,
+                            pointRadius: 0,
                         })
 
                         var mustCheck = "";
@@ -630,8 +483,7 @@
                         });
                     }
 
-                    var ctx2 = document.getElementById(`kpi_trend_chart`).getContext('2d');
-                    line_chart1 = new Chart(ctx2, {
+                    line_chart1 = new Chart(document.getElementById(`kpi_trend_chart`).getContext('2d'), {
                         type: 'line',
                         data: {
                             labels: combinedData.data_timestamp,
@@ -640,7 +492,23 @@
                         options: {
                             responsive: false,
                             scales: {
-                                x: xChartLineFormat,
+                                x: {
+                                    type: 'time',
+                                    time: {
+                                        unit: 'minute',
+                                        tooltipFormat: 'Do-MM-yyy',
+                                        displayFormats: { minute: 'Do-MM-yyy' }
+                                    },
+                                    ticks: {
+                                        minRotation: 0,
+                                        maxTicksLimit: 7,
+                                        autoSkip: false,
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Timestamp'
+                                    }
+                                },
                                 y: {
                                     title: {
                                         display: true,
@@ -663,232 +531,335 @@
                     });
 
                     ///////////////////////////
-                    var total_lpd = data.plant.lpd.reduce((sum, value) => sum + value, 0);
-                    var average_lpd = data.plant.lpd.length > 0 ? total_lpd / data.plant.lpd.length : 0;
                     var total_hpd = data.plant.hpd.reduce((sum, value) => sum + value, 0);
                     var average_hpd = data.plant.hpd.length > 0 ? total_hpd / data.plant.hpd.length : 0;
-                    var total_bpd = data.plant.bpd.reduce((sum, value) => sum + value, 0);
-                    var average_bpd = data.plant.bpd.length > 0 ? total_bpd / data.plant.bpd.length : 0;
 
-                    document.getElementById("lp_total").innerText = Math.round(total_lpd).toLocaleString() + " MWh";
-                    document.getElementById("lp_average").innerText = Math.round(average_lpd).toLocaleString() + " MWh";
+                    var total_lpd = data.plant.lpd.reduce((sum, value) => sum + value, 0);
+                    var total_bpd = data.plant.bpd.reduce((sum, value) => sum + value, 0);
+                    var total_kpd = data.plant.kpd.reduce((sum, value) => sum + value, 0);
 
                     document.getElementById("hp_total").innerText = Math.round(total_hpd).toLocaleString() + " MWh";
-                    document.getElementById("hp_average").innerText = Math.round(average_hpd).toLocaleString() + " MWh";
 
-                    document.getElementById("bp_total").innerText = Math.round(total_bpd).toLocaleString() + " MWh";
-                    document.getElementById("bp_average").innerText = Math.round(average_bpd).toLocaleString() + " MWh";
+                    var totals_powerprods = [total_lpd, total_bpd, total_kpd];
+                    var total_sum_powerprods = totals_powerprods.reduce((sum, val) => sum + val, 0);
 
-                    new Chart(document.getElementById(`power_prod1`).getContext('2d'), {
+                    const lpd = data.plant.lpd;
+                    const bpd = data.plant.bpd;
+                    const kpd = data.plant.kpd;
+
+                    const lpd_pct = [];
+                    const bpd_pct = [];
+                    const kpd_pct = [];
+
+                    for (let i = 0; i < lpd.length; i++) {
+                        const total = lpd[i] + bpd[i] + kpd[i];
+
+                        lpd_pct.push((lpd[i] / total) * 100);
+                        bpd_pct.push((bpd[i] / total) * 100);
+                        kpd_pct.push((kpd[i] / total) * 100);
+                    }
+
+                    line_chart2 = new Chart(document.getElementById(`production_trendchart`).getContext('2d'), {
                         type: 'line',
                         data: {
-                            labels: data.plant.lpd.map((_, i) => i + 1),
+                            labels: data.plant.timestamp,
                             datasets: [{
-                                data: data.plant.lpd,
+                                label: 'Larona',
+                                data: lpd_pct,
+                                backgroundColor: '#4CAF50',
                                 borderColor: '#4CAF50',
-                                fill: true,
-                                borderWidth: 1,
+                                tension: 0.4,
                                 pointRadius: 0,
-                                tension: 0.3
+                            },
+                            {
+                                label: 'Balambano',
+                                data: bpd_pct,
+                                backgroundColor: '#FF5252',
+                                borderColor: '#FF5252',
+                                tension: 0.4,
+                                pointRadius: 0,
+                            },
+                            {
+                                label: 'Karebbe',
+                                data: kpd_pct,
+                                backgroundColor: '#FFC107',
+                                borderColor: '#FFC107',
+                                tension: 0.4,
+                                pointRadius: 0,
                             }]
                         },
                         options: {
                             responsive: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: { enabled: false }
-                            },
                             scales: {
-                                x: { display: false },
-                                y: { display: false }
-                            }
-                        }
-                    });
-
-                    new Chart(document.getElementById(`power_prod2`).getContext('2d'), {
-                        type: 'line',
-                        data: {
-                            labels: data.plant.hpd.map((_, i) => i + 1),
-                            datasets: [{
-                                data: data.plant.hpd,
-                                borderColor: '#4CAF50',
-                                fill: true,
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                tension: 0.3
-                            }]
-                        },
-                        options: {
-                            responsive: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: { enabled: false }
-                            },
-                            scales: {
-                                x: { display: false },
-                                y: { display: false }
-                            }
-                        }
-                    });
-
-                    new Chart(document.getElementById(`power_prod3`).getContext('2d'), {
-                        type: 'line',
-                        data: {
-                            labels: data.plant.bpd.map((_, i) => i + 1),
-                            datasets: [{
-                                data: data.plant.bpd,
-                                borderColor: '#4CAF50',
-                                fill: true,
-                                borderWidth: 1,
-                                pointRadius: 0,
-                                tension: 0.3
-                            }]
-                        },
-                        options: {
-                            responsive: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: { enabled: false }
-                            },
-                            scales: {
-                                x: { display: false },
-                                y: { display: false }
-                            }
-                        }
-                    });
-
-                    //////////////////////////
-                    const container = document.getElementById('chartContainer_operationmode');
-
-                    keys_unit.forEach((unitKey, idx) => {
-                        const colDiv = document.createElement('div');
-                        colDiv.className = "col-lg-3 col-md-3 col-sm-3";
-
-                        const canvas = document.createElement('canvas');
-                        canvas.id = `operation_modeChart${idx + 1}`;
-                        canvas.style.width = "100%";
-                        canvas.style.height = "270px";
-
-                        colDiv.appendChild(canvas);
-                        container.appendChild(colDiv);
-                    });
-                    keys_unit.forEach((unitKey, idx) => {
-                        const aux0 = data[unitKey].aux_0;
-                        const aux1 = data[unitKey].aux_1;
-
-                        const aux0_mean = aux0.reduce((a, b) => a + b, 0) / aux0.length;
-                        const aux1_mean = aux1.reduce((a, b) => a + b, 0) / aux1.length;
-
-                        new Chart(document.getElementById(`operation_modeChart${idx + 1}`).getContext('2d'), {
-                            type: 'pie',
-                            data: {
-                                labels: ['Aux', 'Furnace'],
-                                datasets: [{
-                                    data: [aux0_mean, aux1_mean],
-                                    backgroundColor: ['#4CAF50', '#FF5252'],
-                                    hoverOffset: 4
-                                }]
-                            },
-                            options: {
-                                responsive: false,
-                                // animation: {
-                                //     onProgress: function (animation) {
-                                //         const ctx = animation.chart.ctx;
-                                //         ctx.shadowColor = 'rgba(0,0,0,0.3)';
-                                //         ctx.shadowBlur = 10;
-                                //         ctx.shadowOffsetX = 4;
-                                //         ctx.shadowOffsetY = 4;
-                                //     },
-                                //     onComplete: function (animation) {
-                                //         const ctx = animation.chart.ctx;
-                                //         ctx.shadowColor = 'transparent';
-                                //         ctx.shadowBlur = 0;
-                                //         ctx.shadowOffsetX = 0;
-                                //         ctx.shadowOffsetY = 0;
-                                //     }
-                                // },
-                                plugins: {
+                                x: {
+                                    type: 'time',
+                                    time: {
+                                        unit: 'minute',
+                                        tooltipFormat: 'DD-MM',
+                                        displayFormats: { minute: 'DD-MM' }
+                                    },
+                                    ticks: {
+                                        minRotation: 0,
+                                        maxTicksLimit: 5,
+                                        autoSkip: false,
+                                    },
+                                    title: {
+                                        display: false,
+                                        text: 'Date'
+                                    }
+                                },
+                                y: {
                                     title: {
                                         display: true,
-                                        text: unitKey.toUpperCase(), // e.g. "LGS1"
-                                        font: { size: 12 }
+                                        text: "Percentage (%)"
                                     },
-                                    legend: {
-                                        position: 'bottom',
-                                        labels: { font: { size: 10 } }
-                                    },
-                                    tooltip: {
-                                        callbacks: {
-                                            label: function (context) {
-                                                const value = context.raw;
-                                                const total = context.chart._metasets[0].data.reduce((a, b) => a + b, 0);
-                                                const percentage = ((value / total) * 100).toFixed(1);
-                                                return `${context.label}: ${value.toFixed(1)} (${percentage}%)`;
-                                            }
-                                        }
-                                    },
-                                    datalabels: {
-                                        formatter: (value, context) => {
-                                            const data = context.chart.data.datasets[0].data;
-                                            const total = data.reduce((a, b) => a + b, 0);
-                                            const percentage = ((value / total) * 100).toFixed(1);
-                                            return percentage + '%';
-                                        },
-                                        color: '#fff',
-                                        font: { weight: 'bold', size: 10 }
-                                    }
+                                    min: 0,
+                                    max: 100
                                 }
                             },
-                            plugins: [{
-                                id: 'shadowOnlySlices',
-                                beforeDatasetDraw(chart, args, options) {
-                                    const { ctx } = chart;
-                                    if (chart.config.type !== 'pie') return;
-
-                                    const meta = chart.getDatasetMeta(args.index);
-                                    meta.data.forEach(segment => {
-                                        // Save original draw method
-                                        const originalDraw = segment.draw;
-
-                                        // Override draw
-                                        segment.draw = function () {
-                                            ctx.save();
-                                            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-                                            ctx.shadowBlur = 10;
-                                            ctx.shadowOffsetX = 4;
-                                            ctx.shadowOffsetY = 4;
-
-                                            originalDraw.apply(this, arguments);
-
-                                            ctx.restore(); // restore after each slice
-                                        };
-                                    });
-                                }
-                            }, ChartDataLabels]
-                        });
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    enabled: false,
+                                },
+                                zoom: zoomPluginsLineConfig
+                            },
+                        }
                     });
 
-                    /////////////////////////////// DUMMY
-                    console.log(data.noe)
+                    new Chart(document.getElementById(`production_powerpie1`).getContext('2d'), {
+                        type: 'pie',
+                        data: {
+                            labels: ['Larona', 'Balambano', 'Karebbe'],
+                            datasets: [{
+                                data: totals_powerprods,
+                                backgroundColor: ['#4CAF50', '#FF5252', '#FFC107'],
+                                hoverOffset: 4
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { font: { size: 10 } }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            const value = context.raw;
+                                            const percentage = ((value / total_sum_powerprods) * 100).toFixed(1);
+                                            return `${value.toFixed(1)} MWh (${percentage}%)`;
+                                        }
+                                    }
+                                },
+                                datalabels: {
+                                    formatter: (value, context) => {
+                                        const data = context.chart.data.datasets[0].data;
+                                        const total = data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return percentage + ' %';
+                                    },
+                                    color: '#fff',
+                                    font: { weight: 'bold', size: 10 }
+                                }
+                            }
+                        },
+                        plugins: [{
+                            id: 'shadowOnlySlices',
+                            beforeDatasetDraw(chart, args, options) {
+                                const { ctx } = chart;
+                                if (chart.config.type !== 'pie') return;
 
-                    // Get all labels from the first year's data keys
-                    const labels = Object.keys(data.noe.data[0]);
-                    const ctx1 = document.getElementById('stackedChart').getContext('2d');
-                    const labels1 = ['2022', '2023'];
-                    const colorPalette1 = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'];
-                    const datasets1 = data.noe.data.map((item, index) => ({
-                        label: item.label,
-                        data: item.data,
-                        backgroundColor: colorPalette1[index % colorPalette1.length]
-                    }));
+                                const meta = chart.getDatasetMeta(args.index);
+                                meta.data.forEach(segment => {
+                                    // Save original draw method
+                                    const originalDraw = segment.draw;
 
-                    console.log(datasets1)
+                                    // Override draw
+                                    segment.draw = function () {
+                                        ctx.save();
+                                        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                                        ctx.shadowBlur = 10;
+                                        ctx.shadowOffsetX = 4;
+                                        ctx.shadowOffsetY = 4;
 
-                    const stackedChart = new Chart(ctx1, {
+                                        originalDraw.apply(this, arguments);
+
+                                        ctx.restore(); // restore after each slice
+                                    };
+                                });
+                            }
+                        }, ChartDataLabels]
+                    });
+
+                    new Chart(document.getElementById(`grid_pie1`).getContext('2d'), {
+                        type: 'pie',
+                        data: {
+                            labels: ['Aux', 'Furnace'],
+                            datasets: [{
+                                data: [combinedData.aux_0[combinedData.aux_0.length - 1],
+                                combinedData.aux_1[combinedData.aux_1.length - 1]],
+                                backgroundColor: ['#4CAF50', '#FF5252', '#FFC107'],
+                                hoverOffset: 4
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { font: { size: 10 } }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            const value = context.raw;
+                                            const percentage = ((value / total_sum_powerprods) * 100).toFixed(1);
+                                            return ` ${value.toFixed(1)} (${percentage}%)`;
+                                        }
+                                    }
+                                },
+                                datalabels: {
+                                    formatter: (value, context) => {
+                                        const data = context.chart.data.datasets[0].data;
+                                        const total = data.reduce((a, b) => a + b, 0);
+                                        const percentage = ((value / total) * 100).toFixed(1);
+                                        return percentage + ' %';
+                                    },
+                                    color: '#fff',
+                                    font: { weight: 'bold', size: 10 }
+                                }
+                            }
+                        },
+                        plugins: [{
+                            id: 'shadowOnlySlices',
+                            beforeDatasetDraw(chart, args, options) {
+                                const { ctx } = chart;
+                                if (chart.config.type !== 'pie') return;
+
+                                const meta = chart.getDatasetMeta(args.index);
+                                meta.data.forEach(segment => {
+                                    // Save original draw method
+                                    const originalDraw = segment.draw;
+
+                                    // Override draw
+                                    segment.draw = function () {
+                                        ctx.save();
+                                        ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                                        ctx.shadowBlur = 10;
+                                        ctx.shadowOffsetX = 4;
+                                        ctx.shadowOffsetY = 4;
+
+                                        originalDraw.apply(this, arguments);
+
+                                        ctx.restore(); // restore after each slice
+                                    };
+                                });
+                            }
+                        }, ChartDataLabels]
+                    });
+
+                    const aux0_pct = [];
+                    const aux1_pct = [];
+
+                    for (let i = 0; i < combinedData.aux_0.length; i++) {
+                        const total = combinedData.aux_0[i] + combinedData.aux_1[i];
+
+                        aux0_pct.push((combinedData.aux_0[i] / total) * 100);
+                        aux1_pct.push((combinedData.aux_1[i] / total) * 100);
+                    }
+
+                    line_chart3 = new Chart(document.getElementById(`grid_trendchart`).getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: combinedData.data_timestamp,
+                            datasets: [{
+                                label: 'Aux',
+                                data: aux0_pct,
+                                borderColor: '#4CAF50',
+                                backgroundColor: '#4CAF50',
+                                tension: 0.4,
+                                pointRadius: 0,
+                            },
+                            {
+                                label: 'Furnace',
+                                data: aux1_pct,
+                                borderColor: '#FF5252',
+                                backgroundColor: '#FF5252',
+                                tension: 0.4,
+                                pointRadius: 0,
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            scales: {
+                                x: {
+                                    type: 'time',
+                                    time: {
+                                        unit: 'minute',
+                                        tooltipFormat: 'DD-MM',
+                                        displayFormats: { minute: 'DD-MM' }
+                                    },
+                                    ticks: {
+                                        minRotation: 0,
+                                        maxTicksLimit: 5,
+                                        autoSkip: false,
+                                    },
+                                    title: {
+                                        display: false,
+                                        text: 'Date'
+                                    }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: "Percentage (%)"
+                                    },
+                                    min: 0,
+                                    max: 100
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    enabled: false,
+                                },
+                                zoom: zoomPluginsLineConfig
+                            },
+                        }
+                    });
+
+                    const noeTitleText = {
+                        noe: "Number of Maintenance Events",
+                        duration: "Total Maintenance Duration (Hours)",
+                    };
+
+                    new Chart(document.getElementById('stackedChart').getContext('2d'), {
                         type: 'bar',
                         data: {
-                            labels: labels1,
-                            datasets: datasets1
+                            labels: data.noe.labels,  // Replace with df['Plant'].unique()
+                            datasets: [
+                                {
+                                    label: 'CD',
+                                    data: data.noe.data.CD,  // Replace with category_counts['Electrical'].values.tolist()
+                                    backgroundColor: '#1f77b4'
+                                },
+                                {
+                                    label: 'CR',
+                                    data: data.noe.data.CR,
+                                    backgroundColor: '#ff7f0e'
+                                },
+                                {
+                                    label: 'PV',
+                                    data: data.noe.data.PV,
+                                    backgroundColor: '#2ca02c'
+                                }
+                            ]
                         },
                         options: {
                             responsive: true,
@@ -899,15 +870,17 @@
                             },
                             scales: {
                                 x: {
-                                    stacked: true
-                                },
-                                y: {
-                                    stacked: true,
-                                    beginAtZero: true,
                                     title: {
                                         display: true,
-                                        text: 'Number of Maintenance Events'
+                                        text: 'Plant'
                                     }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: noeTitleText[noe_metric]
+                                    },
+                                    beginAtZero: true
                                 }
                             }
                         }
@@ -931,13 +904,11 @@
                         const section = document.createElement("div");
                         section.className = "col-lg-3 col-md-3 col-sm-6 px-0";
 
+                        // <h2>${metric.label}</h2>
                         section.innerHTML = `
-                            <div class="x_panel tile" style="border: none !important;">                
-                            <div class="x_title">
-                                <h2>${metric.label}</h2>
-                                <div class="clearfix"></div>
-                            </div>
+                            <div class="x_panel tile" style="height: 30vh;">                
                             <div class="x_content" id="progress_${metric.key}" style="height: 100%;">
+                            
                             </div></div>`;
 
                         const wrapper = section.querySelector(`#progress_${metric.key}`);
@@ -950,15 +921,14 @@
                             const value = Math.round(unitData[metric.key][latestIndex] * 100);
 
                             const bar = document.createElement("div");
-                            bar.classList.add("mb-2");
+                            bar.classList.add("mb-3");
                             bar.innerHTML = `
-                                <div class="d-flex justify-content-between">
-                                    <strong>${unit.toUpperCase()}</strong>
-                                    <span>${value}%</span>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar ${getColorClassByValue(value)}" role="progressbar"
-                                        style="width: ${value}%;" aria-valuenow="${value}" aria-valuemin="0" aria-valuemax="100">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <strong style="white-space: nowrap;">${unit.toUpperCase()}</strong>
+                                    <div class="progress" style="flex: 1; height: 20px; margin-bottom: 0px;">
+                                        <div class="progress-bar ${getColorClassByValue(value)}" role="progressbar"
+                                            style="width: ${value}%;" aria-valuenow="${value}" aria-valuemin="0" aria-valuemax="100"> ${value}%
+                                        </div>
                                     </div>
                                 </div>`;
                             wrapper.appendChild(bar);
@@ -971,264 +941,6 @@
                 }, 500);
             }
         });
-
-        // $.ajax({
-        //     type: "GET",
-        //     dataType: "json",
-        //     url: "/api/zone_distribution",
-        //     data: { start_date: start_date, end_date: end_date },
-        //     success: function (data) {
-        //         setTimeout(() => {
-        //             new Chart(document.getElementById('operation_zoneChart').getContext('2d'), {
-        //                 type: 'pie',
-        //                 data: {
-        //                     labels: Object.keys(data.operation_zone),
-        //                     datasets: [{
-        //                         data: Object.values(data.operation_zone),
-        //                         hoverOffset: 4
-        //                     }]
-        //                 },
-        //                 options: {
-        //                     responsive: false,
-        //                     plugins: {
-        //                         title: {
-        //                             display: true,
-        //                             text: 'Load Distribution for the Year',
-        //                             font: {
-        //                                 size: 10
-        //                             },
-        //                         },
-        //                         legend: {
-        //                             position: 'bottom',
-        //                             labels: {
-        //                                 font: {
-        //                                     size: 10
-        //                                 }
-        //                             }
-        //                         },
-        //                         tooltip: {
-        //                             callbacks: {
-        //                                 label: function (context) {
-        //                                     const value = context.raw;
-        //                                     const total = context.chart._metasets[0].total;
-        //                                     const percentage = ((value / total) * 100).toFixed(1);
-        //                                     return `${context.label}: ${value} (${percentage}%)`;
-        //                                 }
-        //                             }
-        //                         },
-        //                         datalabels: {
-        //                             formatter: (value, context) => {
-        //                                 const data = context.chart.data.datasets[0].data;
-        //                                 const total = data.reduce((a, b) => a + b, 0);
-        //                                 const percentage = ((value / total) * 100).toFixed(1);
-        //                                 return percentage + '%';
-        //                             },
-        //                             color: '#fff',
-        //                             font: {
-        //                                 weight: 'bold',
-        //                                 size: 10
-        //                             }
-        //                         }
-        //                     }
-        //                 },
-        //                 plugins: [ChartDataLabels]
-        //             });
-
-        //             new Chart(document.getElementById('operation_modeChart').getContext('2d'), {
-        //                 type: 'pie',
-        //                 data: {
-        //                     labels: Object.keys(data.operation_mode),
-        //                     datasets: [{
-        //                         data: Object.values(data.operation_mode),
-        //                         hoverOffset: 4
-        //                     }]
-        //                 },
-        //                 options: {
-        //                     responsive: false,
-
-        //                     plugins: {
-        //                         title: {
-        //                             display: true,
-        //                             text: 'Mode Operation Distribution for the Year',
-        //                             font: {
-        //                                 size: 10
-        //                             },
-        //                         },
-        //                         legend: {
-        //                             position: 'bottom',
-        //                             labels: {
-        //                                 font: {
-        //                                     size: 10
-        //                                 }
-        //                             }
-        //                         },
-        //                         tooltip: {
-        //                             callbacks: {
-        //                                 label: function (context) {
-        //                                     const value = context.raw;
-        //                                     const total = context.chart._metasets[0].total;
-        //                                     const percentage = ((value / total) * 100).toFixed(1);
-        //                                     return `${context.label}: ${value} (${percentage}%)`;
-        //                                 }
-        //                             }
-        //                         },
-        //                         datalabels: {
-        //                             formatter: (value, context) => {
-        //                                 const data = context.chart.data.datasets[0].data;
-        //                                 const total = data.reduce((a, b) => a + b, 0);
-        //                                 const percentage = ((value / total) * 100).toFixed(1);
-        //                                 return percentage + '%';
-        //                             },
-        //                             color: '#fff',
-        //                             font: {
-        //                                 weight: 'bold',
-        //                                 size: 10
-        //                             }
-        //                         }
-        //                     }
-        //                 },
-        //                 plugins: [ChartDataLabels]
-        //             });
-        //         }, 500);
-        //     }
-        // });
-
-        // const codeToColor = {
-        //     2: 'gray',
-        //     3: 'green',
-        //     4: 'orange',
-        //     5: 'brown',
-        //     6: 'steelblue'
-        // };
-        // const codeToLabel = {
-        //     2: 'No Load',
-        //     3: 'Low Load',
-        //     4: 'Rough Zone',
-        //     5: 'Part Load',
-        //     6: 'Efficient Load'
-        // };
-
-        // $.ajax({
-        //     type: "GET",
-        //     dataType: "json",
-        //     url: "/api/zone_distributionTimeline",
-        //     data: { start_date: start_date, end_date: end_date },
-        //     success: function (data) {
-        //         var data_timestamp = data.data_timestamp;
-        //         var loadStatus = data.load_datas;
-        //         var gridStatus = data.grid_datas;
-
-        // const colorsLoad = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b'];
-        // const colorsGrid = ['#d62728', '#2ca02c'];
-        // const lineColors = ['#3366cc', '#dc3912', '#ff9900', '#109618'];
-
-        // // // Get the index of the dominant category (argmax) for each timestep
-        // // const loadStatus = load_datas.map(row => {
-        // //     const arr = Array.from(row);  // ensure it's iterable
-        // //     return arr.indexOf(Math.max(...arr));
-        // // });
-        // // const gridStatus = grid_datas.map(row => {
-        // //     const arr = Array.from(row);
-        // //     return arr.indexOf(Math.max(...arr));
-        // // });
-        // const labelNames = [
-        //     'Shutdown',
-        //     'Warming',
-        //     'No Load',
-        //     'Low Load',
-        //     'Rough Zone',
-        //     'Part Load',
-        //     'Efficient Load',
-        //     'High Load',
-        //     'Undefined'
-        // ];
-
-        // const loadStatusLabels = loadStatus.map(code => labelNames[code] || 'Unknown');
-        // const lineDatasets = loadStatusLabels.map((label, i) => ({
-        //     label,
-        //     data: Array.from({ length: data_timestamp.length }, () => Math.random() * 50 + 50),
-        //     borderColor: lineColors[i],
-        //     backgroundColor: lineColors[i],
-        //     yAxisID: 'y',
-        //     tension: 0.3
-        // }));
-
-        // const statusPlugin = {
-        //     id: 'statusBars',
-        //     beforeDatasetDraw(chart, args, options) {
-        //         const { ctx, chartArea, scales } = chart;
-        //         const { top, bottom, left, right } = chartArea;
-        //         const width = (right - left) / data_timestamp.length;
-        //         const height = 20;
-
-        //         for (let i = 0; i < data_timestamp.length; i++) {
-        //             const x = left + i * width;
-        //             // Load Status bar (top)
-        //             ctx.fillStyle = colorsLoad[loadStatus[i]];
-        //             ctx.fillRect(x, top - 40, width, height);
-
-        //             // Grid Status bar (under it)
-        //             ctx.fillStyle = colorsGrid[gridStatus[i]];
-        //             ctx.fillRect(x, top - 20, width, height);
-        //         }
-
-        //         // Optional labels
-        //         ctx.fillStyle = "#000";
-        //         ctx.font = "12px sans-serif";
-        //         ctx.fillText("Load", left - 30, top - 25);
-        //         ctx.fillText("Grid", left - 30, top - 5);
-        //     }
-        // };
-
-        // new Chart(document.getElementById("load_stackBar"), {
-        //     type: "line",
-        //     data: {
-        //         labels: data_timestamp,
-        //         datasets: lineDatasets
-        //     },
-        //     options: {
-        //         responsive: true,
-        //         maintainAspectRatio: false,
-        //         plugins: {
-        //             title: {
-        //                 display: true,
-        //                 text: "OEE / PA / Performance / UoA"
-        //             },
-        //             legend: {
-        //                 position: 'bottom'
-        //             }
-        //         },
-        //         layout: {
-        //             padding: {
-        //                 top: 50
-        //             }
-        //         },
-        //         scales: {
-        //             y: {
-        //                 min: 0,
-        //                 max: 100,
-        //                 title: {
-        //                     display: true,
-        //                     text: "%"
-        //                 }
-        //             },
-        //             x: {
-        //                 title: {
-        //                     display: true,
-        //                     text: "Timestamp"
-        //                 },
-        //                 ticks: {
-        //                     autoSkip: false
-        //                 }
-        //             }
-        //         }
-        //     },
-        //     plugins: [statusPlugin]
-        // });
-
-        //     }
-        // })
-
     });
 
 

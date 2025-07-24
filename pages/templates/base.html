@@ -15,7 +15,8 @@
 
     <link href="{% static 'css/vendors/bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
     <link href="{% static 'css/vendors/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
-    <link href="{% static 'css/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css' %}"
+        rel="stylesheet">
     <link href="{% static 'css/vendors/dataTables/dataTables.dataTables.min.css' %}" rel="stylesheet">
     <link href="{% static 'css/vendors/others/daterangepicker.min.css' %}" rel="stylesheet">
     <link href="{% static 'css/custom.min.css' %}" rel="stylesheet">
@@ -33,13 +34,15 @@
 <body class="nav-sm">
     <div class="container body">
         <div class="main_container">
-            {% if request.path != '/dashboard/' %}
+            {% with request.path as path %}
+            {% if path != '/dashboard/' and path != '/kpi/' %}
             <div class="col-md-3 left_col">
                 <div class="left_col scroll-view">
                     {% include 'sidebar.html' %}
                 </div>
             </div>
             {% endif %}
+            {% endwith %}
 
 
             <script src="{% static 'js/vendors/jquery/dist/jquery.min.js' %}"></script>
@@ -134,7 +137,7 @@
                     minDate: '01/01/2021',
                     maxDate: '12/31/2045',
                     dateLimit: {
-                        days: 150
+                        days: 365
                     },
                     showDropdowns: true,
                     showWeekNumbers: true,
@@ -261,6 +264,80 @@
                     ]
                 };
 
+                var gaugeSeverityChartOptionsKPI = {
+                    responsive: false,
+                    maintainAspectRatio: false,
+                    series: [
+                        {
+                            type: 'gauge',
+                            center: ['50%', '70%'],
+                            startAngle: 200,
+                            endAngle: -20,
+                            min: 0,
+                            max: 100,
+                            splitNumber: 8,
+                            itemStyle: {
+                                color: '#FFAB91'
+                            },
+                            progress: {
+                                show: true,
+                                width: 15
+                            },
+                            pointer: {
+                                show: false
+                            },
+                            axisLine: {
+                                lineStyle: {
+                                    width: 15
+                                }
+                            },
+                            axisTick: {
+                                distance: -25,
+                                splitNumber: 5,
+                                lineStyle: {
+                                    width: 2,
+                                    color: '#999'
+                                }
+                            },
+                            splitLine: {
+                                distance: -32,
+                                length: 10,
+                                lineStyle: {
+                                    width: 2,
+                                    color: '#999'
+                                }
+                            },
+                            axisLabel: {
+                                distance: -25,
+                                color: '#999',
+                                fontSize: 13
+                            },
+                            anchor: {
+                                show: false
+                            },
+                            title: {
+                                show: false
+                            },
+                            detail: {
+                                valueAnimation: true,
+                                width: '60%',
+                                lineHeight: 40,
+                                borderRadius: 8,
+                                offsetCenter: [0, '-15%'],
+                                fontSize: 20,
+                                fontWeight: 'bolder',
+                                formatter: '{value} %',
+                                color: 'inherit'
+                            },
+                            data: [
+                                {
+                                    value: 20
+                                }
+                            ]
+                        }
+                    ]
+                };
+
                 //let nowDateMoment = moment.utc();
                 let nowDateMoment = moment.utc("2024-12-30T05:40:00");
             </script>
@@ -276,21 +353,27 @@
             </script>
 
             <!-- page content -->
-            <div class="right_col" role="main" style="{% if request.path == '/dashboard/' %}margin-left: 0px;{% endif %}">
-                {% block content %}{% endblock %}
-            </div>
-            <!-- /page content -->
-
-            <!-- footer content -->
-            <footer>
-                <div class="pull-right">
-                    -
+            {% with request.path as path %}
+            {% if path == '/dashboard/' or path == '/kpi/' %}
+            <div class="right_col" role="main" style="margin-left: 0px;">
+                {% else %}
+                <div class="right_col" role="main">
+                    {% endif %}
+                    {% block content %}{% endblock %}
                 </div>
-                <div class="clearfix"></div>
-            </footer>
-            <!-- /footer content -->
+                {% endwith %}
+                <!-- /page content -->
+
+                <!-- footer content -->
+                <footer>
+                    <div class="pull-right">
+                        -
+                    </div>
+                    <div class="clearfix"></div>
+                </footer>
+                <!-- /footer content -->
+            </div>
         </div>
-    </div>
 </body>
 
 </html>
