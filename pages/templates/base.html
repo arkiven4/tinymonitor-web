@@ -285,34 +285,34 @@
                             },
                             progress: {
                                 show: true,
-                                width: 15
+                                width: window.innerHeight * 0.015
                             },
                             pointer: {
                                 show: false
                             },
                             axisLine: {
                                 lineStyle: {
-                                    width: 15
+                                    width: window.innerHeight * 0.017
                                 }
                             },
                             axisTick: {
-                                distance: -25,
+                                distance: -window.innerHeight * 0.025,
                                 splitNumber: 5,
                                 lineStyle: {
-                                    width: 2,
+                                    width: window.innerHeight * 0.002,
                                     color: '#999'
                                 }
                             },
                             splitLine: {
-                                distance: -32,
-                                length: 10,
+                                distance: -window.innerHeight * 0.032,
+                                length: window.innerHeight * 0.010,
                                 lineStyle: {
-                                    width: 2,
+                                    width: window.innerHeight * 0.002,
                                     color: '#999'
                                 }
                             },
                             axisLabel: {
-                                distance: -25,
+                                distance: -window.innerHeight * 0.025,
                                 color: '#999',
                                 fontSize: vhFontSize(1.4)
                             },
@@ -325,7 +325,7 @@
                             detail: {
                                 valueAnimation: true,
                                 width: '60%',
-                                lineHeight: 40,
+                                lineHeight: window.innerHeight * 0.040,
                                 borderRadius: 8,
                                 offsetCenter: [0, '-15%'],
                                 fontSize: vhFontSize(2.1),
