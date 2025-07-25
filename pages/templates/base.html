@@ -64,6 +64,10 @@
             <script>
                 // const autocolors = window['chartjs-plugin-autocolors'];
                 // Chart.register(autocolors);
+                function vhFontSize(percent) {
+                    const vh = window.innerHeight;
+                    return Math.max(10, vh * (percent / 100));  // Minimum font size safeguard
+                }
 
                 const featureSet = [
                     "Active Power", "Reactive Power", "Governor speed actual", "UGB X displacement", "UGB Y displacement",
@@ -310,7 +314,7 @@
                             axisLabel: {
                                 distance: -25,
                                 color: '#999',
-                                fontSize: 13
+                                fontSize: vhFontSize(1.4)
                             },
                             anchor: {
                                 show: false
@@ -324,7 +328,7 @@
                                 lineHeight: 40,
                                 borderRadius: 8,
                                 offsetCenter: [0, '-15%'],
-                                fontSize: 20,
+                                fontSize: vhFontSize(2.1),
                                 fontWeight: 'bolder',
                                 formatter: '{value} %',
                                 color: 'inherit'
