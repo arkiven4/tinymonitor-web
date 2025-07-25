@@ -976,9 +976,9 @@
                             const value = Math.round(unitData[metric.key][latestIndex] * 100);
 
                             const bar = document.createElement("div");
-                            bar.classList.add("mb-3");
+                            bar.classList.add("dummy-class");
                             bar.innerHTML = `
-                                <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.8vh;">
                                     <strong style="white-space: nowrap;">${unit.toUpperCase()}</strong>
                                     <div class="progress" style="flex: 1; height: 2.2vh; margin-bottom: 0px;">
                                         <div class="progress-bar ${getColorClassByValue(value)}" role="progressbar"
