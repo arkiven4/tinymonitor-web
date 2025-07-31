@@ -1,0 +1,891 @@
+<!-- templates/index.html -->
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Advisory Details - Vale Dash{% endblock %}
+{% block content %}
+
+<style>
+    #custom-tooltip {
+        position: absolute;
+        background: white;
+        border: 1px solid black;
+        padding: 10px;
+        border-radius: 5px;
+        pointer-events: auto;
+        display: none;
+        z-index: 1000;
+    }
+
+    .checkbox-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+    }
+
+    .x_content {
+        padding: 0 3px 0 !important;
+        clear: both !important;
+        margin-top: 0px !important;
+    }
+
+    .resetZoom {
+        position: absolute;
+        top: 8vh;
+        left: 4vw;
+        z-index: 10;
+        cursor: pointer;
+    }
+
+    body {
+        overflow: hidden;
+    }
+</style>
+<style>
+    .timeline-row {
+        margin-bottom: 12px;
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .row-label {
+        width: 180px;
+        display: inline-block;
+        font-weight: bold;
+        vertical-align: top;
+    }
+
+    .row-track {
+        display: inline-block;
+        height: 20px;
+        position: relative;
+        background: #e7e7e7;
+        width: 90%;
+        border: 1px solid #b4b4b4;
+    }
+
+    .segment {
+        position: absolute;
+        height: 100%;
+        top: 0;
+    }
+
+    .legend {
+        margin-top: 10px;
+        font-size: 12px;
+    }
+
+    .legend span {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        margin-right: 5px;
+    }
+
+    .timeline-axis {
+        width: 90%;
+        margin-left: auto;
+        /* shifts axis to the right */
+        color: #444;
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        border-top: 1px solid #ccc;
+        padding-top: 4px;
+    }
+</style>
+
+<div class="row" id="chart_container">
+    <div class="col-md-12 col-sm-12 px-0">
+        <div class="x_panel tile">
+            <div id="reportrange_right" class="pull-left"
+                style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
+                <i class="fa fa-calendar"></i>
+                <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
+            </div>
+            <div id="reportrange_right" class="pull-left"
+                style="background: #fff; cursor: pointer; padding: 5px 10px; margin-left: 5px; display: flex; align-items: center; gap: 10px; justify-content: space-between;">
+                <!-- Group Checkboxes -->
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input group-checkbox" type="checkbox" id="group_Larona" data-group="Larona"
+                        disabled>
+                    <label class="form-check-label" for="group_Larona">Larona</label>
+                </div>
+
+                <!-- Individual Checkboxes -->
+                <div id="tagCheckboxes"></div>
+
+                <script>
+                    const tagMap = {
+                        Larona: ["LGS1", "LGS2", "LGS3"]
+                    };
+
+                    const tagContainer = document.getElementById("tagCheckboxes");
+
+                    // Generate tag checkboxes dynamically
+                    const allTags = Object.values(tagMap).flat();
+                    allTags.forEach(tag => {
+                        const wrapper = document.createElement("div");
+                        wrapper.classList.add("form-check", "form-check-inline");
+
+                        wrapper.innerHTML = `
+                <input class="form-check-input tag-checkbox" type="checkbox" id="tag_${tag}" value="${tag}">
+                <label class="form-check-label" for="tag_${tag}">${tag}</label>
+            `;
+                        tagContainer.appendChild(wrapper);
+                    });
+
+                    const tagCheckboxes = document.querySelectorAll('.tag-checkbox');
+                    const groupCheckboxes = document.querySelectorAll('.group-checkbox');
+
+                    function getURLTags() {
+                        const params = new URLSearchParams(window.location.search);
+                        const tagString = params.get("tag");
+                        if (!tagString) return null;
+                        return tagString.split(",");
+                    }
+
+                    function setCheckboxStatesFromURL(tagsInURL) {
+                        if (!tagsInURL) {
+                            tagCheckboxes.forEach(cb => cb.checked = true);
+                        } else {
+                            tagCheckboxes.forEach(cb => {
+                                cb.checked = tagsInURL.includes(cb.value);
+                            });
+                        }
+
+                        // Sync group checkbox states
+                        groupCheckboxes.forEach(groupCB => {
+                            const group = groupCB.dataset.group;
+                            const groupTags = tagMap[group];
+                            groupCB.checked = groupTags.every(tag => document.getElementById(`tag_${tag}`).checked);
+                        });
+                    }
+
+                    function updateURLFromSelections() {
+                        const selectedTags = Array.from(tagCheckboxes)
+                            .filter(cb => cb.checked)
+                            .map(cb => cb.value);
+
+                        const params = new URLSearchParams(window.location.search);
+                        if (selectedTags.length > 0) {
+                            params.set("tag", selectedTags.join(","));
+                        } else {
+                            params.delete("tag");
+                        }
+
+                        window.location.search = params.toString();
+                    }
+
+                    function handleGroupCheckbox(groupCB) {
+                        const group = groupCB.dataset.group;
+                        const groupTags = tagMap[group];
+                        groupTags.forEach(tag => {
+                            document.getElementById(`tag_${tag}`).checked = groupCB.checked;
+                        });
+                        updateURLFromSelections();
+                    }
+
+                    function handleTagCheckboxChange() {
+                        // Update group checkboxes based on tag state
+                        groupCheckboxes.forEach(groupCB => {
+                            const group = groupCB.dataset.group;
+                            const groupTags = tagMap[group];
+                            groupCB.checked = groupTags.every(tag => document.getElementById(`tag_${tag}`).checked);
+                        });
+                        updateURLFromSelections();
+                    }
+
+                    // Attach listeners
+                    groupCheckboxes.forEach(cb => {
+                        cb.addEventListener("change", () => handleGroupCheckbox(cb));
+                    });
+
+                    tagCheckboxes.forEach(cb => {
+                        cb.addEventListener("change", handleTagCheckboxChange);
+                    });
+
+                    // Initialize
+                    const urlTags = getURLTags();
+                    setCheckboxStatesFromURL(urlTags);
+                </script>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 px-0">
+        <div class="x_content">
+            <div class="row">
+                <div class="col-lg-3 col-md-3 col-sm-6 px-0">
+                    <div class="x_panel tile" style="height: 30vh;">
+                        <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
+                            <h2>OEE</h2>
+                            <div id="gauge_oee" style="height: 70%; box-sizing: border-box;"></div>
+                            <canvas id="sparkline_oee" class="sparkline" style="height: 15%; width: 100%;"></canvas>
+                            <div style="height: 5%; margin-top: 5px;">
+                                <p>Previously Period: <span id="prev_oee">100%</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-6 px-0">
+                    <div class="x_panel tile" style="height: 30vh;">
+                        <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
+                            <h2>Physical Availability</h2>
+                            <div id="gauge_phy_avail" style="height: 70%; box-sizing: border-box;"></div>
+                            <canvas id="sparkline_phy_avail" class="sparkline"
+                                style="height: 15%; width: 100%;"></canvas>
+                            <div style="height: 5%; margin-top: 5px;">
+                                <p>Perviously Period: <span id="prev_phy_avail">100%</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-6 px-0">
+                    <div class="x_panel tile" style="height: 30vh;">
+                        <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
+                            <h2>Performance</h2>
+                            <div id="gauge_performance" style="height: 70%; box-sizing: border-box;"></div>
+                            <canvas id="sparkline_performance" class="sparkline"
+                                style="height: 15%; width: 100%;"></canvas>
+                            <div style="height: 5%; margin-top: 5px;">
+                                <p>Perviously Period: <span id="prev_performance">100%</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-6 px-0">
+                    <div class="x_panel tile" style="height: 30vh;">
+                        <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
+                            <h2>Utilization of Availability</h2>
+                            <div id="gauge_uo_Avail" style="height: 70%; box-sizing: border-box;"></div>
+                            <canvas id="sparkline_uo_Avail" class="sparkline"
+                                style="height: 15%; width: 100%;"></canvas>
+                            <div style="height: 5%; margin-top: 5px;">
+                                <p>Perviously Period: <span id="prev_uo_Avail">100%</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="">
+            <div class="x_content">
+                <div class="row">
+                    <div class="col-lg-12 col-md-12 col-sm-12 px-0">
+                        <div class="x_panel tile" style="height: 30vh;">
+                            <div class="x_content" style="height: 100%;">
+                                <h2>Other KPIs</h2>
+                                <div class="row">
+                                    <div class="col-lg-12 col-md-12 col-sm-12 px-0">
+                                        <div class="x_panel tile">
+                                            <div class="x_content"
+                                                style="height: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center; align-content: center; flex-wrap: nowrap;">
+                                                <h2>TEEP</h2>
+                                                <h2>96.98% / 59.59%</h2>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12 col-md-12 col-sm-12 px-0">
+                                        <div class="x_panel tile">
+                                            <div class="x_content"
+                                                style="height: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center; align-content: center; flex-wrap: nowrap;">
+                                                <h2>MTTR</h2>
+                                                <h2>1,950sec / 1,800sec</h2>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12 col-md-12 col-sm-12 px-0">
+                                        <div class="x_panel tile">
+                                            <div class="x_content"
+                                                style="height: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center; align-content: center; flex-wrap: nowrap;">
+                                                <h2>MTBF</h2>
+                                                <h2>9,499.75sec / 8,914.29sec</h2>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 px-0">
+        <div class="x_content">
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 px-0">
+                    <div class="x_panel tile" style="height: 60vh;">
+                        <div class="x_title">
+                            <h2>Machine Status</h2>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="x_content" style="height: 55vh;">
+                            <div class="row">
+                                <div class="col-lg-10 col-md-10 col-sm-10 px-0">
+                                    <div class="x_panel tile" style="height: 55vh;border: 0px solid #E6E9ED;">
+                                        <div class="row" style="height: 100%;">
+                                            <div class="col-lg-12 col-md-12 col-sm-12 px-0" style="height: 73%;">
+                                                <div id="timeline-container"
+                                                    style="width: 100%; overflow-x: auto; border: 1px solid #aaa; padding: 10px;">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12 col-md-12 col-sm-12 px-0" style="height: 25%;">
+                                                <div id="timeline-container-grid"
+                                                    style="width: 100%; overflow-x: auto; border: 1px solid #aaa; padding: 10px;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-2 px-0">
+                                    <div class="x_panel tile" style="height: 55vh;">
+                                        <h2>Distribution</h2>
+                                        <div style="display: flex; align-items: flex-end;">
+                                            <div id="stacked-bar"
+                                                style="width: 40px; height: 45vh; border: 1px solid #000; display: flex; flex-direction: column-reverse;border-radius: 10px;">
+                                            </div>
+                                            <div id="stacked-labels"
+                                                style="margin-left: 16px; display: flex; flex-direction: column; justify-content: flex-end;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- <script>
+    const select = document.getElementById('noe_metric_select');
+
+    const params = new URLSearchParams(window.location.search);
+    const currentValue = params.get('noe_metric') || 'noe';
+    select.value = currentValue;
+    select.addEventListener('change', function () {
+        params.set('noe_metric', this.value);
+        window.location.search = params.toString();
+    });
+</script> -->
+
+
+<script>
+    let end_date;
+    let start_date;
+    let idx_sensor;
+
+    const datepicker_callback = function (start, end, label) {
+        var url = new URL(window.location.href);
+        var params = url.searchParams;
+
+        params.set('start_date', start.format("YYYY-MM-DDTHH:mm:ss"));
+        params.set('end_date', end.format("YYYY-MM-DDTHH:mm:ss"));
+
+        window.location.href = `${url.pathname}?${params.toString()}`;
+    };
+
+
+    function severity2color(severity) {
+        const norm = (severity - 1) / 5; // Normalize severity to range [0,1]
+        const colorScale = d3.scaleLinear()
+            .domain([0, 0.5, 1]) // Normalized values
+            .range(["green", "yellow", "red"]); // Corresponding colors
+        return colorScale(norm); // Return the mapped color
+    }
+
+    const colorPalette = [
+        'red', 'blue', 'green', 'orange', 'purple', 'teal', 'gold', 'brown'
+    ];
+
+    let correlate_chart = [];
+    let line_chart1;
+    let line_chart2;
+    let line_chart3;
+
+    const kpi_key = ["oee", "phy_avail", "performance", "uo_Avail"]
+    const kpi_labels = ["OEE", "Physical Availability", "Performance", "Utilization of Availability"]
+    function getColorClassByValue(value) {
+        if (value < 20) return "bg-danger";         // dark red
+        if (value < 40) return "bg-danger-subtle";  // red
+        if (value < 60) return "bg-warning";        // orange
+        if (value < 80) return "bg-warning-subtle"; // dark yellow
+        return "bg-success";                        // green
+    }
+
+    function getColorFromValue(value) {
+        const colorMap = [
+            [0.16, '#ff0000'],
+            [0.32, '#ff5500'],
+            [0.48, '#ffaa00'],
+            [0.64, '#e5e500'],
+            [0.80, '#99e500'],
+            [1.00, '#00cc00']
+        ];
+
+        for (let i = 0; i < colorMap.length; i++) {
+            if (value <= colorMap[i][0]) {
+                return colorMap[i][1];
+            }
+        }
+        return colorMap[colorMap.length - 1][1];
+    }
+
+    function drawSegment(container, start, end, label, globalStart, totalDuration, categoryColorsNow) {
+        const left = ((start - globalStart) / totalDuration) * 100;
+        const width = ((end - start) / totalDuration) * 100;
+
+        const seg = document.createElement('div');
+        seg.className = 'segment';
+        seg.style.left = `${left}%`;
+        seg.style.width = `${width}%`;
+        seg.style.backgroundColor = categoryColorsNow[label];
+        seg.title = label;
+
+        container.appendChild(seg);
+    }
+
+    function formatDuration(ms) {
+        const totalSeconds = Math.floor(ms / 1000);
+        const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+        const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+        const seconds = String(totalSeconds % 60).padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+    }
+
+    const categoryColors = {
+        'Unit Shut Down': 'yellow',
+        'Start-Up and Shutdown Process': 'green',
+        'Speed No Load': 'red',
+        'Low Load': 'orange',
+        'Rough Zone': 'purple',
+        'Part Load': 'cyan',
+        'Best Efficiency Point': 'magenta',
+        'High Load': 'blue',
+    };
+
+    const labelMap = {
+        0: 'Unit Shut Down',
+        1: 'Start-Up and Shutdown Process',
+        2: 'Speed No Load',
+        3: 'Low Load',
+        4: 'Rough Zone',
+        5: 'Part Load',
+        6: 'Best Efficiency Point',
+        7: 'High Load'
+    };
+
+    const labelMapGrid = {
+        0: 'Auxiliary Grid',
+        1: 'FCE Grid'
+    };
+
+    const categoryColorsGrid = {
+        'Auxiliary Grid': 'purple',
+        'FCE Grid': 'orange',
+    };
+
+
+    var kpiDatasets = [];
+
+    $(document).ready(function () {
+        var url = new URL(window.location.href);
+        var urlParams = new URLSearchParams(url.search);
+
+        if (urlParams.has('start_date')) {
+            end_date = moment.utc(urlParams.get('end_date')).format("YYYY-MM-DDTHH:mm:ss");
+            start_date = moment.utc(urlParams.get('start_date')).format("YYYY-MM-DDTHH:mm:ss");
+        } else {
+            end_date = nowDateMoment.format("YYYY-MM-DDTHH:mm:ss");
+            start_date = nowDateMoment.subtract(29, 'days').format("YYYY-MM-DDTHH:mm:ss");
+        }
+
+        $('#reportrange_right span').html(moment.utc(start_date).format('MMMM D, YYYY') + ' - ' + moment.utc(end_date).format('MMMM D, YYYY'));
+        $('#reportrange_right').daterangepicker(dateRangeOptions1, datepicker_callback);
+
+
+        let tags = urlParams.get('tag');
+        if (!tags) {
+            tags = Object.values(tagMap).flat().join(",");
+        }
+
+        let noe_metric = urlParams.get('noe_metric');
+        if (!noe_metric) {
+            noe_metric = "noe";
+        }
+
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: "/api/zone_distributionTimeline",
+            data: { start_date: start_date, end_date: end_date },
+            success: function (data) {
+                console.log(data)
+                setTimeout(() => {
+                    const timestamps = data.data_timestamp.map(ts => new Date(ts));
+                    const load_codes = data.load_datas;
+                    const grid_codes = data.grid_datas;
+
+                    const container = document.getElementById('timeline-container');
+                    const container_grid = document.getElementById('timeline-container-grid');
+                    const timeStamps = timestamps.map(t => new Date(t));
+                    const startTime = timeStamps[0];
+                    const endTime = timeStamps[timeStamps.length - 1];
+                    const totalMs = endTime - startTime;
+
+                    // ===== Overall Track =====
+                    const overallTrack = document.createElement('div');
+                    overallTrack.className = 'timeline-row';
+                    overallTrack.innerHTML = `<div class="row-label" style="margin-right:10px">Overall</div><div class="row-track" id="row-overall"></div>`;
+                    container.appendChild(overallTrack);
+                    const rowOverall = overallTrack.querySelector('.row-track');
+
+                    // Build timeline segments
+                    let segStart = startTime;
+                    let currentCode = load_codes[0];
+                    for (let i = 1; i < load_codes.length; i++) {
+                        if (load_codes[i] !== currentCode) {
+                            drawSegment(rowOverall, segStart, timeStamps[i], labelMap[currentCode], startTime, totalMs, categoryColors);
+                            segStart = timeStamps[i];
+                            currentCode = load_codes[i];
+                        }
+                    }
+                    drawSegment(rowOverall, segStart, endTime, labelMap[currentCode], startTime, totalMs, categoryColors);
+
+                    // ===== Individual Class Rows =====
+                    for (const [label, color] of Object.entries(categoryColors)) {
+                        const row = document.createElement('div');
+                        row.className = 'timeline-row';
+                        const trackId = `row-${label.replace(/\s+/g, '-')}`;
+                        row.innerHTML = `<div class="row-label" style="display: flex;align-content: center; justify-content: flex-start; align-items: center; margin-right:10px"><div style="width: 12px; height: 2vh; background-color: ${color};border-radius: 2px;flex-shrink: 0;margin-right:4px"></div>${label}</div><div class="row-track" id="${trackId}"></div>`;
+                        container.appendChild(row);
+
+                        const rowTrack = row.querySelector('.row-track');
+
+                        let inRange = false;
+                        let rangeStart = null;
+
+                        for (let i = 0; i < load_codes.length; i++) {
+                            const thisLabel = labelMap[load_codes[i]];
+                            if (thisLabel === label && !inRange) {
+                                inRange = true;
+                                rangeStart = timeStamps[i];
+                            } else if (thisLabel !== label && inRange) {
+                                drawSegment(rowTrack, rangeStart, timeStamps[i], label, startTime, totalMs, categoryColors);
+                                inRange = false;
+                            }
+                        }
+                        if (inRange) {
+                            drawSegment(rowTrack, rangeStart, endTime, label, startTime, totalMs, categoryColors);
+                        }
+                    }
+
+                    // ===================================== 
+                    // ===============  GRID  ==============
+                    // =====================================
+                    const overallTrackGrid = document.createElement('div');
+                    overallTrackGrid.className = 'timeline-row';
+                    overallTrackGrid.innerHTML = `<div class="row-label" style="margin-right:10px">Overall</div><div class="row-track" id="row-overall-grid"></div>`;
+                    container_grid.appendChild(overallTrackGrid);
+                    const rowOverallGrid = overallTrackGrid.querySelector('.row-track');
+
+                    // Build timeline segments
+                    segStart = startTime;
+                    currentCode = grid_codes[0];
+                    for (let i = 1; i < grid_codes.length; i++) {
+                        if (grid_codes[i] !== currentCode) {
+                            drawSegment(rowOverallGrid, segStart, timeStamps[i], labelMapGrid[currentCode], startTime, totalMs, categoryColorsGrid);
+                            segStart = timeStamps[i];
+                            currentCode = grid_codes[i];
+                        }
+                    }
+                    drawSegment(rowOverallGrid, segStart, endTime, labelMapGrid[currentCode], startTime, totalMs, categoryColorsGrid);
+
+                    // ===== Individual Class Rows =====
+                    for (const [label, color] of Object.entries(categoryColorsGrid)) {
+                        const row = document.createElement('div');
+                        row.className = 'timeline-row';
+                        const trackId = `row-${label.replace(/\s+/g, '-')}`;
+                        row.innerHTML = `<div class="row-label" style="display: flex;align-content: center; justify-content: flex-start; align-items: center; margin-right:10px"><div style="width: 12px; height: 12px; background-color: ${color};border-radius: 2px;flex-shrink: 0;margin-right:4px"></div>${label}</div><div class="row-track" id="${trackId}"></div>`;
+                        container_grid.appendChild(row);
+
+                        const rowTrack = row.querySelector('.row-track');
+
+                        let inRange = false;
+                        let rangeStart = null;
+
+                        for (let i = 0; i < grid_codes.length; i++) {
+                            const thisLabel = labelMapGrid[grid_codes[i]];
+                            if (thisLabel === label && !inRange) {
+                                inRange = true;
+                                rangeStart = timeStamps[i];
+                            } else if (thisLabel !== label && inRange) {
+                                drawSegment(rowTrack, rangeStart, timeStamps[i], label, startTime, totalMs, categoryColorsGrid);
+                                inRange = false;
+                            }
+                        }
+                        if (inRange) {
+                            drawSegment(rowTrack, rangeStart, endTime, label, startTime, totalMs, categoryColorsGrid);
+                        }
+                    }
+
+                    // ===== Timestamp Axis =====
+                    const overallLabel = overallTrack.querySelector('.row-label');
+                    const trackWidth = rowOverall.offsetWidth;
+                    const trackLeftOffset = rowOverall.getBoundingClientRect().left - container.getBoundingClientRect().left - 10;
+
+
+                    const axis = document.createElement('div');
+                    axis.style.position = 'relative';
+                    axis.style.width = `${trackWidth}px`;
+                    axis.style.left = `${trackLeftOffset}px`;
+                    axis.style.display = 'flex';
+                    axis.style.justifyContent = 'space-between';
+                    axis.style.fontSize = '12px';
+                    axis.style.marginTop = '8px';
+                    axis.style.borderTop = '1px solid #ccc';
+                    axis.style.paddingTop = '4px';
+
+                    const numTicks = 7;
+                    for (let i = 0; i <= numTicks; i++) {
+                        const tick = document.createElement('div');
+                        tick.style.flex = '1';
+                        tick.style.textAlign = i === 0 ? 'left' : (i === numTicks ? 'right' : 'center');
+
+                        const timeOffset = totalMs * (i / numTicks);
+                        const tickTime = new Date(startTime.getTime() + timeOffset);
+                        const day = String(tickTime.getDate()).padStart(2, '0');
+                        const month = String(tickTime.getMonth() + 1).padStart(2, '0'); // months are 0-based
+                        const year = tickTime.getFullYear();
+                        const hour = String(tickTime.getHours()).padStart(2, '0');
+                        const minute = String(tickTime.getMinutes()).padStart(2, '0');
+
+                        tick.textContent = `${day}-${month}-${year} ${hour}:${minute}`;
+
+                        axis.appendChild(tick);
+                    }
+                    container.appendChild(axis);
+
+                    // ===================================== 
+                    // ===============Vertical==============
+                    // =====================================
+
+                    // 1. Compute duration per category
+                    const durations = {};
+                    segStart = startTime;
+                    currentCode = load_codes[0];
+
+                    for (let i = 1; i < load_codes.length; i++) {
+                        if (load_codes[i] !== currentCode) {
+                            const duration = timeStamps[i] - segStart;
+                            const label = labelMap[currentCode];
+                            durations[label] = (durations[label] || 0) + duration;
+                            segStart = timeStamps[i];
+                            currentCode = load_codes[i];
+                        }
+                    }
+                    const lastLabel = labelMap[currentCode];
+                    durations[lastLabel] = (durations[lastLabel] || 0) + (endTime - segStart);
+
+                    // 2. Sort by duration descending
+                    const sortedDurations = Object.entries(durations).sort((a, b) => b[1] - a[1]);
+
+                    // 3. Render stacked bar
+                    const barContainer = document.getElementById('stacked-bar');
+                    barContainer.innerHTML = '';
+
+                    const labelContainer = document.getElementById('stacked-labels');
+                    labelContainer.innerHTML = '';
+                    var count = 0;
+                    for (const [label, duration] of sortedDurations.reverse()) {
+                        const percent = (duration / totalMs) * 100;
+                        const color = categoryColors[label] || '#999';
+
+                        // Create bar segment
+                        const segment = document.createElement('div');
+                        segment.style.height = `${percent}%`;
+                        segment.style.backgroundColor = color;
+                        segment.title = `${label}: ${(duration / 3600000).toFixed(2)} hrs`;
+                        if (count === 0) {
+                            segment.style.borderBottomLeftRadius = '10px';
+                            segment.style.borderBottomRightRadius = '10px';
+                        } else if (count === sortedDurations.length - 1) {
+                            segment.style.borderTopLeftRadius = '10px';
+                            segment.style.borderTopRightRadius = '10px';
+                        }
+                        barContainer.appendChild(segment);
+                        count += 1;
+                    }
+
+                    for (const [label, duration] of sortedDurations.reverse()) {
+                        const percent = (duration / totalMs) * 100;
+                        const color = categoryColors[label] || '#999';
+
+                        // Create label (icon + label text)
+                        const labelDiv = document.createElement('div');
+                        labelDiv.style.display = 'flex';
+                        labelDiv.style.alignItems = 'center';
+                        labelDiv.style.marginBottom = '0.8vh'; // responsive spacing
+                        labelDiv.innerHTML = `
+                            <div style="width: 1.5vh; height: 1.5vh; background-color: ${color}; border-radius: 0.3vh; margin-right: 0.8vh;"></div>
+                            <div style="font-size: 1.8vh"><strong>${label}</strong></div>
+                        `;
+                        labelContainer.appendChild(labelDiv);
+
+                        // Create duration label
+                        const labelDiv2 = document.createElement('div');
+                        labelDiv2.style.display = 'flex';
+                        labelDiv2.style.alignItems = 'center';
+                        labelDiv2.style.marginBottom = '2vh';
+                        labelDiv2.innerHTML = `
+                            <div style="font-size: 2.0vh">${formatDuration(duration)}</div>
+                        `;
+                        labelContainer.appendChild(labelDiv2);
+                    }
+
+                }, 500);
+            }
+        })
+        console.log(tags)
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: "/api/kpi",
+            data: { start_date: start_date, end_date: end_date, tags: tags, noe_metric: noe_metric },
+            success: function (data) {
+                console.log(data)
+                const keysToAverage = ['oee', 'phy_avail', 'performance', 'uo_Avail'];
+                const keysToSum = ['aux_0', 'aux_1'];
+
+                const keys_unit = Object.keys(data).filter(key => key !== 'plant' && key !== 'noe');
+                const timestamps = data[keys_unit[0]].timestamp;
+                const combinedData = {
+                    data_timestamp: timestamps,
+                    oee: [],
+                    phy_avail: [],
+                    performance: [],
+                    uo_Avail: [],
+                    aux_0: [],
+                    aux_1: []
+                };
+
+                for (let i = 0; i < timestamps.length; i++) {
+                    for (const key of keysToAverage) {
+                        let sum = 0;
+                        for (const unitKey of keys_unit) {
+                            sum += data[unitKey][key][i];
+                        }
+                        const avg = sum / keys_unit.length;
+                        combinedData[key].push(avg);
+                    }
+
+                    for (const key of keysToSum) {
+                        let sum = 0;
+                        for (const unitKey of keys_unit) {
+                            sum += data[unitKey][key][i];
+                        }
+                        combinedData[key].push(sum);
+                    }
+                }
+
+                for (const key in combinedData) {
+                    if (key === 'data_timestamp') continue;
+                    combinedData[key] = combinedData[key].map(v => Math.round(v * 100) / 100);
+                }
+
+                setTimeout(() => {
+                    for (let index = 0; index < kpi_key.length; index++) {
+                        const nowKPIKey = kpi_key[index];
+                        document.getElementById("prev_" + nowKPIKey).innerHTML = (combinedData[nowKPIKey][combinedData[nowKPIKey].length - 2] * 100) + "%";
+                        gaugeSeverityChartOptionsKPI.series[0].data[0].value = combinedData[nowKPIKey][combinedData[nowKPIKey].length - 1] * 100;
+                        gaugeSeverityChartOptionsKPI.series[0].itemStyle.color = getColorFromValue(combinedData[nowKPIKey][combinedData[nowKPIKey].length - 1]);
+
+                        gaugeSeverityChart = echarts.init(document.getElementById('gauge_' + nowKPIKey), null, {
+                            renderer: 'canvas',
+                        });
+                        gaugeSeverityChart.setOption(gaugeSeverityChartOptionsKPI);
+                        window.addEventListener('resize', gaugeSeverityChart.resize);
+
+                        const color = colorPalette[index % colorPalette.length];
+                        kpiDatasets.push({
+                            label: kpi_labels[index],
+                            data: combinedData[nowKPIKey].map((v, i) => v * 100),
+                            borderColor: color,
+                            backgroundColor: Chart.helpers.color(color).alpha(0.2).rgbString(),
+                            tension: 0.4,
+                            pointRadius: 0,
+                        })
+
+                        const ctx1 = document.getElementById(`sparkline_${nowKPIKey}`).getContext('2d');
+                        new Chart(ctx1, {
+                            type: 'line',
+                            data: {
+                                labels: combinedData[nowKPIKey].map((_, i) => i + 1),
+                                datasets: [{
+                                    data: combinedData[nowKPIKey],
+                                    borderColor: '#4CAF50',
+                                    fill: true,
+                                    borderWidth: 1,
+                                    pointRadius: 0,
+                                    tension: 0.3
+                                }]
+                            },
+                            options: {
+                                responsive: false,
+                                plugins: {
+                                    legend: { display: false },
+                                    tooltip: { enabled: false }
+                                },
+                                scales: {
+                                    x: { display: false },
+                                    y: { display: false }
+                                }
+                            }
+                        });
+                    }
+
+                    ///////////////////////////
+                    const aux0_pct = [];
+                    const aux1_pct = [];
+
+                    for (let i = 0; i < combinedData.aux_0.length; i++) {
+                        const total = combinedData.aux_0[i] + combinedData.aux_1[i];
+
+                        aux0_pct.push((combinedData.aux_0[i] / total) * 100);
+                        aux1_pct.push((combinedData.aux_1[i] / total) * 100);
+                    }
+
+
+                    /////////////// LOLOPLSAD{Okas[pdokas]}
+                }, 500);
+            }
+        });
+    });
+
+
+    function resetZoom(chart_object) {
+        chart_object.resetZoom();
+    }
+
+    function openModal() {
+        var modal = new bootstrap.Modal(document.getElementById('myModal'));
+        modal.show();
+    }
+
+    //window.addEventListener('resize', gaugeSeverityChart.resize);
+</script>
+{% endblock %}

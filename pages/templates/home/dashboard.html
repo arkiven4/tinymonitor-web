@@ -399,10 +399,6 @@
             url: "/api/zone_distribution",
             data: { start_date: start_dateNewyear, end_date: end_date },
             success: function (data) {
-
-                console.log()
-                console.log()
-
                 setTimeout(() => {
                     new Chart(document.getElementById('operation_zoneChart').getContext('2d'), {
                         type: 'pie',

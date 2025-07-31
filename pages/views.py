@@ -13,6 +13,9 @@ def dashboard(request):
 def kpi(request):
     return render(request, "kpi/kpi.html", {})
 
+def kpi_units(request):
+    return render(request, "kpi/kpi_units.html", {})
+
 def kpi_updatenoe(request):
     if request.method == 'POST' and request.FILES.get('file'):
         if not request.FILES.get('file'):
