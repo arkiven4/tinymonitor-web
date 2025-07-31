@@ -141,9 +141,9 @@ def get_OperationDistribution(start_date=None, end_date=None):
     return operation_mode, operation_zone
 
 
-def get_OperationDistributionTimeline(start_date=None, end_date=None):
-    # end_dateT1 = datetime.strptime(
-    #     end_date, "%Y-%m-%dT%H:%M:%S") - timedelta(hours=6)
+def get_OperationDistributionTimeline(start_date=None, end_date=None, units=None):
+    if units == None:
+        units = ['LGS1', 'LGS2', 'LGS3', 'BGS1', 'BGS2', 'KGS1', 'KGS2']
 
     grid_datas = commons.fetch_between_dates(
         start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "additional_original_data")
