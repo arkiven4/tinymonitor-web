@@ -549,7 +549,7 @@
                         const row = document.createElement('div');
                         row.className = 'timeline-row';
                         const trackId = `row-${label.replace(/\s+/g, '-')}`;
-                        row.innerHTML = `<div class="row-label" style="display: flex;align-content: center; justify-content: flex-start; align-items: center; margin-right:10px"><div style="width: 12px; height: 2vh; background-color: ${color};border-radius: 2px;flex-shrink: 0;margin-right:4px"></div>${label} ${labelMapaddti[label]}</div><div class="row-track" id="${trackId}"></div>`;
+                        row.innerHTML = `<div class="row-label" style="display: flex;align-content: center; justify-content: flex-start; align-items: center; margin-right:10px; font-size: 2vh;"><div style="width: 12px; height: 2vh; background-color: ${color};border-radius: 2px;flex-shrink: 0;margin-right:4px"></div>${label} ${labelMapaddti[label]}</div><div class="row-track" id="${trackId}"></div>`;
                         container.appendChild(row);
 
                         const rowTrack = row.querySelector('.row-track');
