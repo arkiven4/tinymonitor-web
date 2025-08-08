@@ -107,112 +107,74 @@
             </div>
             <div id="reportrange_right" class="pull-left"
                 style="background: #fff; cursor: pointer; padding: 5px 10px; margin-left: 5px; display: flex; align-items: center; gap: 10px; justify-content: space-between;">
-                <!-- Group Checkboxes -->
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input group-checkbox" type="checkbox" id="group_Larona" data-group="Larona"
-                        disabled>
-                    <label class="form-check-label" for="group_Larona">Larona</label>
-                </div>
 
-                <!-- Individual Checkboxes -->
-                <div id="tagCheckboxes"></div>
+                <!-- Label -->
+                <label for="tagDropdown">Select Tag:</label>
+
+                <!-- Single-select dropdown -->
+                <select id="tagDropdown" class="form-control" style="min-width: 200px;">
+                    <!-- Options will be added dynamically -->
+                </select>
 
                 <script>
                     const tagMap = {
-                        Larona: ["LGS1", "LGS2", "LGS3"]
+                        Larona: ["LGS1", "LGS2", "LGS3"],
+                        Balambano: ["BGS1", "BGS2"],
+                        Karebbe: ["KGS1", "KGS2"]
                     };
+                    const DEFAULT_TAG = "LGS1";
 
-                    const tagContainer = document.getElementById("tagCheckboxes");
+                    const tagDropdown = document.getElementById("tagDropdown");
 
-                    // Generate tag checkboxes dynamically
+                    // Populate dropdown options
                     const allTags = Object.values(tagMap).flat();
                     allTags.forEach(tag => {
-                        const wrapper = document.createElement("div");
-                        wrapper.classList.add("form-check", "form-check-inline");
-
-                        wrapper.innerHTML = `
-                <input class="form-check-input tag-checkbox" type="checkbox" id="tag_${tag}" value="${tag}">
-                <label class="form-check-label" for="tag_${tag}">${tag}</label>
-            `;
-                        tagContainer.appendChild(wrapper);
+                        const option = document.createElement("option");
+                        option.value = tag;
+                        option.textContent = tag;
+                        tagDropdown.appendChild(option);
                     });
 
-                    const tagCheckboxes = document.querySelectorAll('.tag-checkbox');
-                    const groupCheckboxes = document.querySelectorAll('.group-checkbox');
-
-                    function getURLTags() {
+                    function getURLTag() {
                         const params = new URLSearchParams(window.location.search);
-                        const tagString = params.get("tag");
-                        if (!tagString) return null;
-                        return tagString.split(",");
+                        return params.get("tag");
                     }
 
-                    function setCheckboxStatesFromURL(tagsInURL) {
-                        if (!tagsInURL) {
-                            tagCheckboxes.forEach(cb => cb.checked = true);
-                        } else {
-                            tagCheckboxes.forEach(cb => {
-                                cb.checked = tagsInURL.includes(cb.value);
-                            });
-                        }
-
-                        // Sync group checkbox states
-                        groupCheckboxes.forEach(groupCB => {
-                            const group = groupCB.dataset.group;
-                            const groupTags = tagMap[group];
-                            groupCB.checked = groupTags.every(tag => document.getElementById(`tag_${tag}`).checked);
-                        });
+                    function setDropdownFromURL(tagInURL) {
+                        const tagToSelect = tagInURL || DEFAULT_TAG;
+                        tagDropdown.value = tagToSelect;
                     }
 
-                    function updateURLFromSelections() {
-                        const selectedTags = Array.from(tagCheckboxes)
-                            .filter(cb => cb.checked)
-                            .map(cb => cb.value);
-
+                    function updateURLFromDropdown() {
+                        const selectedTag = tagDropdown.value;
                         const params = new URLSearchParams(window.location.search);
-                        if (selectedTags.length > 0) {
-                            params.set("tag", selectedTags.join(","));
+
+                        if (selectedTag) {
+                            params.set("tag", selectedTag);
                         } else {
                             params.delete("tag");
                         }
 
-                        window.location.search = params.toString();
+                        // Only reload if value changed
+                        const newQuery = params.toString();
+                        if (window.location.search !== "?" + newQuery) {
+                            window.location.search = newQuery;
+                        }
                     }
 
-                    function handleGroupCheckbox(groupCB) {
-                        const group = groupCB.dataset.group;
-                        const groupTags = tagMap[group];
-                        groupTags.forEach(tag => {
-                            document.getElementById(`tag_${tag}`).checked = groupCB.checked;
-                        });
-                        updateURLFromSelections();
+                    // Listener
+                    tagDropdown.addEventListener("change", updateURLFromDropdown);
+
+                    // Init
+                    const urlTag = getURLTag();
+                    setDropdownFromURL(urlTag);
+
+                    // If no tag in URL, set it to default in the URL immediately
+                    if (!urlTag) {
+                        updateURLFromDropdown();  // Will set ?tag=LGS1
                     }
-
-                    function handleTagCheckboxChange() {
-                        // Update group checkboxes based on tag state
-                        groupCheckboxes.forEach(groupCB => {
-                            const group = groupCB.dataset.group;
-                            const groupTags = tagMap[group];
-                            groupCB.checked = groupTags.every(tag => document.getElementById(`tag_${tag}`).checked);
-                        });
-                        updateURLFromSelections();
-                    }
-
-                    // Attach listeners
-                    groupCheckboxes.forEach(cb => {
-                        cb.addEventListener("change", () => handleGroupCheckbox(cb));
-                    });
-
-                    tagCheckboxes.forEach(cb => {
-                        cb.addEventListener("change", handleTagCheckboxChange);
-                    });
-
-                    // Initialize
-                    const urlTags = getURLTags();
-                    setCheckboxStatesFromURL(urlTags);
                 </script>
             </div>
-
         </div>
     </div>
 </div>
@@ -336,7 +298,7 @@
                                 <div class="col-lg-10 col-md-10 col-sm-10 px-0">
                                     <div class="x_panel tile" style="height: 55vh;border: 0px solid #E6E9ED;">
                                         <div class="row" style="height: 100%;">
-                                            <div class="col-lg-12 col-md-12 col-sm-12 px-0" style="height: 73%;">
+                                            <div class="col-lg-12 col-md-12 col-sm-12 px-0" style="height: 75%;">
                                                 <div id="timeline-container"
                                                     style="width: 100%; overflow-x: auto; border: 1px solid #aaa; padding: 10px;">
                                                 </div>
@@ -468,9 +430,9 @@
     }
 
     const categoryColors = {
-        'Unit Shut Down': 'yellow',
+        'Unit Shut Down': 'red',
         'Start-Up and Shutdown Process': 'green',
-        'Speed No Load': 'red',
+        'Speed No Load': 'yellow', 
         'Low Load': 'orange',
         'Rough Zone': 'purple',
         'Part Load': 'cyan',
@@ -489,14 +451,25 @@
         7: 'High Load'
     };
 
+    const labelMapaddti = {
+        'Unit Shut Down': '',
+        'Start-Up and Shutdown Process': '',
+        'Speed No Load': '', 
+        'Low Load': '(1 - 20 MW)',
+        'Rough Zone': '(20 - 40 MW)',
+        'Part Load': '(40 - 50 MW)',
+        'Best Efficiency Point': '(50 - 65 MW)',
+        'High Load': '(>=65 MW)',
+    }
+
     const labelMapGrid = {
         0: 'Auxiliary Grid',
         1: 'FCE Grid'
     };
 
     const categoryColorsGrid = {
-        'Auxiliary Grid': 'purple',
-        'FCE Grid': 'orange',
+        'Auxiliary Grid': '#00807C',
+        'FCE Grid': '#EEA722',
     };
 
 
@@ -513,6 +486,11 @@
             end_date = nowDateMoment.format("YYYY-MM-DDTHH:mm:ss");
             start_date = nowDateMoment.subtract(29, 'days').format("YYYY-MM-DDTHH:mm:ss");
         }
+
+        start_date_dist = moment().startOf('year').format("YYYY-MM-DDTHH:mm:ss");
+        end_date_dist = moment().format("YYYY-MM-DDTHH:mm:ss");
+        // start_date_dist = start_date
+        // end_date_dist = end_date
 
         $('#reportrange_right span').html(moment.utc(start_date).format('MMMM D, YYYY') + ' - ' + moment.utc(end_date).format('MMMM D, YYYY'));
         $('#reportrange_right').daterangepicker(dateRangeOptions1, datepicker_callback);
@@ -532,7 +510,7 @@
             type: "GET",
             dataType: "json",
             url: "/api/zone_distributionTimeline",
-            data: { start_date: start_date, end_date: end_date },
+            data: { start_date: start_date_dist, end_date: end_date_dist, tags: tags},
             success: function (data) {
                 console.log(data)
                 setTimeout(() => {
@@ -571,7 +549,7 @@
                         const row = document.createElement('div');
                         row.className = 'timeline-row';
                         const trackId = `row-${label.replace(/\s+/g, '-')}`;
-                        row.innerHTML = `<div class="row-label" style="display: flex;align-content: center; justify-content: flex-start; align-items: center; margin-right:10px"><div style="width: 12px; height: 2vh; background-color: ${color};border-radius: 2px;flex-shrink: 0;margin-right:4px"></div>${label}</div><div class="row-track" id="${trackId}"></div>`;
+                        row.innerHTML = `<div class="row-label" style="display: flex;align-content: center; justify-content: flex-start; align-items: center; margin-right:10px"><div style="width: 12px; height: 2vh; background-color: ${color};border-radius: 2px;flex-shrink: 0;margin-right:4px"></div>${label} ${labelMapaddti[label]}</div><div class="row-track" id="${trackId}"></div>`;
                         container.appendChild(row);
 
                         const rowTrack = row.querySelector('.row-track');
@@ -752,7 +730,7 @@
                         labelDiv2.style.alignItems = 'center';
                         labelDiv2.style.marginBottom = '2vh';
                         labelDiv2.innerHTML = `
-                            <div style="font-size: 2.0vh">${formatDuration(duration)}</div>
+                            <div style="font-size: 2.0vh">${formatDuration(duration)} (${parseInt(percent)}%)</div>
                         `;
                         labelContainer.appendChild(labelDiv2);
                     }

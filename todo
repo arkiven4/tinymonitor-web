@@ -1,3 +1,9 @@
 Catatan progress Vale:
 * Time selection sepertinya terbatas 2 bulan masa pengamatan, lebih dari itu grafik tidak ter load
-* Ada 1 page tambahan (ketika unit dipilih), yaitu halaman KPI yang sama tapi khusus untuk 1 unit saja (ex. LGS1 saja, LGS2 saja, dst)
+
+Note untuk KPI Per Unit
+- KPI sudah bisa dibuat moda streaming (untuk 7 unit)
+- Load berdasarkan parameter CB (agar tidak salah Low Load dan Shut Down) -> nanti aku bisa coba bantu susun logic nya
+- Input data manual untuk TEEP, MTTR dan MTBF (seperti CD, CV, CR - maintenance event)
+
+

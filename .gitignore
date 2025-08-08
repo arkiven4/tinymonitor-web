@@ -6,4 +6,4 @@ db
 db_bak
 db_prod
 staticfiles
-kpi2024.csv
+*.csv
