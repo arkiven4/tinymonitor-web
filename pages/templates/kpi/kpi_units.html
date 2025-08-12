@@ -112,7 +112,7 @@
                 <label for="tagDropdown">Select Tag:</label>
 
                 <!-- Single-select dropdown -->
-                <select id="tagDropdown" class="form-control" style="min-width: 200px;">
+                <select id="tagDropdown" style="min-width: 200px;">
                     <!-- Options will be added dynamically -->
                 </select>
 
@@ -298,7 +298,7 @@
                                 <div class="col-lg-10 col-md-10 col-sm-10 px-0">
                                     <div class="x_panel tile" style="height: 55vh;border: 0px solid #E6E9ED;">
                                         <div class="row" style="height: 100%;">
-                                            <div class="col-lg-12 col-md-12 col-sm-12 px-0" style="height: 75%;">
+                                            <div class="col-lg-12 col-md-12 col-sm-12 px-0" style="height: 86%;">
                                                 <div id="timeline-container"
                                                     style="width: 100%; overflow-x: auto; border: 1px solid #aaa; padding: 10px;">
                                                 </div>
@@ -549,7 +549,7 @@
                         const row = document.createElement('div');
                         row.className = 'timeline-row';
                         const trackId = `row-${label.replace(/\s+/g, '-')}`;
-                        row.innerHTML = `<div class="row-label" style="display: flex;align-content: center; justify-content: flex-start; align-items: center; margin-right:10px; font-size: 2vh;"><div style="width: 12px; height: 2vh; background-color: ${color};border-radius: 2px;flex-shrink: 0;margin-right:4px"></div>${label} ${labelMapaddti[label]}</div><div class="row-track" id="${trackId}"></div>`;
+                        row.innerHTML = `<div class="row-label" style="display: flex;align-content: center; justify-content: flex-start; align-items: center; margin-right:10px; font-size: 1.3vh;"><div style="width: 12px; height: 2vh; background-color: ${color};border-radius: 2px;flex-shrink: 0;margin-right:4px"></div>${label} ${labelMapaddti[label]}</div><div class="row-track" id="${trackId}"></div>`;
                         container.appendChild(row);
 
                         const rowTrack = row.querySelector('.row-track');
@@ -598,7 +598,7 @@
                         const row = document.createElement('div');
                         row.className = 'timeline-row';
                         const trackId = `row-${label.replace(/\s+/g, '-')}`;
-                        row.innerHTML = `<div class="row-label" style="display: flex;align-content: center; justify-content: flex-start; align-items: center; margin-right:10px"><div style="width: 12px; height: 12px; background-color: ${color};border-radius: 2px;flex-shrink: 0;margin-right:4px"></div>${label}</div><div class="row-track" id="${trackId}"></div>`;
+                        row.innerHTML = `<div class="row-label" style="display: flex;align-content: center; justify-content: flex-start; align-items: center; margin-right:10px; font-size: 1.3vh;"><div style="width: 12px; height: 12px; background-color: ${color};border-radius: 2px;flex-shrink: 0;margin-right:4px"></div>${label}</div><div class="row-track" id="${trackId}"></div>`;
                         container_grid.appendChild(row);
 
                         const rowTrack = row.querySelector('.row-track');
