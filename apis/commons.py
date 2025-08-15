@@ -259,14 +259,14 @@ def process_operationZone(start_date, end_date, db_name="data.db", table_name="s
     query = f"""
     SELECT
     CASE
-        WHEN "Active_Power" < 1 AND "Governor_speed_actual" < 1 THEN 'Shutdown'
-        WHEN "Active_Power" < 3 AND "Governor_speed_actual" < 250 THEN 'Warming'
-        WHEN "Active_Power" < 3 AND "Governor_speed_actual" > 250 THEN 'No Load'
-        WHEN "Active_Power" >= 1 AND "Active_Power" < 20 AND "Governor_speed_actual" > 250 THEN 'Low Load'
-        WHEN "Active_Power" >= 20 AND "Active_Power" < 40 AND "Governor_speed_actual" > 250 THEN 'Rough Zone'
-        WHEN "Active_Power" >= 40 AND "Active_Power" < 50 AND "Governor_speed_actual" > 250 THEN 'Part Load'
-        WHEN "Active_Power" >= 50 AND "Active_Power" < 65 AND "Governor_speed_actual" > 250 THEN 'Efficient Load'
-        WHEN "Active_Power" >= 65 AND "Governor_speed_actual" > 250 THEN 'High Load'
+        WHEN "active_power" < 1 AND "rpm" < 1 THEN 'Shutdown'
+        WHEN "active_power" < 3 AND "rpm" < 250 THEN 'Warming'
+        WHEN "active_power" < 3 AND "rpm" > 250 THEN 'No Load'
+        WHEN "active_power" >= 1 AND "active_power" < 20 AND "rpm" > 250 THEN 'Low Load'
+        WHEN "active_power" >= 20 AND "active_power" < 40 AND "rpm" > 250 THEN 'Rough Zone'
+        WHEN "active_power" >= 40 AND "active_power" < 50 AND "rpm" > 250 THEN 'Part Load'
+        WHEN "active_power" >= 50 AND "active_power" < 65 AND "rpm" > 250 THEN 'Efficient Load'
+        WHEN "active_power" >= 65 AND "rpm" > 250 THEN 'High Load'
         ELSE 'Shutdown'
     END AS Label,
     COUNT(*) AS Count
@@ -285,11 +285,11 @@ def process_operationMode(start_date, end_date, db_name="data.db", table_name="s
     cursor = conn.cursor()
 
     query = f"""
-    SELECT Grid_Selection, COUNT(*) as Count
+    SELECT aux_1, COUNT(*) as Count
     FROM {table_name}
     WHERE timestamp BETWEEN ? AND ?
-    GROUP BY Grid_Selection
-    ORDER BY Grid_Selection
+    GROUP BY aux_1
+    ORDER BY aux_1
     """
 
     cursor.execute(query, (start_date, end_date))

@@ -142,7 +142,7 @@
 
     function updateChart() {
         var end_date = nowDateMoment.format("YYYY-MM-DDTHH:mm:ss"); // moment.utc();
-        var start_date = nowDateMoment.subtract(12, 'hours').format("YYYY-MM-DDTHH:mm:ss");
+        var start_date = nowDateMoment.subtract(2, 'hours').format("YYYY-MM-DDTHH:mm:ss");
 
         $.ajax({
             type: "GET",
@@ -178,7 +178,7 @@
 
     $(document).ready(function () {
         var end_date = nowDateMoment.format("YYYY-MM-DDTHH:mm:ss");
-        var start_date = nowDateMoment.subtract(12, 'hours').format("YYYY-MM-DDTHH:mm:ss");
+        var start_date = nowDateMoment.subtract(1, 'hours').format("YYYY-MM-DDTHH:mm:ss");
 
         $.ajax({
             type: "GET",
