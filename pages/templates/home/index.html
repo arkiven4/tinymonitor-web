@@ -45,15 +45,15 @@
                                 <tbody>
                                     <tr>
                                         <th style="width:25%">Current Time</th>
-                                        <td>"YYYY-MM-DDTHH:mm:ss"</td>
+                                        <td id="current-time"></td>
                                     </tr>
                                     <tr>
                                         <th>Last update</th>
-                                        <td>"YYYY-MM-DDTHH:mm:ss"</td>
+                                        <td id="last-update"></td>
                                     </tr>
                                     <tr>
                                         <th>Next Update</th>
-                                        <td>"YYYY-MM-DDTHH:mm:ss"</td>
+                                        <td id="next-update"></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -68,7 +68,7 @@
                                     </tr>
                                     <tr>
                                         <th>Threshold Setting</th>
-                                        <td>"YYYY-MM-DDTHH:mm:ss"</td>
+                                        <td>Dynamic</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -87,10 +87,14 @@
                 <div class="clearfix"></div>
             </div>
             <div class="x_content">
-                <canvas id="lineChart1" style="width: 100%; height: 300px"></canvas><hr/>
-                <canvas id="lineChart2" style="width: 100%; height: 300px"></canvas><hr/>
-                <canvas id="lineChart3" style="width: 100%; height: 300px"></canvas><hr/>
-                <canvas id="lineChart4" style="width: 100%; height: 300px"></canvas><hr/>
+                <canvas id="lineChart1" style="width: 100%; height: 300px"></canvas>
+                <hr />
+                <canvas id="lineChart2" style="width: 100%; height: 300px"></canvas>
+                <hr />
+                <canvas id="lineChart3" style="width: 100%; height: 300px"></canvas>
+                <hr />
+                <canvas id="lineChart4" style="width: 100%; height: 300px"></canvas>
+                <hr />
             </div>
         </div>
     </div>
@@ -101,10 +105,14 @@
                 <div class="clearfix"></div>
             </div>
             <div class="x_content">
-                <canvas id="losslineChart1" style="width: 100%; height: 300px"></canvas><hr/>
-                <canvas id="losslineChart2" style="width: 100%; height: 300px"></canvas><hr/>
-                <canvas id="losslineChart3" style="width: 100%; height: 300px"></canvas><hr/>
-                <canvas id="losslineChart4" style="width: 100%; height: 300px"></canvas><hr/>
+                <canvas id="losslineChart1" style="width: 100%; height: 300px"></canvas>
+                <hr />
+                <canvas id="losslineChart2" style="width: 100%; height: 300px"></canvas>
+                <hr />
+                <canvas id="losslineChart3" style="width: 100%; height: 300px"></canvas>
+                <hr />
+                <canvas id="losslineChart4" style="width: 100%; height: 300px"></canvas>
+                <hr />
             </div>
         </div>
     </div>
@@ -188,6 +196,13 @@
             success: function (data) {
                 let [timestamps, predictions, originalData, lossData,
                     severityData, severityLabels, severityValues, severityCounts, colors] = parseData_fromserver(data)
+
+                var copy_timestamp = timestamps.map(ts => new Date(ts));
+                document.getElementById("current-time").textContent = new Date().toLocaleString(); 
+                const lastUpdate = copy_timestamp[copy_timestamp.length - 1];
+                document.getElementById("last-update").textContent = lastUpdate.toLocaleString();
+                const nextUpdate = new Date(copy_timestamp[0].getTime() + 15 * 60 * 1000);
+                document.getElementById("next-update").textContent = nextUpdate.toLocaleString();
 
                 // Line Charts
                 severityLabels.slice(0, 4).forEach((feature, idx) => {
