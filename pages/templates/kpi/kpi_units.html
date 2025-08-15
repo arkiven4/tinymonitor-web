@@ -95,6 +95,29 @@
         border-top: 1px solid #ccc;
         padding-top: 4px;
     }
+
+    #timeline-container,
+    #timeline-container-grid {
+        height: 60vh;
+        /* Set viewport-relative height */
+        max-height: 60vh;
+        /* Enforce max height */
+        overflow-y: auto;
+        /* Enable vertical scrolling if content overflows */
+        overflow-x: auto;
+        /* Keep horizontal scrolling */
+        box-sizing: border-box;
+        border: 1px solid #aaa;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .timeline-row {
+        flex-shrink: 0;
+        /* Prevent rows from shrinking */
+        margin-bottom: 8px;
+    }
 </style>
 
 <div class="row" id="chart_container">
@@ -288,22 +311,20 @@
         <div class="x_content">
             <div class="row">
                 <div class="col-lg-12 col-md-12 col-sm-12 px-0">
-                    <div class="x_panel tile" style="height: 60vh;">
-                        <div class="x_title">
-                            <h2>Machine Status</h2>
-                            <div class="clearfix"></div>
-                        </div>
-                        <div class="x_content" style="height: 57vh;">
+                    <div class="x_panel tile"
+                        style="height: 59vh;display: flex; flex-direction: column;overflow: hidden;">
+                        <h2>Machine Status</h2>
+                        <div class="x_content">
                             <div class="row">
                                 <div class="col-lg-10 col-md-10 col-sm-10 px-0">
-                                    <div class="x_panel tile" style="height: 50vh;border: 0px solid #E6E9ED;">
-                                        <div class="row" style="height: 100%;">
-                                            <div class="col-lg-12 col-md-12 col-sm-12 px-0" style="height: 70%;">
+                                    <div class="x_panel tile" style="border: 0px solid #E6E9ED;">
+                                        <div class="row">
+                                            <div class="col-lg-12 col-md-12 col-sm-12 px-0">
                                                 <div id="timeline-container"
                                                     style="width: 100%; overflow-x: auto; border: 1px solid #aaa; padding: 10px;">
                                                 </div>
                                             </div>
-                                            <div class="col-lg-12 col-md-12 col-sm-12 px-0" style="height: 15%;">
+                                            <div class="col-lg-12 col-md-12 col-sm-12 px-0">
                                                 <div id="timeline-container-grid"
                                                     style="width: 100%; overflow-x: auto; border: 1px solid #aaa; padding: 10px;">
                                                 </div>
@@ -312,14 +333,18 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-2 col-md-2 col-sm-2 px-0">
-                                    <div class="x_panel tile" style="height: 50vh;">
+                                    <div class="x_panel tile" style="border: 0px solid #E6E9ED;">
                                         <h2>Distribution</h2>
-                                        <div style="display: flex;">
-                                            <div id="stacked-bar"
-                                                style="width: 40px; height: 45vh; border: 1px solid #000; display: flex; flex-direction: column-reverse;border-radius: 10px;">
-                                            </div>
-                                            <div id="stacked-labels"
-                                                style="margin-left: 16px; display: flex; flex-direction: column; justify-content: flex-end;">
+                                        <div class="row">
+                                            <div class="col-lg-12 col-md-12 col-sm-12 px-0" style="height: 100%;">
+                                                <div style="display: flex; height: 100%;">
+                                                    <div id="stacked-bar"
+                                                        style="width: 40px; height: 45vh; border: 1px solid #000; display: flex; flex-direction: column-reverse;border-radius: 10px;">
+                                                    </div>
+                                                    <div id="stacked-labels"
+                                                        style="margin-left: 16px; display: flex; flex-direction: column; justify-content: flex-start;">
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -432,7 +457,7 @@
     const categoryColors = {
         'Unit Shut Down': 'red',
         'Start-Up and Shutdown Process': 'green',
-        'Speed No Load': 'yellow', 
+        'Speed No Load': 'yellow',
         'Low Load': 'orange',
         'Rough Zone': 'purple',
         'Part Load': 'cyan',
@@ -454,7 +479,7 @@
     const labelMapaddti = {
         'Unit Shut Down': '',
         'Start-Up and Shutdown Process': '',
-        'Speed No Load': '', 
+        'Speed No Load': '',
         'Low Load': '(1 - 20 MW)',
         'Rough Zone': '(20 - 40 MW)',
         'Part Load': '(40 - 50 MW)',
@@ -506,11 +531,18 @@
             noe_metric = "noe";
         }
 
+        function setTimelineHeight() {
+            document.getElementById('timeline-container').style.height = window.innerHeight * 0.42 + 'px';
+            document.getElementById('timeline-container-grid').style.height = window.innerHeight * 0.2 + 'px';
+        }
+        setTimelineHeight();
+        window.addEventListener('resize', setTimelineHeight);
+
         $.ajax({
             type: "GET",
             dataType: "json",
             url: "/api/zone_distributionTimeline",
-            data: { start_date: start_date_dist, end_date: end_date_dist, tags: tags},
+            data: { start_date: start_date_dist, end_date: end_date_dist, tags: tags },
             success: function (data) {
                 console.log(data)
                 setTimeout(() => {
