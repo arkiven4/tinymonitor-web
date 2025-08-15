@@ -33,7 +33,8 @@ def panel_summary(request):
 def zone_distribution(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
-    tags = request.GET.get('tags').split(",") or None
+    tags_param = request.GET.get('tags')
+    tags = tags_param.split(",") if tags_param else None
 
     operation_mode, operation_zone = helper_fun.get_OperationDistribution(
         start_date, end_date, tags)
@@ -49,7 +50,8 @@ def zone_distribution(request):
 def zone_distributionTimeline(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
-    tags = request.GET.get('tags').split(",") or None
+    tags_param = request.GET.get('tags')
+    tags = tags_param.split(",") if tags_param else None
 
     data_timestamp, load_datas, grid_datas = helper_fun.get_OperationDistributionTimeline(
         start_date, end_date, tags)
@@ -81,7 +83,8 @@ def unitStatus(request):
 def kpi(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
-    tags = request.GET.get('tags').split(",") or None
+    tags_param = request.GET.get('tags')
+    tags = tags_param.split(",") if tags_param else None
     noe_metric = request.GET.get('noe_metric') or "noe"
 
     kpi_datas = helper_fun.get_KPIData(
