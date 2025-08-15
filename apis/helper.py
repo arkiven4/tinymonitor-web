@@ -79,8 +79,7 @@ def get_FixedDate(start_date=None, end_date=None, ignore=False):
     except:
         datetime_last = commons.get_LastdateLastRow(
             settings.MONITORINGDB_PATH + "db/original_data.db")
-        start_date = (datetime_last - timedelta(hours=2)
-                      ).strftime("%Y-%m-%dT%H:%M:%S")
+        start_date = (datetime_last - timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%S")
         end_date = datetime_last.strftime("%Y-%m-%dT%H:%M:%S")
 
     return start_date, end_date
@@ -307,66 +306,80 @@ def get_KPIData(start_date=None, end_date=None, units=None, noe_metric="noe"):
     return kpi_results
 
 
-def get_SeverityNLoss(start_date=None, end_date=None):
-    start_date, end_date = get_FixedDate(start_date, end_date)
+import time
+import numpy as np
 
+def get_SeverityNLoss(start_date=None, end_date=None):
+    timings = {}
+
+    t0 = time.perf_counter()
+    start_date, end_date = get_FixedDate(start_date, end_date)
+    timings['date_setup'] = time.perf_counter() - t0
+
+    t1 = time.perf_counter()
     threshold_percentages = {}
     threshold_percentages_sorted = {}
-    for idx_model, (model_name) in enumerate(commons.model_array):
+    for idx_model, model_name in enumerate(commons.model_array):
         now_fetched = commons.fetch_between_dates(
             start_date, end_date, settings.MONITORINGDB_PATH + "db/threshold_data.db", model_name)[-1, 2:]
 
-        threshold_pass = {}
-        for idx_sensor, sensor_thre in enumerate(now_fetched):
-            threshold_pass[commons.feature_set[idx_sensor]
-                           ] = float(sensor_thre)
+        threshold_pass = {commons.feature_set[idx_sensor]: float(sensor_thre)
+                          for idx_sensor, sensor_thre in enumerate(now_fetched)}
 
         threshold_percentages_sorted[idx_model] = dict(
             sorted(threshold_pass.items(), key=lambda item: item[1], reverse=True)[:10])
         threshold_percentages[idx_model] = threshold_pass
+    timings['fetch_thresholds'] = time.perf_counter() - t1
 
+    t2 = time.perf_counter()
     temp_original_data = commons.fetch_between_dates(
         start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "original_data")
-    df_timestamp, df_feature = temp_original_data[:, 1], temp_original_data[:, 2:].astype(
-        np.float16)
+    df_timestamp, df_feature = temp_original_data[:, 1], temp_original_data[:, 2:].astype(np.float16)
+    timings['fetch_original_data'] = time.perf_counter() - t2
 
+    t3 = time.perf_counter()
     temp_ypreds = {}
-    for idx_model, (model_name) in enumerate(commons.model_array):
-        temp_ypreds[idx_model] = commons.fetch_between_dates(
-            start_date, end_date, settings.MONITORINGDB_PATH + "db/pred_data.db", model_name)[:, 2:].astype(np.float16)
+    for idx_model, model_name in enumerate(commons.model_array):
+        temp_ypreds[idx_model] = commons.fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/pred_data.db", model_name)[:, 2:].astype(np.float16)
+    timings['fetch_predictions'] = time.perf_counter() - t3
 
-    counter_feature_s2, counter_feature_plot = commons.calc_counterPercentage(
-        threshold_percentages_sorted)
+    t4 = time.perf_counter()
+    counter_feature_s2, counter_feature_plot = commons.calc_counterPercentage(threshold_percentages_sorted)
+    timings['calc_counterPercentage'] = time.perf_counter() - t4
+
+    t5 = time.perf_counter()
     df_feature_send = []
     y_pred_send = []
     loss_send = []
     thr_now_model = []
 
-    feature_index_list = [commons.feature_set.index(
-        feat_name) for feat_name in list(counter_feature_s2.keys())]
-    for idx, (feature_index_now) in enumerate(feature_index_list[:4]):
+    feature_index_list = [commons.feature_set.index(feat_name) for feat_name in list(counter_feature_s2.keys())]
+    for idx, feature_index_now in enumerate(feature_index_list[:4]):
         model_idx_highest = counter_feature_plot[commons.feature_set[feature_index_now]]
 
         y_true, _, _ = commons.normalize3(df_feature, min_a, max_a)
-        y_pred, _, _ = commons.normalize3(
-            temp_ypreds[model_idx_highest], min_a, max_a)
+        y_pred, _, _ = commons.normalize3(temp_ypreds[model_idx_highest], min_a, max_a)
 
         loss = commons.denormalize3((y_true - y_pred) ** 2, min_a, max_a)
-        model_thr_temp = commons.denormalize3(
-            model_thr[commons.model_array[model_idx_highest]], min_a, max_a)
+        model_thr_temp = commons.denormalize3(model_thr[commons.model_array[model_idx_highest]], min_a, max_a)
 
         loss_send.append(loss[:, feature_index_now])
         thr_now_model.append(float(model_thr_temp[feature_index_now]))
 
         df_feature_send.append(df_feature[:, feature_index_now])
-        y_pred_send.append(
-            temp_ypreds[model_idx_highest][:, feature_index_now])
+        y_pred_send.append(temp_ypreds[model_idx_highest][:, feature_index_now])
 
     df_feature_send = np.vstack(df_feature_send).T
     y_pred_send = np.vstack(y_pred_send).T
     loss_send = np.vstack(loss_send).T
+    timings['feature_processing'] = time.perf_counter() - t5
+
+    # Print timing results
+    for step, duration in timings.items():
+        print(f"{step}: {duration:.4f} sec")
 
     return counter_feature_s2, df_timestamp, df_feature_send, y_pred_send, loss_send, thr_now_model
+
 
 
 def get_top10Charts(start_date, end_date):
