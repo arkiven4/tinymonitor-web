@@ -162,7 +162,7 @@ def get_PanelSummary(start_date=None, end_date=None):
 
 def get_OperationDistribution(start_date=None, end_date=None, units=None):
     if units == None:
-        units = 'LGS1'
+        units = ['LGS1']
 
     operation_mode = commons.process_operationMode(
         start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", units[0] + "_timeline")
@@ -174,7 +174,7 @@ def get_OperationDistribution(start_date=None, end_date=None, units=None):
 
 def get_OperationDistributionTimeline(start_date=None, end_date=None, units=None):
     if units == None:
-        units = 'LGS1'
+        units = ['LGS1']
 
     sensor_datas = commons.fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", units[0] + "_timeline")
 
