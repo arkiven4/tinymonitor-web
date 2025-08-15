@@ -33,9 +33,10 @@ def panel_summary(request):
 def zone_distribution(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
+    tags = request.GET.get('tags').split(",") or None
 
     operation_mode, operation_zone = helper_fun.get_OperationDistribution(
-        start_date, end_date)
+        start_date, end_date, tags)
 
     data = {
         'operation_mode': dict(operation_mode),
@@ -48,14 +49,30 @@ def zone_distribution(request):
 def zone_distributionTimeline(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
+    tags = request.GET.get('tags').split(",") or None
 
     data_timestamp, load_datas, grid_datas = helper_fun.get_OperationDistributionTimeline(
-        start_date, end_date)
+        start_date, end_date, tags)
 
     data = {
         'data_timestamp': data_timestamp,
         'load_datas': load_datas,
         'grid_datas': grid_datas,
+    }
+
+    return Response(data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def unitStatus(request):
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    tags = ['LGS1', 'LGS2', 'LGS3', 'BGS1', 'BGS2', 'KGS1', 'KGS2']
+
+    status_dict = helper_fun.get_units_status(
+        start_date, end_date, tags)
+
+    data = {
+        'status_dict': status_dict,
     }
 
     return Response(data, status=status.HTTP_200_OK)

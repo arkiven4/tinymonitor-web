@@ -51,6 +51,7 @@
             </div>
             <div id="reportrange_right" class="pull-left"
                 style="background: #fff; cursor: pointer; padding: 5px 10px; margin-left: 5px; display: flex; align-items: center; gap: 10px; justify-content: space-between;">
+
                 <!-- Group Checkboxes -->
                 <div class="form-check form-check-inline">
                     <input class="form-check-input group-checkbox" type="checkbox" id="group_Larona"
@@ -78,6 +79,17 @@
                         Karebbe: ["KGS1", "KGS2"]
                     };
 
+                    // Hardcoded status for now
+                    const tagStatus = {
+                        LGS1: "alive",
+                        LGS2: "shutdown",
+                        LGS3: "alive",
+                        BGS1: "shutdown",
+                        BGS2: "alive",
+                        KGS1: "alive",
+                        KGS2: "shutdown"
+                    };
+
                     const tagContainer = document.getElementById("tagCheckboxes");
 
                     // Generate tag checkboxes dynamically
@@ -86,9 +98,12 @@
                         const wrapper = document.createElement("div");
                         wrapper.classList.add("form-check", "form-check-inline");
 
+                        const status = tagStatus[tag];
+                        const color = status === "alive" ? "green" : "red";
+
                         wrapper.innerHTML = `
                 <input class="form-check-input tag-checkbox" type="checkbox" id="tag_${tag}" value="${tag}">
-                <label class="form-check-label" for="tag_${tag}">${tag}</label>
+                <label class="form-check-label" for="tag_${tag}" style="color:${color}">${tag} (${status})</label>
             `;
                         tagContainer.appendChild(wrapper);
                     });
@@ -112,7 +127,6 @@
                             });
                         }
 
-                        // Sync group checkbox states
                         groupCheckboxes.forEach(groupCB => {
                             const group = groupCB.dataset.group;
                             const groupTags = tagMap[group];
@@ -145,7 +159,6 @@
                     }
 
                     function handleTagCheckboxChange() {
-                        // Update group checkboxes based on tag state
                         groupCheckboxes.forEach(groupCB => {
                             const group = groupCB.dataset.group;
                             const groupTags = tagMap[group];
@@ -163,11 +176,11 @@
                         cb.addEventListener("change", handleTagCheckboxChange);
                     });
 
-                    // Initialize
                     const urlTags = getURLTags();
                     setCheckboxStatesFromURL(urlTags);
                 </script>
             </div>
+
 
         </div>
     </div>
@@ -434,6 +447,27 @@
         $.ajax({
             type: "GET",
             dataType: "json",
+            url: "/api/unitStatus",
+            data: { start_date: start_date, end_date: end_date },
+            success: function (data) {
+                console.log(data.status_dict)
+                Object.keys(data.status_dict).forEach(tag => {
+                    console.log(tag)
+                    const status = data.status_dict[tag];
+                    const color = status === "alive" ? "green" : "red";
+
+                    const label = document.querySelector(`label[for='tag_${tag}']`);
+                    if (label) {
+                        label.textContent = `${tag} (${status})`;
+                        label.style.color = color;
+                    }
+                });
+            }
+        })
+
+        $.ajax({
+            type: "GET",
+            dataType: "json",
             url: "/api/kpi",
             data: { start_date: start_date, end_date: end_date, tags: tags, noe_metric: noe_metric },
             success: function (data) {
@@ -609,9 +643,9 @@
                     for (let i = 0; i < lpd.length; i++) {
                         const total = lpd[i] + bpd[i] + kpd[i];
 
-                        lpd_pct.push((lpd[i] / total) * 100);
-                        bpd_pct.push((bpd[i] / total) * 100);
-                        kpd_pct.push((kpd[i] / total) * 100);
+                        lpd_pct.push(lpd[i]);//lpd_pct.push((lpd[i] / total) * 100);
+                        bpd_pct.push(bpd[i]);
+                        kpd_pct.push(kpd[i]);
                     }
 
                     line_chart2 = new Chart(document.getElementById(`production_trendchart`).getContext('2d'), {
@@ -666,10 +700,10 @@
                                 y: {
                                     title: {
                                         display: true,
-                                        text: "Percentage (%)"
+                                        text: "MWh"
                                     },
-                                    min: 0,
-                                    max: 100
+                                    // min: 0,
+                                    // max: 100
                                 }
                             },
                             plugins: {
@@ -823,8 +857,8 @@
                     for (let i = 0; i < combinedData.aux_0.length; i++) {
                         const total = combinedData.aux_0[i] + combinedData.aux_1[i];
 
-                        aux0_pct.push((combinedData.aux_0[i] / total) * 100);
-                        aux1_pct.push((combinedData.aux_1[i] / total) * 100);
+                        aux0_pct.push(combinedData.aux_0[i]) //aux0_pct.push((combinedData.aux_0[i] / total) * 100);
+                        aux1_pct.push(combinedData.aux_1[i]);
                     }
 
                     line_chart3 = new Chart(document.getElementById(`grid_trendchart`).getContext('2d'), {
@@ -871,10 +905,10 @@
                                 y: {
                                     title: {
                                         display: true,
-                                        text: "Percentage (%)"
+                                        text: "Count"
                                     },
-                                    min: 0,
-                                    max: 100
+                                    // min: 0,
+                                    // max: 100
                                 }
                             },
                             plugins: {

@@ -31,6 +31,35 @@ with open('param_statistic.pickle', 'rb') as handle:
 with open('correlation.pickle', 'rb') as handle:
     correlation_param = pickle.load(handle)  # (4, 30)
 
+def calculate_priority(parameter_name, recap_severity, current_severity, equipment_critical_list):
+    o = recap_severity['Level'] * recap_severity['Proportion']
+    o = np.sum(o)
+    s = current_severity
+    if parameter_name in equipment_critical_list:
+        c = 2
+    else:
+        c = 1
+
+    p = o * s * c
+    return p
+
+recap_severity = pd.DataFrame({'Level': [1, 2, 3, 4, 5, 6], 'Proportion': [0.2, 0.1, 0.1, 0.5, 0.1, 0]})
+equipment_critical_list = [
+    'UGB X Displacement',
+    'UGB Y Displacement',
+    'LGB X Displacement',
+    'LGB Y Displacement',
+    'TGB X Displacement',
+    'TGB Y Displacement',
+    'Governor Actual Speed',
+    'TGB Temperature',
+    'Stator Winding Temperature 13',
+    'Stator Winding Temperature 14',
+    'Stator Winding Temperature 15',
+    'Penstock Pressure',
+    'UGB Metal Air Outlet Temperature'
+]
+
 #########################################################
 #
 # Main Function For Web
@@ -55,7 +84,6 @@ def get_FixedDate(start_date=None, end_date=None, ignore=False):
         end_date = datetime_last.strftime("%Y-%m-%dT%H:%M:%S")
 
     return start_date, end_date
-
 
 def get_PanelSummary(start_date=None, end_date=None):
     start_date, end_date = get_FixedDate(start_date, end_date)
@@ -108,64 +136,105 @@ def get_PanelSummary(start_date=None, end_date=None):
     severtrend_datas = severtrend_datas[:, 2:].astype(float)
     sensor_datas = sensor_datas[:, 2:].astype(float)
     priority_parameter = {}
-    datetime_index = pd.to_datetime(data_timestamp)
     for idx, feature_name in enumerate(commons.feature_set):
-        series = pd.Series(
-            severtrend_datas[:, idx], index=datetime_index)
-        if len(series) >= 400:
-            series = series[~series.index.duplicated(keep='first')]
-            series = series.asfreq('15min').ffill()
-            result = seasonal_decompose(
-                series, model='additive', period=96 * 2)
-            trend = result.trend.dropna()
-            x = np.arange(len(trend))
-            corr, _ = spearmanr(x, trend)
-            if np.isnan(corr) or np.isinf(corr):
-                corr = 0
-            if corr <= 0:
-                priority_parameter[feature_name] = float((corr + 1) * 25)
-            else:
-                priority_parameter[feature_name] = float(25 + corr * 75)
-        else:
-            priority_parameter[feature_name] = float(1)
+        current_severity = commons.percentage2severity(float(severtrend_datas[:, idx].mean()))
+        priority = calculate_priority(feature_name, recap_severity, current_severity, equipment_critical_list)
+        priority_parameter[feature_name] = float(priority)
+        # if len(series) >= 400:
+        #     series = series[~series.index.duplicated(keep='first')]
+        #     series = series.asfreq('15min').ffill()
+        #     result = seasonal_decompose(
+        #         series, model='additive', period=96 * 2)
+        #     trend = result.trend.dropna()
+        #     x = np.arange(len(trend))
+        #     corr, _ = spearmanr(x, trend)
+        #     if np.isnan(corr) or np.isinf(corr):
+        #         corr = 0
+        #     if corr <= 0:
+        #         priority_parameter[feature_name] = float((corr + 1) * 25)
+        #     else:
+        #         priority_parameter[feature_name] = float(25 + corr * 75)
+        # else:
+        #     priority_parameter[feature_name] = float(1)
 
     return data_timestamp[-1], last_sensor_featname, sensor_featname, last_severity_featname, sever_featname, ordered_feature_name, sever_count_featname, priority_parameter
 
 
-def get_OperationDistribution(start_date=None, end_date=None):
+def get_OperationDistribution(start_date=None, end_date=None, units=None):
+    if units == None:
+        units = 'LGS1'
+
     operation_mode = commons.process_operationMode(
-        start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "additional_original_data")
+        start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", units[0] + "_timeline")
     operation_zone = commons.process_operationZone(
-        start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "original_data")
+        start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", units[0] + "_timeline")
 
     return operation_mode, operation_zone
 
 
 def get_OperationDistributionTimeline(start_date=None, end_date=None, units=None):
     if units == None:
-        units = ['LGS1', 'LGS2', 'LGS3', 'BGS1', 'BGS2', 'KGS1', 'KGS2']
+        units = 'LGS1'
 
-    grid_datas = commons.fetch_between_dates(
-        start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "additional_original_data")
-    sensor_datas = commons.fetch_between_dates(
-        start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "original_data")
+    sensor_datas = commons.fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", units[0] + "_timeline")
 
     data_timestamp = sensor_datas[:, 1]
     sensor_datas = sensor_datas[:, 2:].astype(float)
     activepow_data = sensor_datas[:, 0].astype(float)
-    rpm_data = sensor_datas[:, 2].astype(float)
-    grid_datas = grid_datas[:, 2].astype(float)
+    rpm_data = sensor_datas[:, 1].astype(float)
     df = pd.DataFrame({
         'Timestap': data_timestamp,
         'Active Power': activepow_data,
         'Governor speed actual': rpm_data
     })
-    #print(df)
+    aux_1 = sensor_datas[:, 3].astype(float)
     df['Load Label'] = df.apply(commons.label_load, axis=1)
     df['Load Code'] = df['Load Label'].map(commons.label_to_code)
     #df = df[df['Load Code'] != df['Load Code'].shift()].reset_index(drop=True)
-    return df['Timestap'].values, df['Load Code'].values, grid_datas
+    return df['Timestap'].values, df['Load Code'].values, aux_1
 
+def get_unit_status(start_date=None, end_date=None, unit='LGS1'):
+    """
+    Returns 'alive' or 'shutdown' for a single unit based on its latest Load Code.
+    """
+    # Fetch sensor data
+    sensor_datas = commons.fetch_between_dates(
+        start_date, end_date,
+        settings.MONITORINGDB_PATH + "db/kpi.db",
+        unit + "_timeline"
+    )
+
+    if sensor_datas.shape[0] == 0:
+        return "shutdown"  # no data -> assume shutdown
+
+    data_timestamp = sensor_datas[:, 1]
+    sensor_datas = sensor_datas[:, 2:].astype(float)
+    activepow_data = sensor_datas[:, 0]
+    rpm_data = sensor_datas[:, 1]
+
+    df = pd.DataFrame({
+        'Timestap': data_timestamp,
+        'Active Power': activepow_data,
+        'Governor speed actual': rpm_data
+    })
+
+    # Add Load Label and Load Code
+    df['Load Label'] = df.apply(commons.label_load, axis=1)
+    df['Load Code'] = df['Load Label'].map(commons.label_to_code)
+    latest_code = df['Load Code'].iloc[-1]
+
+    return "shutdown" if latest_code == 0 else "alive"
+
+def get_units_status(start_date=None, end_date=None, units=None):
+    """
+    labels_dict: dict of unit -> Load Label
+        e.g., {'LGS1': 'Efficient Load', 'LGS2': 'Shutdown'}
+    Returns dict of unit -> status ('alive' or 'shutdown')
+    """
+    status_dict = {}
+    for unit in units:
+        status_dict[unit] = get_unit_status(start_date=start_date, end_date=end_date, unit='LGS1')
+    return status_dict
 
 def get_KPIData(start_date=None, end_date=None, units=None, noe_metric="noe"):
     if units == None:
