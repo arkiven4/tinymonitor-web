@@ -40,19 +40,19 @@ def label_load(row):
     rpm = row['Governor speed actual']
     if ap < 1 and rpm < 1:
         return 'Shutdown'
-    elif ap < 3 and rpm < 250:
+    elif ap < 3 and rpm < 200:
         return 'Warming'
-    elif ap < 3 and rpm > 250:
+    elif ap < 3 and rpm > 200:
         return 'No Load'
-    elif 1 <= ap < 20 and rpm > 250:
+    elif 1 <= ap < 20 and rpm > 200:
         return 'Low Load'
-    elif 20 <= ap < 40 and rpm > 250:
+    elif 20 <= ap < 40 and rpm > 200:
         return 'Rough Zone'
-    elif 40 <= ap < 50 and rpm > 250:
+    elif 40 <= ap < 50 and rpm > 200:
         return 'Part Load'
-    elif 50 <= ap < 65 and rpm > 250:
+    elif 50 <= ap < 65 and rpm > 200:
         return 'Efficient Load'
-    elif ap >= 65 and rpm > 250:
+    elif ap >= 65 and rpm > 200:
         return 'High Load'
     else:
         return 'Undefined'
