@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    "whitenoise.runserver_nostatic",
+    #"whitenoise.runserver_nostatic",
     'django.contrib.staticfiles',
     'rest_framework'    
 ]
@@ -138,4 +138,4 @@ if DEBUG:
     INSTALLED_APPS = INSTALLED_APPS + ["django_browser_reload"]
     MIDDLEWARE = MIDDLEWARE + ["django_browser_reload.middleware.BrowserReloadMiddleware"]
     MONITORINGDB_PATH = ""
-#MONITORINGDB_PATH = "D:\\ITSTeam\\NewGen\cbm_vale\\"
+MONITORINGDB_PATH = "D:\\ITSTeam\\NewGen\cbm_vale\\"
