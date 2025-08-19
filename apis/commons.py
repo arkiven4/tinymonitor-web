@@ -85,6 +85,9 @@ def fetch_last_rows(num_row, db_name="data.db", table_name="sensor_data"):
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
+    cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.execute("PRAGMA synchronous=NORMAL;")
+
     cursor.execute(f"""
         SELECT * FROM {table_name} ORDER BY timestamp DESC LIMIT ?
     """, (num_row,))
