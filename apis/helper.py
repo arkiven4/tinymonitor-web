@@ -320,8 +320,7 @@ def get_SeverityNLoss(start_date=None, end_date=None):
     threshold_percentages = {}
     threshold_percentages_sorted = {}
     for idx_model, model_name in enumerate(commons.model_array):
-        now_fetched = commons.fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/threshold_data.db", model_name)[-1, 2:]
-
+        now_fetched = commons.fetch_last_rows(1, settings.MONITORINGDB_PATH + "db/threshold_data.db", model_name)[-1, 2:]
         threshold_pass = {commons.feature_set[idx_sensor]: float(sensor_thre)
                           for idx_sensor, sensor_thre in enumerate(now_fetched)}
 
