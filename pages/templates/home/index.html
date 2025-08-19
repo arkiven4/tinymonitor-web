@@ -188,125 +188,125 @@
         var end_date = nowDateMoment.format("YYYY-MM-DDTHH:mm:ss");
         var start_date = nowDateMoment.subtract(1, 'hours').format("YYYY-MM-DDTHH:mm:ss");
 
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url: "/api/severity_plot",
-            data: { start_date: start_date, end_date: end_date },
-            success: function (data) {
-                let [timestamps, predictions, originalData, lossData,
-                    severityData, severityLabels, severityValues, severityCounts, colors] = parseData_fromserver(data)
+        // $.ajax({
+        //     type: "GET",
+        //     dataType: "json",
+        //     url: "/api/severity_plot",
+        //     data: { start_date: start_date, end_date: end_date },
+        //     success: function (data) {
+        //         let [timestamps, predictions, originalData, lossData,
+        //             severityData, severityLabels, severityValues, severityCounts, colors] = parseData_fromserver(data)
 
-                var copy_timestamp = timestamps.map(ts => new Date(ts));
-                document.getElementById("current-time").textContent = new Date().toLocaleString(); 
-                const lastUpdate = copy_timestamp[copy_timestamp.length - 1];
-                document.getElementById("last-update").textContent = lastUpdate.toLocaleString();
-                const nextUpdate = new Date(copy_timestamp[0].getTime() + 15 * 60 * 1000);
-                document.getElementById("next-update").textContent = nextUpdate.toLocaleString();
+        //         var copy_timestamp = timestamps.map(ts => new Date(ts));
+        //         document.getElementById("current-time").textContent = new Date().toLocaleString(); 
+        //         const lastUpdate = copy_timestamp[copy_timestamp.length - 1];
+        //         document.getElementById("last-update").textContent = lastUpdate.toLocaleString();
+        //         const nextUpdate = new Date(copy_timestamp[0].getTime() + 15 * 60 * 1000);
+        //         document.getElementById("next-update").textContent = nextUpdate.toLocaleString();
 
-                // Line Charts
-                severityLabels.slice(0, 4).forEach((feature, idx) => {
-                    chart_array.push(new Chart(document.getElementById(`lineChart${idx + 1}`).getContext('2d'), {
-                        type: 'line',
-                        data: {
-                            labels: timestamps,
-                            datasets: [{ label: "Original", data: originalData.map(row => row[idx]), backgroundColor: "red", borderColor: "red", fill: false },
-                            { label: "Prediction", data: predictions.map(row => row[idx]), backgroundColor: "blue", borderColor: "blue", fill: false }]
-                        },
-                        options: {
-                            responsive: true,
-                            animation: { duration: 500 },
-                            plugins: { legend: { display: true }, title: { display: true, text: feature } },
-                            scales: {
-                                x: xChartLineFormat,
-                                y: {
-                                    title: { display: true, text: unitSet[featureSet.indexOf(feature)] }
-                                }
-                            }
-                        }
-                    }));
+        //         // Line Charts
+        //         severityLabels.slice(0, 4).forEach((feature, idx) => {
+        //             chart_array.push(new Chart(document.getElementById(`lineChart${idx + 1}`).getContext('2d'), {
+        //                 type: 'line',
+        //                 data: {
+        //                     labels: timestamps,
+        //                     datasets: [{ label: "Original", data: originalData.map(row => row[idx]), backgroundColor: "red", borderColor: "red", fill: false },
+        //                     { label: "Prediction", data: predictions.map(row => row[idx]), backgroundColor: "blue", borderColor: "blue", fill: false }]
+        //                 },
+        //                 options: {
+        //                     responsive: true,
+        //                     animation: { duration: 500 },
+        //                     plugins: { legend: { display: true }, title: { display: true, text: feature } },
+        //                     scales: {
+        //                         x: xChartLineFormat,
+        //                         y: {
+        //                             title: { display: true, text: unitSet[featureSet.indexOf(feature)] }
+        //                         }
+        //                     }
+        //                 }
+        //             }));
 
-                    losschart_array.push(new Chart(document.getElementById(`losslineChart${idx + 1}`).getContext('2d'), {
-                        type: 'line',
-                        data: {
-                            labels: timestamps,
-                            datasets: [{ label: "Loss", data: lossData.map(row => row[idx]), backgroundColor: "black", borderColor: "black", fill: false }]
-                        },
-                        options: {
-                            responsive: true,
-                            animation: { duration: 500 },
-                            plugins: {
-                                legend: { display: true }, title: { display: true, text: feature },
-                                annotation: {
-                                    annotations: [{
-                                        type: 'line',
-                                        yMin: data.thr_now_model[idx],
-                                        yMax: data.thr_now_model[idx],
-                                        borderColor: 'red',
-                                        borderWidth: 3,
-                                        label: {
-                                            display: true,
-                                            position: 'center',
-                                            content: "Threshold",
-                                            drawTime: 'afterDatasetsDraw',
-                                        }
-                                    }]
-                                }
-                            },
-                            scales: {
-                                x: xChartLineFormat,
-                                y: {
-                                    title: { display: true, text: unitSet[featureSet.indexOf(feature)] }
-                                }
-                            }
-                        },
-                    }));
-                });
+        //             losschart_array.push(new Chart(document.getElementById(`losslineChart${idx + 1}`).getContext('2d'), {
+        //                 type: 'line',
+        //                 data: {
+        //                     labels: timestamps,
+        //                     datasets: [{ label: "Loss", data: lossData.map(row => row[idx]), backgroundColor: "black", borderColor: "black", fill: false }]
+        //                 },
+        //                 options: {
+        //                     responsive: true,
+        //                     animation: { duration: 500 },
+        //                     plugins: {
+        //                         legend: { display: true }, title: { display: true, text: feature },
+        //                         annotation: {
+        //                             annotations: [{
+        //                                 type: 'line',
+        //                                 yMin: data.thr_now_model[idx],
+        //                                 yMax: data.thr_now_model[idx],
+        //                                 borderColor: 'red',
+        //                                 borderWidth: 3,
+        //                                 label: {
+        //                                     display: true,
+        //                                     position: 'center',
+        //                                     content: "Threshold",
+        //                                     drawTime: 'afterDatasetsDraw',
+        //                                 }
+        //                             }]
+        //                         }
+        //                     },
+        //                     scales: {
+        //                         x: xChartLineFormat,
+        //                         y: {
+        //                             title: { display: true, text: unitSet[featureSet.indexOf(feature)] }
+        //                         }
+        //                     }
+        //                 },
+        //             }));
+        //         });
 
-                // Bar Chart
-                barchart = new Chart(document.getElementById("barChart").getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: severityLabels,
-                        datasets: [{
-                            label: "Severity",
-                            data: severityValues,
-                            count: severityCounts,
-                            backgroundColor: colors
-                        }]
-                    },
-                    options: {
-                        responsive: false,
-                        indexAxis: 'y',
-                        animation: { duration: 500 },
-                        scales: {
-                            x: { suggestedMin: 0, suggestedMax: 7, grid: { display: true, } }
-                        },
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: { enabled: true },
-                            datalabels: {
-                                anchor: 'center',
-                                align: 'center',
-                                color: 'white',
-                                font: { weight: 'bold' },
-                                formatter: (value, context) => {
-                                    return context.dataset.count[context.dataIndex];
-                                }
-                            }
-                        },
-                        onClick: (event, elements) => {
-                            if (elements.length > 0) {
-                                const index = elements[0].index;
-                                const selectedFeature = severityLabels[index];
-                                alert(`You clicked on ${selectedFeature}`);
-                            }
-                        }
-                    },
-                    plugins: [ChartDataLabels]
-                });
-            }
-        });
+        //         // Bar Chart
+        //         barchart = new Chart(document.getElementById("barChart").getContext('2d'), {
+        //             type: 'bar',
+        //             data: {
+        //                 labels: severityLabels,
+        //                 datasets: [{
+        //                     label: "Severity",
+        //                     data: severityValues,
+        //                     count: severityCounts,
+        //                     backgroundColor: colors
+        //                 }]
+        //             },
+        //             options: {
+        //                 responsive: false,
+        //                 indexAxis: 'y',
+        //                 animation: { duration: 500 },
+        //                 scales: {
+        //                     x: { suggestedMin: 0, suggestedMax: 7, grid: { display: true, } }
+        //                 },
+        //                 plugins: {
+        //                     legend: { display: false },
+        //                     tooltip: { enabled: true },
+        //                     datalabels: {
+        //                         anchor: 'center',
+        //                         align: 'center',
+        //                         color: 'white',
+        //                         font: { weight: 'bold' },
+        //                         formatter: (value, context) => {
+        //                             return context.dataset.count[context.dataIndex];
+        //                         }
+        //                     }
+        //                 },
+        //                 onClick: (event, elements) => {
+        //                     if (elements.length > 0) {
+        //                         const index = elements[0].index;
+        //                         const selectedFeature = severityLabels[index];
+        //                         alert(`You clicked on ${selectedFeature}`);
+        //                     }
+        //                 }
+        //             },
+        //             plugins: [ChartDataLabels]
+        //         });
+        //     }
+        // });
 
         setInterval(() => {
             location.reload();
