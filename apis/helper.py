@@ -139,23 +139,6 @@ def get_PanelSummary(start_date=None, end_date=None):
         current_severity = commons.percentage2severity(float(severtrend_datas[:, idx].mean()))
         priority = calculate_priority(feature_name, recap_severity, current_severity, equipment_critical_list)
         priority_parameter[feature_name] = float(priority)
-        # if len(series) >= 400:
-        #     series = series[~series.index.duplicated(keep='first')]
-        #     series = series.asfreq('15min').ffill()
-        #     result = seasonal_decompose(
-        #         series, model='additive', period=96 * 2)
-        #     trend = result.trend.dropna()
-        #     x = np.arange(len(trend))
-        #     corr, _ = spearmanr(x, trend)
-        #     if np.isnan(corr) or np.isinf(corr):
-        #         corr = 0
-        #     if corr <= 0:
-        #         priority_parameter[feature_name] = float((corr + 1) * 25)
-        #     else:
-        #         priority_parameter[feature_name] = float(25 + corr * 75)
-        # else:
-        #     priority_parameter[feature_name] = float(1)
-
     return data_timestamp[-1], last_sensor_featname, sensor_featname, last_severity_featname, sever_featname, ordered_feature_name, sever_count_featname, priority_parameter
 
 
@@ -458,27 +441,12 @@ def get_advisoryTable(start_date, end_date):  # 2529
     for i in range(len(commons.feature_set)):
         severity_trending_datas[:, i] = commons.hampel_filter(
             severity_trending_datas[:, i], window_size=93, n_sigmas=3)
+
     priority_parameter = {}
-    datetime_index = pd.to_datetime(data_timestamp)
     for idx, feature_name in enumerate(commons.feature_set):
-        series = pd.Series(
-            severity_trending_datas[:, idx], index=datetime_index)
-        if len(series) >= 400:
-            series = series[~series.index.duplicated(keep='first')]
-            series = series.asfreq('15min').ffill()
-            result = seasonal_decompose(
-                series, model='additive', period=96 * 2)
-            trend = result.trend.dropna()
-            x = np.arange(len(trend))
-            corr, _ = spearmanr(x, trend)
-            if np.isnan(corr) or np.isinf(corr):
-                corr = 0
-            if corr <= 0:
-                priority_parameter[feature_name] = float((corr + 1) * 25)
-            else:
-                priority_parameter[feature_name] = float(25 + corr * 75)
-        else:
-            priority_parameter[feature_name] = float(1)
+        current_severity = commons.percentage2severity(float(severity_trending_datas[:, idx].mean()))
+        priority = calculate_priority(feature_name, recap_severity, current_severity, equipment_critical_list)
+        priority_parameter[feature_name] = float(priority)
 
     raw_trending_datas = commons.fetch_between_dates(
         start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
