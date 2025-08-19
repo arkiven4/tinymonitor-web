@@ -14,6 +14,7 @@ from scipy.stats import spearmanr
 from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.gridspec import GridSpec
 from matplotlib.dates import DateFormatter
+import heapq
 
 from django.conf import settings
 import apis.commons as commons
@@ -317,18 +318,25 @@ def get_SeverityNLoss(start_date=None, end_date=None):
     timings['date_setup'] = time.perf_counter() - t0
 
     t1 = time.perf_counter()
+    conn = sqlite3.connect(settings.MONITORINGDB_PATH + "db/threshold_data.db")
+    cursor = conn.cursor()
     threshold_percentages = {}
     threshold_percentages_sorted = {}
     for idx_model, model_name in enumerate(commons.model_array):
-        now_fetched = commons.fetch_between_dates(
-            start_date, end_date, settings.MONITORINGDB_PATH + "db/threshold_data.db", model_name)[-1, 2:]
-
-        threshold_pass = {commons.feature_set[idx_sensor]: float(sensor_thre)
-                          for idx_sensor, sensor_thre in enumerate(now_fetched)}
-
+        row = commons.fetch_between_dates(cursor, start_date, end_date, model_name)
+        if row.size == 0:
+            continue
+        now_fetched = row[2:]  # already only one row
+        
+        threshold_pass = {
+            commons.feature_set[idx_sensor]: float(sensor_thre)
+            for idx_sensor, sensor_thre in enumerate(now_fetched)
+        }
         threshold_percentages_sorted[idx_model] = dict(
-            sorted(threshold_pass.items(), key=lambda item: item[1], reverse=True)[:10])
+            heapq.nlargest(10, threshold_pass.items(), key=lambda x: x[1])
+        )
         threshold_percentages[idx_model] = threshold_pass
+    conn.close()
     timings['fetch_thresholds'] = time.perf_counter() - t1
 
     t2 = time.perf_counter()
