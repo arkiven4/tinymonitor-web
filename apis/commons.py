@@ -81,6 +81,17 @@ def fetch_between_dates(start_date, end_date, db_name="data.db", table_name="sen
     
     return np.array(rows)
 
+def fetch_between_dates_cursor(cursor, start_date, end_date, db_name="data.db", table_name="sensor_data"):
+    cursor.execute(f"""
+        SELECT * FROM {table_name} WHERE timestamp BETWEEN ? AND ?
+    """, (start_date, end_date))
+    
+    rows = cursor.fetchall()
+    if not rows:
+        return np.array([])
+    
+    return np.array(rows)
+
 def fetch_last_rows(num_row, db_name="data.db", table_name="sensor_data"):
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
