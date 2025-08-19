@@ -323,7 +323,7 @@ def get_SeverityNLoss(start_date=None, end_date=None):
     threshold_percentages = {}
     threshold_percentages_sorted = {}
     for idx_model, model_name in enumerate(commons.model_array):
-        row = commons.fetch_between_dates(cursor, start_date, end_date, model_name)
+        row = commons.fetch_between_dates_cursor_last(cursor, start_date, end_date, model_name)
         if row.size == 0:
             continue
         now_fetched = row[2:]  # already only one row
