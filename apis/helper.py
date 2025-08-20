@@ -18,17 +18,17 @@ from matplotlib.dates import DateFormatter
 from django.conf import settings
 import apis.commons as commons
 
-with open('model_thr.pickle', 'rb') as handle:
+with open('precom_files/model_thr.pickle', 'rb') as handle:
     model_thr = pickle.load(handle)
 
-with open('normalize_2023.pickle', 'rb') as handle:
+with open('precom_files/normalize_2023.pickle', 'rb') as handle:
     normalize_obj = pickle.load(handle)
     min_a, max_a = normalize_obj['min_a'], normalize_obj['max_a']
 
-with open('param_statistic.pickle', 'rb') as handle:
+with open('precom_files/param_statistic.pickle', 'rb') as handle:
     param_statistic = pickle.load(handle)  # (4, 30)
 
-with open('correlation.pickle', 'rb') as handle:
+with open('precom_files/correlation.pickle', 'rb') as handle:
     correlation_param = pickle.load(handle)  # (4, 30)
 
 def calculate_priority(parameter_name, recap_severity, current_severity, equipment_critical_list):
