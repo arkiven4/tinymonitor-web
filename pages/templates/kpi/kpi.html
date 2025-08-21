@@ -40,6 +40,11 @@
     body {
         overflow: hidden;
     }
+
+    /* Option 2: force override */
+    .bg-success {
+        background-color: #007e7a !important;
+    }
 </style>
 <div class="row" id="chart_container">
     <div class="col-md-12 col-sm-12 px-0">
@@ -49,7 +54,7 @@
                 <i class="fa fa-calendar"></i>
                 <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
             </div>
-            <div id="reportrange_right" class="pull-left"
+            <div class="pull-left"
                 style="background: #fff; cursor: pointer; padding: 5px 10px; margin-left: 5px; display: flex; align-items: center; gap: 10px; justify-content: space-between;">
 
                 <!-- Group Checkboxes -->
@@ -81,13 +86,13 @@
 
                     // Hardcoded status for now
                     const tagStatus = {
-                        LGS1: "alive",
-                        LGS2: "shutdown",
-                        LGS3: "alive",
-                        BGS1: "shutdown",
-                        BGS2: "alive",
-                        KGS1: "alive",
-                        KGS2: "shutdown"
+                        LGS1: "checking",
+                        LGS2: "checking",
+                        LGS3: "checking",
+                        BGS1: "checking",
+                        BGS2: "checking",
+                        KGS1: "checking",
+                        KGS2: "checking"
                     };
 
                     const tagContainer = document.getElementById("tagCheckboxes");
@@ -416,6 +421,20 @@
         return colorMap[colorMap.length - 1][1];
     }
 
+    function aggregateData(data, maxPoints = 500) {
+        const n = data.length;
+        if (n <= maxPoints) return data;
+
+        const step = Math.ceil(n / maxPoints);
+        const aggregated = [];
+        for (let i = 0; i < n; i += step) {
+            const slice = data.slice(i, i + step);
+            const avg = slice.reduce((a, b) => a + b, 0) / slice.length;
+            aggregated.push(avg);
+        }
+        return aggregated;
+    }
+
     var kpiDatasets = [];
 
     $(document).ready(function () {
@@ -566,32 +585,80 @@
                                 },
                                 scales: {
                                     x: { display: false },
-                                    y: { display: false }
+                                    y: {
+                                        display: false,
+                                        min: 0,
+                                        max: 1
+                                    }
                                 }
                             }
                         });
                     }
 
+                    function aggregateDataWithTimestamps(data, timestamps, maxPoints = 100) {
+                        const n = data.length;
+                        if (n <= maxPoints) return { data, timestamps };
+
+                        const step = Math.ceil(n / maxPoints);
+                        const aggregatedData = [];
+                        const aggregatedTimestamps = [];
+
+                        for (let i = 0; i < n; i += step) {
+                            const slice = data.slice(i, i + step);
+                            const sliceTimestamps = timestamps.slice(i, i + step);
+
+                            // average the data
+                            const avg = slice.reduce((a, b) => a + b, 0) / slice.length;
+                            aggregatedData.push(avg);
+
+                            // pick the first timestamp (or midpoint)
+                            aggregatedTimestamps.push(sliceTimestamps[0]);
+                        }
+
+                        return { data: aggregatedData, timestamps: aggregatedTimestamps };
+                    }
+
+                    const agg = aggregateDataWithTimestamps(kpiDatasets[0].data, combinedData.data_timestamp);
+                    kpiDatasets[0].data = agg.data;
+                    const formattedLabels = agg.timestamps.map(ts => {
+                        const d = new Date(ts);
+                        return `${d.getDate().toString().padStart(2, '0')}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getFullYear()}`;
+                    });
+                    console.log(kpiDatasets[0].data)
                     line_chart1 = new Chart(document.getElementById(`kpi_trend_chart`).getContext('2d'), {
                         type: 'line',
                         data: {
-                            labels: combinedData.data_timestamp,
-                            datasets: [kpiDatasets[0]]
+                            labels: formattedLabels,
+                            datasets: [{
+                                ...kpiDatasets[0],
+                                borderColor: '#32635a',
+                                backgroundColor: '#32635a'
+                            }]
                         },
                         options: {
                             responsive: false,
                             scales: {
                                 x: {
-                                    type: 'time',
+                                    //type: 'time',
                                     time: {
-                                        unit: 'minute',
+                                        unit: 'auto',
                                         tooltipFormat: 'Do-MM-yyy',
-                                        displayFormats: { minute: 'Do-MM-yyy' }
+                                        displayFormats: {
+                                            millisecond: 'Do-MM-yyyy',
+                                            second: 'Do-MM-yyyy',
+                                            minute: 'Do-MM-yyyy',
+                                            hour: 'Do-MM-yyyy',
+                                            day: 'Do-MM-yyyy',
+                                            week: 'Do-MM-yyyy',
+                                            month: 'Do-MM-yyyy',
+                                            quarter: 'Do-MM-yyyy',
+                                            year: 'Do-MM-yyyy'
+                                        }
                                     },
                                     ticks: {
                                         minRotation: 0,
                                         maxTicksLimit: 7,
-                                        autoSkip: false,
+                                        autoSkip: true,
                                     },
                                     title: {
                                         display: true,
@@ -651,28 +718,28 @@
                     line_chart2 = new Chart(document.getElementById(`production_trendchart`).getContext('2d'), {
                         type: 'line',
                         data: {
-                            labels: data.plant.timestamp,
+                            labels: formattedLabels,
                             datasets: [{
                                 label: 'Larona',
                                 data: lpd_pct,
-                                backgroundColor: '#4CAF50',
-                                borderColor: '#4CAF50',
+                                backgroundColor: '#047f7c',
+                                borderColor: '#047f7c',
                                 tension: 0.4,
                                 pointRadius: 0,
                             },
                             {
                                 label: 'Balambano',
                                 data: bpd_pct,
-                                backgroundColor: '#FF5252',
-                                borderColor: '#FF5252',
+                                backgroundColor: '#08bc9d',
+                                borderColor: '#08bc9d',
                                 tension: 0.4,
                                 pointRadius: 0,
                             },
                             {
                                 label: 'Karebbe',
                                 data: kpd_pct,
-                                backgroundColor: '#FFC107',
-                                borderColor: '#FFC107',
+                                backgroundColor: '#41b4e0',
+                                borderColor: '#41b4e0',
                                 tension: 0.4,
                                 pointRadius: 0,
                             }]
@@ -681,7 +748,7 @@
                             responsive: false,
                             scales: {
                                 x: {
-                                    type: 'time',
+                                    //type: 'time',
                                     time: {
                                         unit: 'minute',
                                         tooltipFormat: 'DD-MM',
@@ -690,7 +757,7 @@
                                     ticks: {
                                         minRotation: 0,
                                         maxTicksLimit: 5,
-                                        autoSkip: false,
+                                        autoSkip: true,
                                     },
                                     title: {
                                         display: false,
@@ -864,20 +931,20 @@
                     line_chart3 = new Chart(document.getElementById(`grid_trendchart`).getContext('2d'), {
                         type: 'line',
                         data: {
-                            labels: combinedData.data_timestamp,
+                            labels: formattedLabels,
                             datasets: [{
                                 label: 'Aux',
                                 data: aux0_pct,
-                                borderColor: '#4CAF50',
-                                backgroundColor: '#4CAF50',
+                                borderColor: '#e8b62e',
+                                backgroundColor: '#e8b62e',
                                 tension: 0.4,
                                 pointRadius: 0,
                             },
                             {
                                 label: 'Furnace',
                                 data: aux1_pct,
-                                borderColor: '#FF5252',
-                                backgroundColor: '#FF5252',
+                                borderColor: '#c2386f',
+                                backgroundColor: '#c2386f',
                                 tension: 0.4,
                                 pointRadius: 0,
                             }]
@@ -886,7 +953,7 @@
                             responsive: false,
                             scales: {
                                 x: {
-                                    type: 'time',
+                                    //type: 'time',
                                     time: {
                                         unit: 'minute',
                                         tooltipFormat: 'DD-MM',
@@ -895,7 +962,7 @@
                                     ticks: {
                                         minRotation: 0,
                                         maxTicksLimit: 5,
-                                        autoSkip: false,
+                                        autoSkip: true,
                                     },
                                     title: {
                                         display: false,
@@ -934,20 +1001,15 @@
                             labels: data.noe.labels,  // Replace with df['Plant'].unique()
                             datasets: [
                                 {
-                                    label: 'CD',
-                                    data: data.noe.data.CD,  // Replace with category_counts['Electrical'].values.tolist()
-                                    backgroundColor: '#1f77b4'
+                                    label: 'PV & CD',
+                                    data: data.noe.data.CD + data.noe.data.PV,  // Replace with category_counts['Electrical'].values.tolist()
+                                    backgroundColor: '#007e7a'
                                 },
                                 {
                                     label: 'CR',
                                     data: data.noe.data.CR,
-                                    backgroundColor: '#ff7f0e'
+                                    backgroundColor: '#edb210'
                                 },
-                                {
-                                    label: 'PV',
-                                    data: data.noe.data.PV,
-                                    backgroundColor: '#2ca02c'
-                                }
                             ]
                         },
                         options: {
@@ -1014,9 +1076,9 @@
                             bar.innerHTML = `
                                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.2vh;">
                                     <strong style="white-space: nowrap;">${unit.toUpperCase()}</strong>
-                                    <div class="progress" style="flex: 1; height: 2.2vh; margin-bottom: 0px;">
+                                    <div class="progress" style="flex: 1; height: 2.2vh; margin-bottom: 0px; border-radius: 8px;">
                                         <div class="progress-bar ${getColorClassByValue(value)}" role="progressbar"
-                                            style="width: ${value}%;" aria-valuenow="${value}" aria-valuemin="0" aria-valuemax="100"> ${value}%
+                                            style="width: ${value}%; border-radius: 8px;" aria-valuenow="${value}" aria-valuemin="0" aria-valuemax="100"> ${value}%
                                         </div>
                                     </div>
                                 </div>`;
@@ -1042,10 +1104,15 @@
         modal.show();
     }
 
+    const colors_line_chart1 = ['#007e7a', '#00bc9b', '#3cb5e4', '#f56705'];
     document.getElementById('checkboxContainer').addEventListener('change', function () {
         const checked = Array.from(document.querySelectorAll('input[name="dataset"]:checked'))
             .map(cb => parseInt(cb.value));
-        line_chart1.data.datasets = checked.map(i => kpiDatasets[i]);
+        line_chart1.data.datasets = checked.map((i, idx) => ({
+            ...kpiDatasets[i],
+            borderColor: colors_line_chart1[idx % colors_line_chart1.length],
+            backgroundColor: colors_line_chart1[idx % colors_line_chart1.length],
+        }));
         line_chart1.update();
     });
     //window.addEventListener('resize', gaugeSeverityChart.resize);

@@ -196,6 +196,12 @@
 
         return colorScale(norm); // Return the mapped color
     }
+    
+    function getContrastingTextColor(bgColor) {
+        const c = d3.color(bgColor);
+        const luminance = (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) / 255;
+        return luminance > 0.7 ? "black" : "white";
+    }
 
     function percentage2color(severity) {
         const norm = severity / 100; // Normalize severity to range [0,1]
@@ -259,16 +265,18 @@
             data: { start_date: start_date, end_date: end_date },
             success: function (data) {
                 document.getElementById("last_calcdate").innerText = data.last_timestamp.replace("T", " ");
-
+                console.log(data)
                 for (const [i, p] of sensorPoints.entries()) {
                     const el = document.getElementById(p.id);
                     var current_sensor_value = data.last_sensor_featname[featureSet[i]];
                     var current_severity_value = data.last_severity_featname[featureSet[i]];
+                    var current_priority_value = data.priority_parameter[featureSet[i]];
+
                     var current_unit = unitSet[i];
                     el.innerHTML = `<div class="btn custom_button_status" onclick="window.open('/advisory/chart?feat_id=${i}','_blank')" style="background-color: rgb(243, 243, 243); color: black">
-                                                    ${p.name} | <span class="badge" style="background-color: ${severity2color(current_severity_value)}; color: black">${current_severity_value}</span> <span class="badge bg-secondary" style="color: black">${percentage2severity(current_severity_value)}</span><br> 
+                                                    ${p.name} | <span class="badge" style="background-color: ${severity2color(current_severity_value)}; color: ${getContrastingTextColor(severity2color(current_severity_value))}">${current_severity_value}</span> <span class="badge" style="background-color: ${severity2color(percentage2priority(current_priority_value))}; color: ${getContrastingTextColor(severity2color(percentage2priority(current_priority_value)))}">${percentage2priority(current_priority_value)}</span><br> 
                                                     <span class="badge bg-dark text-light box_withborder">${current_sensor_value} ${current_unit}</span>`
-                    if (current_severity_value > 1) {
+                    if (current_severity_value > 1) { 
                         el.innerHTML += `<span class="position-absolute translate-middle p-2 bg-danger border border-light rounded-circle" style="top:7%; left: 5%; background-color: ${severity2color(current_severity_value)}">
                                            <span class="visually-hidden">Warnings</span></span>`
                     }

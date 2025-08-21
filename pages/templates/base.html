@@ -155,6 +155,8 @@
                         'Last 60 Days': [moment().subtract(59, 'days'), moment()],
                         'Last 90 Days': [moment().subtract(89, 'days'), moment()],
                     },
+                    autoUpdateInput: true,
+                    alwaysShowCalendars: true,
                     opens: 'right',
                     buttonClasses: ['btn btn-default'],
                     applyClass: 'btn-small btn-primary',
@@ -342,8 +344,8 @@
                     ]
                 };
 
-                let nowDateMoment = moment.utc();
-                //let nowDateMoment = moment.utc("2025-02-01T05:40:00");
+                //let nowDateMoment = moment.utc();
+                let nowDateMoment = moment.utc("2025-08-20T05:40:00");
             </script>
 
             <script>
@@ -353,6 +355,15 @@
                             (value >= 20 && value < 40) ? 3 :
                                 (value >= 40 && value < 75) ? 4 :
                                     (value >= 75 && value <= 100) ? 5 : 6;
+                }
+
+                function percentage2priority(value) {
+                    return (value >= 0 && value < 6) ? 1 :
+                        (value >= 6 && value < 17) ? 2 :
+                            (value >= 17 && value < 34) ? 3 :
+                                (value >= 34 && value < 60) ? 4 :
+                                    (value >= 60 && value < 85) ? 5 :
+                                        (value >= 85 && value <= 100) ? 6 : 0; // 0 for out-of-range
                 }
             </script>
 

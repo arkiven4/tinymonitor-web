@@ -128,7 +128,7 @@
                 <i class="fa fa-calendar"></i>
                 <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
             </div>
-            <div id="reportrange_right" class="pull-left"
+            <div class="pull-left"
                 style="background: #fff; cursor: pointer; padding: 5px 10px; margin-left: 5px; display: flex; align-items: center; gap: 10px; justify-content: space-between;">
 
                 <!-- Label -->
@@ -548,6 +548,103 @@
                 setTimeout(() => {
                     const timestamps = data.data_timestamp.map(ts => new Date(ts));
                     const load_codes = data.load_datas;
+
+                    const timeStamps = timestamps.map(t => new Date(t));
+                    const startTime = timeStamps[0];
+                    const endTime = timeStamps[timeStamps.length - 1];
+                    const totalMs = endTime - startTime;
+
+                    // ===================================== 
+                    // ===============Vertical==============
+                    // =====================================
+
+                    // 1. Compute duration per category
+                    const durations = {};
+                    segStart = startTime;
+                    currentCode = load_codes[0];
+
+                    for (let i = 1; i < load_codes.length; i++) {
+                        if (load_codes[i] !== currentCode) {
+                            const duration = timeStamps[i] - segStart;
+                            const label = labelMap[currentCode];
+                            durations[label] = (durations[label] || 0) + duration;
+                            segStart = timeStamps[i];
+                            currentCode = load_codes[i];
+                        }
+                    }
+                    const lastLabel = labelMap[currentCode];
+                    durations[lastLabel] = (durations[lastLabel] || 0) + (endTime - segStart);
+
+                    // 2. Sort by duration descending
+                    const sortedDurations = Object.entries(durations).sort((a, b) => b[1] - a[1]);
+
+                    // 3. Render stacked bar
+                    const barContainer = document.getElementById('stacked-bar');
+                    barContainer.innerHTML = '';
+
+                    const labelContainer = document.getElementById('stacked-labels');
+                    labelContainer.innerHTML = '';
+                    var count = 0;
+                    for (const [label, duration] of sortedDurations.reverse()) {
+                        const percent = (duration / totalMs) * 100;
+                        const color = categoryColors[label] || '#999';
+
+                        // Create bar segment
+                        const segment = document.createElement('div');
+                        segment.style.height = `${percent}%`;
+                        segment.style.backgroundColor = color;
+                        segment.title = `${label}: ${(duration / 3600000).toFixed(2)} hrs`;
+                        if (count === 0) {
+                            segment.style.borderBottomLeftRadius = '10px';
+                            segment.style.borderBottomRightRadius = '10px';
+                        } else if (count === sortedDurations.length - 1) {
+                            segment.style.borderTopLeftRadius = '10px';
+                            segment.style.borderTopRightRadius = '10px';
+                        }
+                        barContainer.appendChild(segment);
+                        count += 1;
+                    }
+
+                    for (const [label, duration] of sortedDurations.reverse()) {
+                        const percent = (duration / totalMs) * 100;
+                        const color = categoryColors[label] || '#999';
+
+                        // Create label (icon + label text)
+                        const labelDiv = document.createElement('div');
+                        labelDiv.style.display = 'flex';
+                        labelDiv.style.alignItems = 'center';
+                        labelDiv.style.marginBottom = '0.8vh'; // responsive spacing
+                        labelDiv.innerHTML = `
+                            <div style="width: 1.5vh; height: 1.5vh; background-color: ${color}; border-radius: 0.3vh; margin-right: 0.8vh;"></div>
+                            <div style="font-size: 1.8vh"><strong>${label}</strong></div>
+                        `;
+                        labelContainer.appendChild(labelDiv);
+
+                        // Create duration label
+                        const labelDiv2 = document.createElement('div');
+                        labelDiv2.style.display = 'flex';
+                        labelDiv2.style.alignItems = 'center';
+                        labelDiv2.style.marginBottom = '2vh';
+                        labelDiv2.innerHTML = `
+                            <div style="font-size: 2.0vh">${formatDuration(duration)} (${parseInt(percent)}%)</div>
+                        `;
+                        labelContainer.appendChild(labelDiv2);
+                    }
+
+                }, 500);
+            }
+        })
+
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: "/api/zone_distributionTimeline",
+            data: { start_date: start_date, end_date: end_date, tags: tags },
+            success: function (data) {
+                console.log(data)
+                setTimeout(() => {
+                    const timestamps = data.data_timestamp.map(ts => new Date(ts));
+                    const load_codes = data.load_datas;
                     const grid_codes = data.grid_datas;
 
                     const container = document.getElementById('timeline-container');
@@ -691,87 +788,10 @@
                     }
                     container.appendChild(axis);
 
-                    // ===================================== 
-                    // ===============Vertical==============
-                    // =====================================
-
-                    // 1. Compute duration per category
-                    const durations = {};
-                    segStart = startTime;
-                    currentCode = load_codes[0];
-
-                    for (let i = 1; i < load_codes.length; i++) {
-                        if (load_codes[i] !== currentCode) {
-                            const duration = timeStamps[i] - segStart;
-                            const label = labelMap[currentCode];
-                            durations[label] = (durations[label] || 0) + duration;
-                            segStart = timeStamps[i];
-                            currentCode = load_codes[i];
-                        }
-                    }
-                    const lastLabel = labelMap[currentCode];
-                    durations[lastLabel] = (durations[lastLabel] || 0) + (endTime - segStart);
-
-                    // 2. Sort by duration descending
-                    const sortedDurations = Object.entries(durations).sort((a, b) => b[1] - a[1]);
-
-                    // 3. Render stacked bar
-                    const barContainer = document.getElementById('stacked-bar');
-                    barContainer.innerHTML = '';
-
-                    const labelContainer = document.getElementById('stacked-labels');
-                    labelContainer.innerHTML = '';
-                    var count = 0;
-                    for (const [label, duration] of sortedDurations.reverse()) {
-                        const percent = (duration / totalMs) * 100;
-                        const color = categoryColors[label] || '#999';
-
-                        // Create bar segment
-                        const segment = document.createElement('div');
-                        segment.style.height = `${percent}%`;
-                        segment.style.backgroundColor = color;
-                        segment.title = `${label}: ${(duration / 3600000).toFixed(2)} hrs`;
-                        if (count === 0) {
-                            segment.style.borderBottomLeftRadius = '10px';
-                            segment.style.borderBottomRightRadius = '10px';
-                        } else if (count === sortedDurations.length - 1) {
-                            segment.style.borderTopLeftRadius = '10px';
-                            segment.style.borderTopRightRadius = '10px';
-                        }
-                        barContainer.appendChild(segment);
-                        count += 1;
-                    }
-
-                    for (const [label, duration] of sortedDurations.reverse()) {
-                        const percent = (duration / totalMs) * 100;
-                        const color = categoryColors[label] || '#999';
-
-                        // Create label (icon + label text)
-                        const labelDiv = document.createElement('div');
-                        labelDiv.style.display = 'flex';
-                        labelDiv.style.alignItems = 'center';
-                        labelDiv.style.marginBottom = '0.8vh'; // responsive spacing
-                        labelDiv.innerHTML = `
-                            <div style="width: 1.5vh; height: 1.5vh; background-color: ${color}; border-radius: 0.3vh; margin-right: 0.8vh;"></div>
-                            <div style="font-size: 1.8vh"><strong>${label}</strong></div>
-                        `;
-                        labelContainer.appendChild(labelDiv);
-
-                        // Create duration label
-                        const labelDiv2 = document.createElement('div');
-                        labelDiv2.style.display = 'flex';
-                        labelDiv2.style.alignItems = 'center';
-                        labelDiv2.style.marginBottom = '2vh';
-                        labelDiv2.innerHTML = `
-                            <div style="font-size: 2.0vh">${formatDuration(duration)} (${parseInt(percent)}%)</div>
-                        `;
-                        labelContainer.appendChild(labelDiv2);
-                    }
-
                 }, 500);
             }
         })
-        console.log(tags)
+
         $.ajax({
             type: "GET",
             dataType: "json",
@@ -820,6 +840,9 @@
 
                 setTimeout(() => {
                     for (let index = 0; index < kpi_key.length; index++) {
+                        if (index == 0) {
+                            console.log(combinedData[kpi_key[index]])
+                        }
                         const nowKPIKey = kpi_key[index];
                         document.getElementById("prev_" + nowKPIKey).innerHTML = (combinedData[nowKPIKey][combinedData[nowKPIKey].length - 2] * 100) + "%";
                         gaugeSeverityChartOptionsKPI.series[0].data[0].value = combinedData[nowKPIKey][combinedData[nowKPIKey].length - 1] * 100;
@@ -863,7 +886,11 @@
                                 },
                                 scales: {
                                     x: { display: false },
-                                    y: { display: false }
+                                    y: {
+                                        display: false,
+                                        min: 0,
+                                        max: 1
+                                    }
                                 }
                             }
                         });

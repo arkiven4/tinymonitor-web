@@ -169,6 +169,7 @@ def get_OperationDistributionTimeline(start_date=None, end_date=None, units=None
         'Active Power': activepow_data,
         'Governor speed actual': rpm_data
     })
+
     aux_1 = sensor_datas[:, 3].astype(float)
     df['Load Label'] = df.apply(commons.label_load, axis=1)
     df['Load Code'] = df['Load Label'].map(commons.label_to_code)
