@@ -139,4 +139,4 @@ if DEBUG:
     MIDDLEWARE = MIDDLEWARE + ["django_browser_reload.middleware.BrowserReloadMiddleware"]
     
 #MONITORINGDB_PATH = ""
-MONITORINGDB_PATH = "D:\\ITSTeam\\NewGen\cbm_vale\\"
+MONITORINGDB_PATH = "D:\\ITSTeam\\NewGen\\cbm_vale\\"
