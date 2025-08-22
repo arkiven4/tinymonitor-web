@@ -140,3 +140,4 @@ if DEBUG:
     
 #MONITORINGDB_PATH = ""
 MONITORINGDB_PATH = "D:\\ITSTeam\\NewGen\\cbm_vale\\"
+
