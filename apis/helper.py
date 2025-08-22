@@ -99,6 +99,9 @@ def get_PanelSummary(start_date=None, end_date=None):
     sensor_datas = sensor_datas[:, 2:].astype(float)
     severtrend_datas = severtrend_datas[:, 2:].astype(float)
 
+    # Start Implement Adjsutment
+    severtrend_datas[:, 22] = severtrend_datas[:, 22] * 0.15
+
     vectorized_func = np.vectorize(commons.percentage2severity)
     severity_level_datas = vectorized_func(severtrend_datas)
 
@@ -134,6 +137,10 @@ def get_PanelSummary(start_date=None, end_date=None):
     data_timestamp = sensor_datas[:, 1]
     severtrend_datas = severtrend_datas[:, 2:].astype(float)
     sensor_datas = sensor_datas[:, 2:].astype(float)
+
+    # Start Implement Adjsutment
+    severtrend_datas[:, 22] = severtrend_datas[:, 22] * 0.15
+
     priority_parameter = {}
     for idx, feature_name in enumerate(commons.feature_set):
         current_severity = commons.percentage2severity(float(severtrend_datas[:, idx].mean()))
@@ -308,6 +315,9 @@ def get_SeverityNLoss(start_date=None, end_date=None):
         threshold_pass = {commons.feature_set[idx_sensor]: float(sensor_thre)
                           for idx_sensor, sensor_thre in enumerate(now_fetched)}
 
+        # Start Implement Adjsutment
+        threshold_pass['UGB cooling water flow'] = threshold_pass['UGB cooling water flow'] * 0.15
+
         threshold_percentages_sorted[idx_model] = dict(sorted(threshold_pass.items(), key=lambda item: item[1], reverse=True)[:10])
         threshold_percentages[idx_model] = threshold_pass
     timings['fetch_thresholds'] = time.perf_counter() - t1
@@ -343,6 +353,11 @@ def get_SeverityNLoss(start_date=None, end_date=None):
 
         loss = commons.denormalize3((y_true - y_pred) ** 2, min_a, max_a)
         model_thr_temp = commons.denormalize3(model_thr[commons.model_array[model_idx_highest]], min_a, max_a)
+
+        # Start Implement Adjsutment
+        if feature_index_now == 22:
+            loss[:, feature_index_now] = loss[:, feature_index_now] * 0.4
+            temp_ypreds[model_idx_highest][:, feature_index_now] = temp_ypreds[model_idx_highest][:, feature_index_now] * 0.9
 
         loss_send.append(loss[:, feature_index_now])
         thr_now_model.append(float(model_thr_temp[feature_index_now]))
@@ -394,10 +409,15 @@ def get_top10Charts(start_date, end_date):
         start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor")
 
     data_timestamp = sensor_datas[:, 1]
-    severity_trending_datas = severity_trending_datas[:, 2:][:, index_top10feat].astype(
-        float)
+    severity_trending_datas = severity_trending_datas[:, 2:].astype(float)
+
+    # Start Implement Adjsutment
+    severity_trending_datas[:, 22] = severity_trending_datas[:, 22] * 0.15
+    
+    severity_trending_datas = severity_trending_datas[:, index_top10feat]
     sensor_datas = sensor_datas[:, 2:][:, index_top10feat].astype(float)
     sensor_statistic_current = param_statistic[:, index_top10feat]
+
 
     # window_size = 15
     # kernel = np.ones(window_size) / window_size
@@ -429,6 +449,7 @@ def get_sensorNtrend(start_date, end_date):
 
 
 def get_advisoryTable(start_date, end_date):  # 2529
+    # TODO INI kenapa 2x ambil severity Trending
     # Try Priority
     start_dateLate = datetime.strptime(
         end_date, "%Y-%m-%dT%H:%M:%S") - timedelta(days=30)
@@ -443,6 +464,9 @@ def get_advisoryTable(start_date, end_date):  # 2529
         severity_trending_datas[:, i] = commons.hampel_filter(
             severity_trending_datas[:, i], window_size=93, n_sigmas=3)
 
+    # Start Implement Adjsutment
+    severity_trending_datas[:, 22] = severity_trending_datas[:, 22] * 0.15
+
     priority_parameter = {}
     for idx, feature_name in enumerate(commons.feature_set):
         current_severity = commons.percentage2severity(float(severity_trending_datas[:, idx].mean()))
@@ -454,6 +478,9 @@ def get_advisoryTable(start_date, end_date):  # 2529
     raw_trending_datas = raw_trending_datas[::-1]
     data_timestamp = raw_trending_datas[:, 1]
     severity_trending_datas = raw_trending_datas[:, 2:].astype(float)
+
+    # Start Implement Adjsutment
+    severity_trending_datas[:, 22] = severity_trending_datas[:, 22] * 0.15
 
     vectorized_func = np.vectorize(commons.percentage2severity)
     severity_level_datas = vectorized_func(severity_trending_datas)
@@ -488,14 +515,16 @@ def get_advisoryDetail(start_date, end_date, sensor_id, feat_correlate):
         start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor")
 
     data_timestamp = sensor_datas[:, 1]
-    severity_trending_datas = severity_trending_datas[:, 2:]
+    severity_trending_datas = severity_trending_datas[:, 2:].astype(float)
     sensor_datas = sensor_datas[:, 2:]
+
+    # Start Implement Adjsutment
+    severity_trending_datas[:, 22] = severity_trending_datas[:, 22] * 0.10
 
     shutdown_periods = commons.process_shutdownTimestamp(
         data_timestamp, sensor_datas)
 
-    selected_severity_trending_datas = severity_trending_datas[:, sensor_id].astype(
-        float)
+    selected_severity_trending_datas = severity_trending_datas[:, sensor_id].astype(float)
     selected_sensor_datas = sensor_datas[:, sensor_id].astype(float)
 
     window_size = 30
@@ -508,4 +537,7 @@ def get_advisoryDetail(start_date, end_date, sensor_id, feat_correlate):
     correlate_trending_datas = severity_trending_datas[:, feat_correlate].astype(
         float)
 
-    return data_timestamp, selected_severity_trending_datas, selected_sensor_datas, shutdown_periods, correlation_nowparam, correlate_sensor_datas, correlate_trending_datas
+    current_severity_fpriority = commons.percentage2severity(float(selected_severity_trending_datas.mean()))
+    priority = calculate_priority(commons.feature_set[sensor_id], recap_severity, current_severity_fpriority, equipment_critical_list)
+
+    return data_timestamp, selected_severity_trending_datas, priority, selected_sensor_datas, shutdown_periods, correlation_nowparam, correlate_sensor_datas, correlate_trending_datas

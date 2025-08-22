@@ -167,12 +167,13 @@ def advisory_detail(request, feat_id=0, minusdays=7):
     except ValueError:
         feat_correlate = []
 
-    data_timestamp, severity_trending_datas, sensor_datas, shutdown_periods, correlation_nowparam, correlate_sensor_datas, correlate_trending_datas = helper_fun.get_advisoryDetail(
+    data_timestamp, severity_trending_datas, priority_data, sensor_datas, shutdown_periods, correlation_nowparam, correlate_sensor_datas, correlate_trending_datas = helper_fun.get_advisoryDetail(
         start_date, end_date, feat_id, feat_correlate)
     data = {
         'feat_id': feat_id,
         'data_timestamp': data_timestamp.tolist(),
         'severity_trending_datas': severity_trending_datas.tolist(),
+        'priority_data': priority_data,
         'sensor_datas': sensor_datas.tolist(),
         'shutdown_periods': shutdown_periods,
         'correlation_nowparam': correlation_nowparam,

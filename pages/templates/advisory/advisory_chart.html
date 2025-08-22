@@ -116,7 +116,7 @@
                                                             </p>
                                                         </td>
                                                         <td class="severity-percent" data-severity="1"
-                                                            style="width:70%">0.0%</td>
+                                                            style="width:70%">100.0%</td>
                                                     </tr>
                                                     <tr>
                                                         <td style="width:70%">
@@ -124,7 +124,7 @@
                                                             </p>
                                                         </td>
                                                         <td class="severity-percent" data-severity="2"
-                                                            style="width:70%">7.0%</td>
+                                                            style="width:70%">0.0%</td>
                                                     </tr>
                                                     <tr>
                                                         <td style="width:70%">
@@ -132,7 +132,7 @@
                                                             </p>
                                                         </td>
                                                         <td class="severity-percent" data-severity="3"
-                                                            style="width:70%">64.7%</td>
+                                                            style="width:70%">0.0%</td>
                                                     </tr>
                                                     <tr>
                                                         <td style="width:70%">
@@ -140,7 +140,7 @@
                                                             </p>
                                                         </td>
                                                         <td class="severity-percent" data-severity="4"
-                                                            style="width:70%">28.3%</td>
+                                                            style="width:70%">0.0%</td>
                                                     </tr>
                                                     <tr>
                                                         <td style="width:70%">
@@ -427,6 +427,8 @@
                             x: data['data_timestamp'][i], y: current_max, severity_value: data['severity_trending_datas'][i]
                         })
                         current_severity_color_data.push(severity2color(severity))
+                    } else {
+                        severityCounts[1]++;
                     }
                 }
 
@@ -481,6 +483,9 @@
 
                 setTimeout(() => {
                     var totalCount = current_severity_data.length
+                    if (totalCount == 0 && severityCounts[1] != 0) {
+                        totalCount = data['severity_trending_datas'].length
+                    }
                     document.querySelectorAll('.severity-percent').forEach(td => {
                         var level = td.getAttribute('data-severity');
                         var count = severityCounts[level] || 0;
@@ -495,7 +500,7 @@
                         gaugeSeverityChartOptions.series[0].data[0].value = percentage2severity(current_severity_data[current_severity_data.length - 1]['severity_value']);
                     } catch (error) {
                         console.log(error)
-                        gaugeSeverityChartOptions.series[0].data[0].value = 0;
+                        gaugeSeverityChartOptions.series[0].data[0].value = 1;
                     }
 
                     gaugeSeverityChart = echarts.init(document.getElementById('gauge_1'), null, {
@@ -503,8 +508,8 @@
                     });
                     gaugeSeverityChart.setOption(gaugeSeverityChartOptions);
                     window.addEventListener('resize', gaugeSeverityChart.resize);
-
-                    gaugeSeverityChartOptions.series[0].data[0].value = 2;
+                    
+                    gaugeSeverityChartOptions.series[0].data[0].value = percentage2priority(data['priority_data']);
                     gaugeSeverityChartOptions.series[0].data[0].name = "Priority Level";
                     gaugeSeverityChart2 = echarts.init(document.getElementById('gauge_2'), null, {
                         renderer: 'canvas',
