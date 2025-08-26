@@ -198,11 +198,7 @@
                     severityData, severityLabels, severityValues, severityCounts, colors] = parseData_fromserver(data)
 
                 var copy_timestamp = timestamps.map(ts => new Date(ts));
-                document.getElementById("current-time").textContent = new Date().toLocaleString(); 
-                const lastUpdate = copy_timestamp[copy_timestamp.length - 1];
-                document.getElementById("last-update").textContent = lastUpdate.toLocaleString();
-                const nextUpdate = new Date(copy_timestamp[0].getTime() + 15 * 60 * 1000);
-                document.getElementById("next-update").textContent = nextUpdate.toLocaleString();
+                document.getElementById("current-time").textContent = new Date().toLocaleString();
 
                 // Line Charts
                 severityLabels.slice(0, 4).forEach((feature, idx) => {
@@ -307,6 +303,19 @@
                 });
             }
         });
+
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: "/api/timeinfo_detail",
+            data: { start_date: start_date, end_date: end_date },
+            success: function (data) {
+                const lastUpdate = new Date(data.datetime_last);
+                document.getElementById("last-update").textContent = lastUpdate.toLocaleString();
+                const nextUpdate = new Date(data.next_update);
+                document.getElementById("next-update").textContent = nextUpdate.toLocaleString();
+            }
+        })
 
         setInterval(() => {
             location.reload();

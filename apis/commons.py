@@ -103,7 +103,7 @@ def fetch_last_rows(num_row, db_name="data.db", table_name="sensor_data"):
 def get_LastdateLastRow(db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute(f"""SELECT * FROM original_data order by rowid desc LIMIT 1""")
+    cursor.execute(f"""SELECT * FROM original_data ORDER BY timestamp DESC LIMIT 1""")
     rows = cursor.fetchall()
     conn.close()
     datetime_last = np.datetime64(np.array(rows)[:, 1][0]).astype(datetime)

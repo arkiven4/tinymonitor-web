@@ -267,7 +267,12 @@
                     <div class="col-lg-12 col-md-12 col-sm-12 px-0">
                         <div class="x_panel tile" style="height: 30vh;">
                             <div class="x_content" style="height: 100%;">
-                                <h2>Other KPIs</h2>
+                                <div
+                                    style="display: flex;flex-wrap: nowrap;justify-content: space-between;align-items: center;">
+                                    <h2>Other KPIs</h2><a class="btn btn-link"
+                                        href="{% url 'kpi_manualdata' %}">Update</a>
+                                </div>
+
                                 <div class="row">
                                     <div class="col-lg-12 col-md-12 col-sm-12 px-0">
                                         <div class="x_panel tile">
@@ -421,7 +426,7 @@
             [0.48, '#ffaa00'],
             [0.64, '#e5e500'],
             [0.80, '#99e500'],
-            [1.00, '#00cc00']
+            [1.00, '#007e7a']
         ];
 
         for (let i = 0; i < colorMap.length; i++) {
@@ -798,11 +803,11 @@
             url: "/api/kpi",
             data: { start_date: start_date, end_date: end_date, tags: tags, noe_metric: noe_metric },
             success: function (data) {
-                console.log(data)
+                console.log(data.other_kpi)
                 const keysToAverage = ['oee', 'phy_avail', 'performance', 'uo_Avail'];
                 const keysToSum = ['aux_0', 'aux_1'];
 
-                const keys_unit = Object.keys(data).filter(key => key !== 'plant' && key !== 'noe');
+                const keys_unit = Object.keys(data).filter(key => key !== 'plant' && key !== 'noe' && key !== 'other_kpi');
                 const timestamps = data[keys_unit[0]].timestamp;
                 const combinedData = {
                     data_timestamp: timestamps,

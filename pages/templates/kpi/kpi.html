@@ -48,145 +48,147 @@
 </style>
 <div class="row" id="chart_container">
     <div class="col-md-12 col-sm-12 px-0">
-        <div class="x_panel tile">
-            <div id="reportrange_right" class="pull-left"
-                style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
-                <i class="fa fa-calendar"></i>
-                <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
-            </div>
-            <div class="pull-left"
-                style="background: #fff; cursor: pointer; padding: 5px 10px; margin-left: 5px; display: flex; align-items: center; gap: 10px; justify-content: space-between;">
-
-                <!-- Group Checkboxes -->
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input group-checkbox" type="checkbox" id="group_Larona"
-                        data-group="Larona">
-                    <label class="form-check-label" for="group_Larona">Larona</label>
+        <div class="x_panel" style="padding: 0;display: flex;align-items: center;justify-content: space-between;align-content: center;flex-wrap: nowrap;flex-direction: row;">
+            <div style="display: flex; align-items: center; gap: 10px; justify-content: space-between;">
+                <div id="reportrange_right" class="pull-left"
+                    style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;">
+                    <i class="fa fa-calendar"></i>
+                    <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
                 </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input group-checkbox" type="checkbox" id="group_Balambano"
-                        data-group="Balambano">
-                    <label class="form-check-label" for="group_Balambano">Balambano</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input group-checkbox" type="checkbox" id="group_Karebbe"
-                        data-group="Karebbe">
-                    <label class="form-check-label" for="group_Karebbe">Karebbe</label>
-                </div>
+                <div
+                    style="background: #fff; cursor: pointer; padding: 5px 10px; margin-left: 5px; display: flex; align-items: center; gap: 10px; justify-content: space-between;">
+                    <div
+                        style="background: #fff; cursor: pointer; padding: 5px 10px; margin-left: 5px; display: flex; align-items: center; gap: 10px; justify-content: space-between;">
+                        <!-- Group Checkboxes -->
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input group-checkbox" type="checkbox" id="group_Larona"
+                                data-group="Larona">
+                            <label class="form-check-label" for="group_Larona">Larona</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input group-checkbox" type="checkbox" id="group_Balambano"
+                                data-group="Balambano">
+                            <label class="form-check-label" for="group_Balambano">Balambano</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input group-checkbox" type="checkbox" id="group_Karebbe"
+                                data-group="Karebbe">
+                            <label class="form-check-label" for="group_Karebbe">Karebbe</label>
+                        </div>
 
-                <!-- Individual Checkboxes -->
-                <div id="tagCheckboxes"></div>
+                        <!-- Individual Checkboxes -->
+                        <div id="tagCheckboxes"></div>
+                    </div>
+                    <script>
+                        const tagMap = {
+                            Larona: ["LGS1", "LGS2", "LGS3"],
+                            Balambano: ["BGS1", "BGS2"],
+                            Karebbe: ["KGS1", "KGS2"]
+                        };
 
-                <script>
-                    const tagMap = {
-                        Larona: ["LGS1", "LGS2", "LGS3"],
-                        Balambano: ["BGS1", "BGS2"],
-                        Karebbe: ["KGS1", "KGS2"]
-                    };
+                        // Hardcoded status for now
+                        const tagStatus = {
+                            LGS1: "chk..",
+                            LGS2: "chk..",
+                            LGS3: "chk..",
+                            BGS1: "chk..",
+                            BGS2: "chk..",
+                            KGS1: "chk..",
+                            KGS2: "chk.."
+                        };
 
-                    // Hardcoded status for now
-                    const tagStatus = {
-                        LGS1: "checking",
-                        LGS2: "checking",
-                        LGS3: "checking",
-                        BGS1: "checking",
-                        BGS2: "checking",
-                        KGS1: "checking",
-                        KGS2: "checking"
-                    };
+                        const tagContainer = document.getElementById("tagCheckboxes");
 
-                    const tagContainer = document.getElementById("tagCheckboxes");
+                        // Generate tag checkboxes dynamically
+                        const allTags = Object.values(tagMap).flat();
+                        allTags.forEach(tag => {
+                            const wrapper = document.createElement("div");
+                            wrapper.classList.add("form-check", "form-check-inline");
 
-                    // Generate tag checkboxes dynamically
-                    const allTags = Object.values(tagMap).flat();
-                    allTags.forEach(tag => {
-                        const wrapper = document.createElement("div");
-                        wrapper.classList.add("form-check", "form-check-inline");
+                            const status = tagStatus[tag];
+                            const color = status === "alive" ? "green" : "red";
 
-                        const status = tagStatus[tag];
-                        const color = status === "alive" ? "green" : "red";
+                            wrapper.innerHTML = `
+                            <input class="form-check-input tag-checkbox" type="checkbox" id="tag_${tag}" value="${tag}">
+                            <label class="form-check-label" for="tag_${tag}" style="color:${color}">${tag} (${status})</label>
+                        `;
+                            tagContainer.appendChild(wrapper);
+                        });
 
-                        wrapper.innerHTML = `
-                <input class="form-check-input tag-checkbox" type="checkbox" id="tag_${tag}" value="${tag}">
-                <label class="form-check-label" for="tag_${tag}" style="color:${color}">${tag} (${status})</label>
-            `;
-                        tagContainer.appendChild(wrapper);
-                    });
+                        const tagCheckboxes = document.querySelectorAll('.tag-checkbox');
+                        const groupCheckboxes = document.querySelectorAll('.group-checkbox');
 
-                    const tagCheckboxes = document.querySelectorAll('.tag-checkbox');
-                    const groupCheckboxes = document.querySelectorAll('.group-checkbox');
+                        function getURLTags() {
+                            const params = new URLSearchParams(window.location.search);
+                            const tagString = params.get("tag");
+                            if (!tagString) return null;
+                            return tagString.split(",");
+                        }
 
-                    function getURLTags() {
-                        const params = new URLSearchParams(window.location.search);
-                        const tagString = params.get("tag");
-                        if (!tagString) return null;
-                        return tagString.split(",");
-                    }
+                        function setCheckboxStatesFromURL(tagsInURL) {
+                            if (!tagsInURL) {
+                                tagCheckboxes.forEach(cb => cb.checked = true);
+                            } else {
+                                tagCheckboxes.forEach(cb => {
+                                    cb.checked = tagsInURL.includes(cb.value);
+                                });
+                            }
 
-                    function setCheckboxStatesFromURL(tagsInURL) {
-                        if (!tagsInURL) {
-                            tagCheckboxes.forEach(cb => cb.checked = true);
-                        } else {
-                            tagCheckboxes.forEach(cb => {
-                                cb.checked = tagsInURL.includes(cb.value);
+                            groupCheckboxes.forEach(groupCB => {
+                                const group = groupCB.dataset.group;
+                                const groupTags = tagMap[group];
+                                groupCB.checked = groupTags.every(tag => document.getElementById(`tag_${tag}`).checked);
                             });
                         }
 
-                        groupCheckboxes.forEach(groupCB => {
-                            const group = groupCB.dataset.group;
-                            const groupTags = tagMap[group];
-                            groupCB.checked = groupTags.every(tag => document.getElementById(`tag_${tag}`).checked);
-                        });
-                    }
+                        function updateURLFromSelections() {
+                            const selectedTags = Array.from(tagCheckboxes)
+                                .filter(cb => cb.checked)
+                                .map(cb => cb.value);
 
-                    function updateURLFromSelections() {
-                        const selectedTags = Array.from(tagCheckboxes)
-                            .filter(cb => cb.checked)
-                            .map(cb => cb.value);
+                            const params = new URLSearchParams(window.location.search);
+                            if (selectedTags.length > 0) {
+                                params.set("tag", selectedTags.join(","));
+                            } else {
+                                params.delete("tag");
+                            }
 
-                        const params = new URLSearchParams(window.location.search);
-                        if (selectedTags.length > 0) {
-                            params.set("tag", selectedTags.join(","));
-                        } else {
-                            params.delete("tag");
+                            window.location.search = params.toString();
                         }
 
-                        window.location.search = params.toString();
-                    }
-
-                    function handleGroupCheckbox(groupCB) {
-                        const group = groupCB.dataset.group;
-                        const groupTags = tagMap[group];
-                        groupTags.forEach(tag => {
-                            document.getElementById(`tag_${tag}`).checked = groupCB.checked;
-                        });
-                        updateURLFromSelections();
-                    }
-
-                    function handleTagCheckboxChange() {
-                        groupCheckboxes.forEach(groupCB => {
+                        function handleGroupCheckbox(groupCB) {
                             const group = groupCB.dataset.group;
                             const groupTags = tagMap[group];
-                            groupCB.checked = groupTags.every(tag => document.getElementById(`tag_${tag}`).checked);
+                            groupTags.forEach(tag => {
+                                document.getElementById(`tag_${tag}`).checked = groupCB.checked;
+                            });
+                            updateURLFromSelections();
+                        }
+
+                        function handleTagCheckboxChange() {
+                            groupCheckboxes.forEach(groupCB => {
+                                const group = groupCB.dataset.group;
+                                const groupTags = tagMap[group];
+                                groupCB.checked = groupTags.every(tag => document.getElementById(`tag_${tag}`).checked);
+                            });
+                            updateURLFromSelections();
+                        }
+
+                        // Attach listeners
+                        groupCheckboxes.forEach(cb => {
+                            cb.addEventListener("change", () => handleGroupCheckbox(cb));
                         });
-                        updateURLFromSelections();
-                    }
 
-                    // Attach listeners
-                    groupCheckboxes.forEach(cb => {
-                        cb.addEventListener("change", () => handleGroupCheckbox(cb));
-                    });
+                        tagCheckboxes.forEach(cb => {
+                            cb.addEventListener("change", handleTagCheckboxChange);
+                        });
 
-                    tagCheckboxes.forEach(cb => {
-                        cb.addEventListener("change", handleTagCheckboxChange);
-                    });
-
-                    const urlTags = getURLTags();
-                    setCheckboxStatesFromURL(urlTags);
-                </script>
+                        const urlTags = getURLTags();
+                        setCheckboxStatesFromURL(urlTags);
+                    </script>
+                </div>
             </div>
-
-
+            <a class="btn btn-link" href="{% url 'kpi_manualdata' %}">Update</a>
         </div>
     </div>
 </div>
@@ -330,12 +332,11 @@
                 <div style="display: flex; align-items: center; gap: 10px; justify-content: space-between;">
                     <h2>Number of Event</h2>
                     <form method="get" style="margin: 0;">
-                        <select id="noe_metric_select" class="form-select">
+                        <select id="noe_metric_select">
                             <option value="noe">Default</option>
                             <option value="duration">Duration</option>
                         </select>
                     </form>
-                    <a class="btn btn-link" href="{% url 'kpi_updatenoe' %}">Update</a>
                 </div>
                 <canvas id="stackedChart" style="width: 100%; height: 23vh"></canvas>
             </div>
@@ -410,7 +411,7 @@
             [0.48, '#ffaa00'],
             [0.64, '#e5e500'],
             [0.80, '#99e500'],
-            [1.00, '#00cc00']
+            [1.00, '#007e7a']
         ];
 
         for (let i = 0; i < colorMap.length; i++) {
@@ -494,7 +495,7 @@
                 const keysToAverage = ['oee', 'phy_avail', 'performance', 'uo_Avail'];
                 const keysToSum = ['aux_0', 'aux_1'];
 
-                const keys_unit = Object.keys(data).filter(key => key !== 'plant' && key !== 'noe');
+                const keys_unit = Object.keys(data).filter(key => key !== 'plant' && key !== 'noe' && key !== 'other_kpi');
                 const timestamps = data[keys_unit[0]].timestamp;
                 const combinedData = {
                     data_timestamp: timestamps,
@@ -694,7 +695,7 @@
                     var total_bpd = data.plant.bpd.reduce((sum, value) => sum + value, 0);
                     var total_kpd = data.plant.kpd.reduce((sum, value) => sum + value, 0);
 
-                    document.getElementById("hp_total").innerText = Math.round(total_hpd).toLocaleString() + " MWh";
+                    document.getElementById("hp_total").innerText = Math.round(total_hpd).toLocaleString() + " MW";
 
                     var totals_powerprods = [total_lpd, total_bpd, total_kpd];
                     var total_sum_powerprods = totals_powerprods.reduce((sum, val) => sum + val, 0);
@@ -722,7 +723,7 @@
                             datasets: [{
                                 label: 'Larona',
                                 data: lpd_pct,
-                                backgroundColor: '#047f7c',
+                                backgroundColor: '#047f7c', 
                                 borderColor: '#047f7c',
                                 tension: 0.4,
                                 pointRadius: 0,
@@ -767,7 +768,7 @@
                                 y: {
                                     title: {
                                         display: true,
-                                        text: "MWh"
+                                        text: "MW"
                                     },
                                     // min: 0,
                                     // max: 100
@@ -784,14 +785,14 @@
                             },
                         }
                     });
-
+  
                     new Chart(document.getElementById(`production_powerpie1`).getContext('2d'), {
                         type: 'pie',
-                        data: {
+                        data: {  
                             labels: ['Larona', 'Balambano', 'Karebbe'],
                             datasets: [{
                                 data: totals_powerprods,
-                                backgroundColor: ['#4CAF50', '#FF5252', '#FFC107'],
+                                backgroundColor: ['#00807C', '#EEA722', '#41b4e0'],
                                 hoverOffset: 4
                             }]
                         },
@@ -855,7 +856,7 @@
                         type: 'pie',
                         data: {
                             labels: ['Aux', 'Furnace'],
-                            datasets: [{
+                            datasets: [{ 
                                 data: [combinedData.aux_0[combinedData.aux_0.length - 1],
                                 combinedData.aux_1[combinedData.aux_1.length - 1]],
                                 backgroundColor: ['#00807C', '#EEA722', '#FFC107'],
@@ -918,6 +919,14 @@
                         }, ChartDataLabels]
                     });
 
+                    const fceGridTrend = data.plant.hpd.map((val, i) => val);
+                    const auxGridTrend = combinedData.aux_0.map((val, i) => val + combinedData.aux_1[i]);
+
+                    // If your rules are like Python:
+                    // Fce Grid Trend = sum of corresponding values where grid tag ≠ 0
+                    // Aux Grid Trend = sum of corresponding values where grid tag = 0
+                    console.log(fceGridTrend.length)
+
                     const aux0_pct = [];
                     const aux1_pct = [];
 
@@ -934,7 +943,7 @@
                             labels: formattedLabels,
                             datasets: [{
                                 label: 'Aux',
-                                data: aux0_pct,
+                                data: auxGridTrend,
                                 borderColor: '#e8b62e',
                                 backgroundColor: '#e8b62e',
                                 tension: 0.4,
@@ -942,7 +951,7 @@
                             },
                             {
                                 label: 'Furnace',
-                                data: aux1_pct,
+                                data: fceGridTrend,
                                 borderColor: '#c2386f',
                                 backgroundColor: '#c2386f',
                                 tension: 0.4,
@@ -972,7 +981,7 @@
                                 y: {
                                     title: {
                                         display: true,
-                                        text: "Count"
+                                        text: "MW"
                                     },
                                     // min: 0,
                                     // max: 100

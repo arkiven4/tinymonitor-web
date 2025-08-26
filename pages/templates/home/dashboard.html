@@ -143,8 +143,10 @@
     <div class="col-md-12 col-sm-12">
         <div class="x_panel tile">
             <div class="x_content">
-                <p>Last Update sakjdhakjsdhas, Will be Update in sajdkaskljdhjsa, Last Calculation: <span
-                        id="last_calcdate"></span></p>
+                <p>Page Last Update <span id="last_update"></span>, Page Will be Update in <span
+                        id="refresh_page_time"></span>, Last Calculation:
+                    <span id="last_calcdate"></span>, Next Calculation: <span id="next-update"></span>
+                </p>
             </div>
         </div>
     </div>
@@ -196,7 +198,7 @@
 
         return colorScale(norm); // Return the mapped color
     }
-    
+
     function getContrastingTextColor(bgColor) {
         const c = d3.color(bgColor);
         const luminance = (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) / 255;
@@ -276,7 +278,7 @@
                     el.innerHTML = `<div class="btn custom_button_status" onclick="window.open('/advisory/chart?feat_id=${i}','_blank')" style="background-color: rgb(243, 243, 243); color: black">
                                                     ${p.name} | <span class="badge" style="background-color: ${severity2color(current_severity_value)}; color: ${getContrastingTextColor(severity2color(current_severity_value))}">${current_severity_value}</span> <span class="badge" style="background-color: ${severity2color(percentage2priority(current_priority_value))}; color: ${getContrastingTextColor(severity2color(percentage2priority(current_priority_value)))}">${percentage2priority(current_priority_value)}</span><br> 
                                                     <span class="badge bg-dark text-light box_withborder">${current_sensor_value} ${current_unit}</span>`
-                    if (current_severity_value > 1) { 
+                    if (current_severity_value > 1) {
                         el.innerHTML += `<span class="position-absolute translate-middle p-2 bg-danger border border-light rounded-circle" style="top:7%; left: 5%; background-color: ${severity2color(current_severity_value)}">
                                            <span class="visually-hidden">Warnings</span></span>`
                     }
@@ -522,6 +524,22 @@
                 }, 500);
             }
         });
+
+        var now_date = new Date()
+        document.getElementById("last_update").textContent = now_date.toLocaleString();
+        document.getElementById("refresh_page_time").textContent = new Date(now_date.getTime() + 5 * 60 * 1000).toLocaleString();
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: "/api/timeinfo_detail",
+            data: {},
+            success: function (data) {
+                const lastUpdate = new Date(data.datetime_last);
+                document.getElementById("last_calcdate").textContent = lastUpdate.toLocaleString();
+                const nextUpdate = new Date(data.next_update);
+                document.getElementById("next-update").textContent = nextUpdate.toLocaleString();
+            }
+        })
 
         setInterval(() => {
             location.reload();

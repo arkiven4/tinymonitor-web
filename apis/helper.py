@@ -1,3 +1,4 @@
+import time
 import pickle
 import os
 import sqlite3
@@ -31,6 +32,7 @@ with open('precom_files/param_statistic.pickle', 'rb') as handle:
 with open('precom_files/correlation.pickle', 'rb') as handle:
     correlation_param = pickle.load(handle)  # (4, 30)
 
+
 def calculate_priority(parameter_name, recap_severity, current_severity, equipment_critical_list):
     o = recap_severity['Level'] * recap_severity['Proportion']
     o = np.sum(o)
@@ -43,7 +45,9 @@ def calculate_priority(parameter_name, recap_severity, current_severity, equipme
     p = o * s * c
     return p
 
-recap_severity = pd.DataFrame({'Level': [1, 2, 3, 4, 5, 6], 'Proportion': [0.2, 0.1, 0.1, 0.5, 0.1, 0]})
+
+recap_severity = pd.DataFrame(
+    {'Level': [1, 2, 3, 4, 5, 6], 'Proportion': [0.2, 0.1, 0.1, 0.5, 0.1, 0]})
 equipment_critical_list = [
     'UGB X Displacement',
     'UGB Y Displacement',
@@ -79,10 +83,29 @@ def get_FixedDate(start_date=None, end_date=None, ignore=False):
     except:
         datetime_last = commons.get_LastdateLastRow(
             settings.MONITORINGDB_PATH + "db/original_data.db")
-        start_date = (datetime_last - timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%S")
+        start_date = (datetime_last - timedelta(hours=2)
+                      ).strftime("%Y-%m-%dT%H:%M:%S")
         end_date = datetime_last.strftime("%Y-%m-%dT%H:%M:%S")
 
     return start_date, end_date
+
+def get_TimeInformastion():
+    conn = sqlite3.connect(settings.MONITORINGDB_PATH + "db/severity_trendings.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT * 
+        FROM original_sensor
+        ORDER BY timestamp DESC
+        LIMIT 1;
+    """)
+    last_row = np.array(cursor.fetchone())
+    conn.close()
+    datetime_last = np.datetime64(last_row[1]).astype(datetime)
+    next_update = (datetime_last + timedelta(minutes=10)).strftime("%Y-%m-%dT%H:%M:%S")
+    datetime_last = datetime_last.strftime("%Y-%m-%dT%H:%M:%S")
+
+    return datetime_last, next_update
+
 
 def get_PanelSummary(start_date=None, end_date=None):
     start_date, end_date = get_FixedDate(start_date, end_date)
@@ -143,8 +166,10 @@ def get_PanelSummary(start_date=None, end_date=None):
 
     priority_parameter = {}
     for idx, feature_name in enumerate(commons.feature_set):
-        current_severity = commons.percentage2severity(float(severtrend_datas[:, idx].mean()))
-        priority = calculate_priority(feature_name, recap_severity, current_severity, equipment_critical_list)
+        current_severity = commons.percentage2severity(
+            float(severtrend_datas[:, idx].mean()))
+        priority = calculate_priority(
+            feature_name, recap_severity, current_severity, equipment_critical_list)
         priority_parameter[feature_name] = float(priority)
     return data_timestamp[-1], last_sensor_featname, sensor_featname, last_severity_featname, sever_featname, ordered_feature_name, sever_count_featname, priority_parameter
 
@@ -165,7 +190,8 @@ def get_OperationDistributionTimeline(start_date=None, end_date=None, units=None
     if units == None:
         units = ['LGS1']
 
-    sensor_datas = commons.fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", units[0] + "_timeline")
+    sensor_datas = commons.fetch_between_dates(
+        start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", units[0] + "_timeline")
 
     data_timestamp = sensor_datas[:, 1]
     sensor_datas = sensor_datas[:, 2:].astype(float)
@@ -180,8 +206,9 @@ def get_OperationDistributionTimeline(start_date=None, end_date=None, units=None
     aux_1 = sensor_datas[:, 3].astype(float)
     df['Load Label'] = df.apply(commons.label_load, axis=1)
     df['Load Code'] = df['Load Label'].map(commons.label_to_code)
-    #df = df[df['Load Code'] != df['Load Code'].shift()].reset_index(drop=True)
+    # df = df[df['Load Code'] != df['Load Code'].shift()].reset_index(drop=True)
     return df['Timestap'].values, df['Load Code'].values, aux_1
+
 
 def get_unit_status(start_date=None, end_date=None, unit='LGS1'):
     """
@@ -215,6 +242,7 @@ def get_unit_status(start_date=None, end_date=None, unit='LGS1'):
 
     return "shutdown" if latest_code == 0 else "alive"
 
+
 def get_units_status(start_date=None, end_date=None, units=None):
     """
     labels_dict: dict of unit -> Load Label
@@ -223,8 +251,10 @@ def get_units_status(start_date=None, end_date=None, units=None):
     """
     status_dict = {}
     for unit in units:
-        status_dict[unit] = get_unit_status(start_date=start_date, end_date=end_date, unit='LGS1')
+        status_dict[unit] = get_unit_status(
+            start_date=start_date, end_date=end_date, unit='LGS1')
     return status_dict
+
 
 def get_KPIData(start_date=None, end_date=None, units=None, noe_metric="noe"):
     if units == None:
@@ -237,7 +267,7 @@ def get_KPIData(start_date=None, end_date=None, units=None, noe_metric="noe"):
         )
         if kpi_data is None or len(kpi_data) == 0:
             continue
-        
+
         timestamps = kpi_data[:, 1]
         oee = kpi_data[:, 2].astype(float)
         phy_avail = kpi_data[:, 3].astype(float)
@@ -281,24 +311,37 @@ def get_KPIData(start_date=None, end_date=None, units=None, noe_metric="noe"):
 
         kpi_results['plant'] = plant_values
 
-    loaded_df = pd.read_pickle(settings.MONITORINGDB_PATH + "db/number_of_event.pickle")
-    #loaded_df = loaded_df[(loaded_df['Start'] >= pd.to_datetime(start_date)) & (loaded_df['Start'] <= pd.to_datetime(end_date))]
+    loaded_df = pd.read_pickle(
+        settings.MONITORINGDB_PATH + "db/number_of_event.pickle")
+    # loaded_df = loaded_df[(loaded_df['Start'] >= pd.to_datetime(start_date)) & (loaded_df['Start'] <= pd.to_datetime(end_date))]
     loaded_df = loaded_df[loaded_df['Plant'].isin(units)]
     loaded_df['Duration'] = loaded_df['End'] - loaded_df['Start']
-    loaded_df['Duration_hours'] = np.round(loaded_df['Duration'].dt.total_seconds() / 3600,2)
-    
+    loaded_df['Duration_hours'] = np.round(
+        loaded_df['Duration'].dt.total_seconds() / 3600, 2)
+
     if noe_metric == 'noe':
-        groupen_df1 = loaded_df.groupby(['Plant', 'Category']).size().unstack(fill_value=0)
+        groupen_df1 = loaded_df.groupby(
+            ['Plant', 'Category']).size().unstack(fill_value=0)
         kpi_results['noe'] = {'data': groupen_df1, 'labels': groupen_df1.index}
     else:
-        groupen_df2 = loaded_df.groupby(['Plant', 'Category'])['Duration_hours'].sum().unstack(fill_value=0)
+        groupen_df2 = loaded_df.groupby(['Plant', 'Category'])[
+            'Duration_hours'].sum().unstack(fill_value=0)
         kpi_results['noe'] = {'data': groupen_df2, 'labels': groupen_df2.index}
+
+    loaded_df = pd.read_pickle(
+        settings.MONITORINGDB_PATH + "db/other_kpis.pickle")
+    loaded_df = loaded_df[(loaded_df['Start'] >= pd.to_datetime(start_date)) & (
+        loaded_df['Start'] <= pd.to_datetime(end_date))]
+    # loaded_df = loaded_df[loaded_df['Plant'].isin(units)]
+    values = loaded_df[['MTBF', 'MTTR', 'TEEP']].sum().to_frame().T.values[0]
+    labels = ['MTBF', 'MTTR', 'TEEP']
+    kpi_results['other_kpi'] = {
+        'data': values,
+        'labels': labels
+    }
 
     return kpi_results
 
-
-import time
-import numpy as np
 
 def get_SeverityNLoss(start_date=None, end_date=None):
     timings = {}
@@ -311,31 +354,36 @@ def get_SeverityNLoss(start_date=None, end_date=None):
     threshold_percentages = {}
     threshold_percentages_sorted = {}
     for idx_model, model_name in enumerate(commons.model_array):
-        now_fetched = commons.fetch_last_rows(1, settings.MONITORINGDB_PATH + "db/threshold_data.db", model_name)[-1, 2:]
+        now_fetched = commons.fetch_last_rows(
+            1, settings.MONITORINGDB_PATH + "db/threshold_data.db", model_name)[-1, 2:]
         threshold_pass = {commons.feature_set[idx_sensor]: float(sensor_thre)
                           for idx_sensor, sensor_thre in enumerate(now_fetched)}
 
         # Start Implement Adjsutment
         threshold_pass['UGB cooling water flow'] = threshold_pass['UGB cooling water flow'] * 0.15
 
-        threshold_percentages_sorted[idx_model] = dict(sorted(threshold_pass.items(), key=lambda item: item[1], reverse=True)[:10])
+        threshold_percentages_sorted[idx_model] = dict(
+            sorted(threshold_pass.items(), key=lambda item: item[1], reverse=True)[:10])
         threshold_percentages[idx_model] = threshold_pass
     timings['fetch_thresholds'] = time.perf_counter() - t1
 
     t2 = time.perf_counter()
     temp_original_data = commons.fetch_between_dates(
         start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "original_data")
-    df_timestamp, df_feature = temp_original_data[:, 1], temp_original_data[:, 2:].astype(np.float16)
+    df_timestamp, df_feature = temp_original_data[:, 1], temp_original_data[:, 2:].astype(
+        np.float16)
     timings['fetch_original_data'] = time.perf_counter() - t2
 
     t3 = time.perf_counter()
     temp_ypreds = {}
     for idx_model, model_name in enumerate(commons.model_array):
-        temp_ypreds[idx_model] = commons.fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/pred_data.db", model_name)[:, 2:].astype(np.float16)
+        temp_ypreds[idx_model] = commons.fetch_between_dates(
+            start_date, end_date, settings.MONITORINGDB_PATH + "db/pred_data.db", model_name)[:, 2:].astype(np.float16)
     timings['fetch_predictions'] = time.perf_counter() - t3
 
     t4 = time.perf_counter()
-    counter_feature_s2, counter_feature_plot = commons.calc_counterPercentage(threshold_percentages_sorted)
+    counter_feature_s2, counter_feature_plot = commons.calc_counterPercentage(
+        threshold_percentages_sorted)
     timings['calc_counterPercentage'] = time.perf_counter() - t4
 
     t5 = time.perf_counter()
@@ -344,26 +392,31 @@ def get_SeverityNLoss(start_date=None, end_date=None):
     loss_send = []
     thr_now_model = []
 
-    feature_index_list = [commons.feature_set.index(feat_name) for feat_name in list(counter_feature_s2.keys())]
+    feature_index_list = [commons.feature_set.index(
+        feat_name) for feat_name in list(counter_feature_s2.keys())]
     for idx, feature_index_now in enumerate(feature_index_list[:4]):
         model_idx_highest = counter_feature_plot[commons.feature_set[feature_index_now]]
 
         y_true, _, _ = commons.normalize3(df_feature, min_a, max_a)
-        y_pred, _, _ = commons.normalize3(temp_ypreds[model_idx_highest], min_a, max_a)
+        y_pred, _, _ = commons.normalize3(
+            temp_ypreds[model_idx_highest], min_a, max_a)
 
         loss = commons.denormalize3((y_true - y_pred) ** 2, min_a, max_a)
-        model_thr_temp = commons.denormalize3(model_thr[commons.model_array[model_idx_highest]], min_a, max_a)
+        model_thr_temp = commons.denormalize3(
+            model_thr[commons.model_array[model_idx_highest]], min_a, max_a)
 
         # Start Implement Adjsutment
         if feature_index_now == 22:
             loss[:, feature_index_now] = loss[:, feature_index_now] * 0.4
-            temp_ypreds[model_idx_highest][:, feature_index_now] = temp_ypreds[model_idx_highest][:, feature_index_now] * 0.9
+            temp_ypreds[model_idx_highest][:,
+                                           feature_index_now] = temp_ypreds[model_idx_highest][:, feature_index_now] * 0.9
 
         loss_send.append(loss[:, feature_index_now])
         thr_now_model.append(float(model_thr_temp[feature_index_now]))
 
         df_feature_send.append(df_feature[:, feature_index_now])
-        y_pred_send.append(temp_ypreds[model_idx_highest][:, feature_index_now])
+        y_pred_send.append(
+            temp_ypreds[model_idx_highest][:, feature_index_now])
 
     df_feature_send = np.vstack(df_feature_send).T
     y_pred_send = np.vstack(y_pred_send).T
@@ -375,7 +428,6 @@ def get_SeverityNLoss(start_date=None, end_date=None):
         print(f"{step}: {duration:.4f} sec")
 
     return counter_feature_s2, df_timestamp, df_feature_send, y_pred_send, loss_send, thr_now_model
-
 
 
 def get_top10Charts(start_date, end_date):
@@ -413,11 +465,10 @@ def get_top10Charts(start_date, end_date):
 
     # Start Implement Adjsutment
     severity_trending_datas[:, 22] = severity_trending_datas[:, 22] * 0.15
-    
+
     severity_trending_datas = severity_trending_datas[:, index_top10feat]
     sensor_datas = sensor_datas[:, 2:][:, index_top10feat].astype(float)
     sensor_statistic_current = param_statistic[:, index_top10feat]
-
 
     # window_size = 15
     # kernel = np.ones(window_size) / window_size
@@ -469,8 +520,10 @@ def get_advisoryTable(start_date, end_date):  # 2529
 
     priority_parameter = {}
     for idx, feature_name in enumerate(commons.feature_set):
-        current_severity = commons.percentage2severity(float(severity_trending_datas[:, idx].mean()))
-        priority = calculate_priority(feature_name, recap_severity, current_severity, equipment_critical_list)
+        current_severity = commons.percentage2severity(
+            float(severity_trending_datas[:, idx].mean()))
+        priority = calculate_priority(
+            feature_name, recap_severity, current_severity, equipment_critical_list)
         priority_parameter[feature_name] = float(priority)
 
     raw_trending_datas = commons.fetch_between_dates(
@@ -524,7 +577,8 @@ def get_advisoryDetail(start_date, end_date, sensor_id, feat_correlate):
     shutdown_periods = commons.process_shutdownTimestamp(
         data_timestamp, sensor_datas)
 
-    selected_severity_trending_datas = severity_trending_datas[:, sensor_id].astype(float)
+    selected_severity_trending_datas = severity_trending_datas[:, sensor_id].astype(
+        float)
     selected_sensor_datas = sensor_datas[:, sensor_id].astype(float)
 
     window_size = 30
@@ -532,12 +586,18 @@ def get_advisoryDetail(start_date, end_date, sensor_id, feat_correlate):
     selected_severity_trending_datas = np.convolve(
         selected_severity_trending_datas, kernel, mode='same')
 
+    
     correlation_nowparam = correlation_param[commons.feature_set[sensor_id]]
+    has_active_power = any("Active Power" in d for d in correlation_nowparam)
+    if has_active_power == False:
+        correlation_nowparam.append({'Active Power': '-'})
     correlate_sensor_datas = sensor_datas[:, feat_correlate].astype(float)
     correlate_trending_datas = severity_trending_datas[:, feat_correlate].astype(
         float)
 
-    current_severity_fpriority = commons.percentage2severity(float(selected_severity_trending_datas.mean()))
-    priority = calculate_priority(commons.feature_set[sensor_id], recap_severity, current_severity_fpriority, equipment_critical_list)
+    current_severity_fpriority = commons.percentage2severity(
+        float(selected_severity_trending_datas.mean()))
+    priority = calculate_priority(
+        commons.feature_set[sensor_id], recap_severity, current_severity_fpriority, equipment_critical_list)
 
     return data_timestamp, selected_severity_trending_datas, priority, selected_sensor_datas, shutdown_periods, correlation_nowparam, correlate_sensor_datas, correlate_trending_datas

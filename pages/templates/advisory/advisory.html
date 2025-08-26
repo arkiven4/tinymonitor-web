@@ -115,7 +115,7 @@
                             <td>${key}</td>
                             <td>
                                 <div class="progress">
-                                    <div class="progress-bar" role="progressbar" style="width: ${data.priority_parameter[key]}%; background-color: ${percentage2color(data.priority_parameter[key])}" aria-valuenow="${data.priority_parameter[key]}"
+                                    <div class="progress-bar" role="progressbar" style="width: ${100 - data.priority_parameter[key]}%; background-color: ${percentage2color(data.priority_parameter[key])}" aria-valuenow="${data.priority_parameter[key]}"
                                         aria-valuemin="0" aria-valuemax="100"></div> 
                                 </div>
                             </td>
@@ -139,7 +139,7 @@
                         paging: false,
                         info: false,
                         searchPanes: false,
-                        order: [[2, 'asc']]
+                        order: [[2, 'desc']]
                     });
 
                     for (var i = 0; i < featureSet.length; i++) {

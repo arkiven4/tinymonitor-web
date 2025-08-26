@@ -269,7 +269,101 @@
                         }
                     ]
                 };
-
+                const gaugePriorityChartOptions = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    series: [
+                        {
+                            type: 'gauge',
+                            startAngle: 180,
+                            endAngle: 0,
+                            center: ['50%', '75%'],
+                            radius: '90%',
+                            min: 0,
+                            max: 6,
+                            splitNumber: 6,
+                            axisLine: {
+                                lineStyle: {
+                                    width: 10,
+                                    color: [
+                                        [0.16, '#ff0000'], 
+                                        [0.32, '#ff5500'],
+                                        [0.48, '#ffaa00'],
+                                        [0.64, '#ffff00'],
+                                        [0.80, '#aaff00'],
+                                        [1, '#00ff00']
+                                    ]
+                                }
+                            },
+                            pointer: {
+                                icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
+                                length: '12%',
+                                width: 20,
+                                offsetCenter: [0, '-60%'],
+                                itemStyle: {
+                                    color: 'auto'
+                                }
+                            },
+                            axisTick: {
+                                length: 12,
+                                lineStyle: {
+                                    color: 'auto',
+                                    width: 2
+                                }
+                            },
+                            splitLine: {
+                                length: 20,
+                                lineStyle: {
+                                    color: 'auto',
+                                    width: 5
+                                }
+                            },
+                            axisLabel: {
+                                color: '#464646',
+                                fontSize: 14,
+                                distance: -50,
+                                rotate: 'tangential',
+                                formatter: function (value) {
+                                    if (value === 0) {
+                                        return '0';
+                                    } else if (value === 1) {
+                                        return '1';
+                                    } else if (value === 2) {
+                                        return '2';
+                                    } else if (value === 3) {
+                                        return '3';
+                                    } else if (value === 4) {
+                                        return '4';
+                                    } else if (value === 5) {
+                                        return '5';
+                                    } else if (value === 6) {
+                                        return '6';
+                                    }
+                                    return '';
+                                }
+                            },
+                            title: {
+                                offsetCenter: [0, '-10%'],
+                                fontSize: 20
+                            },
+                            detail: {
+                                fontSize: 30,
+                                offsetCenter: [0, '-35%'],
+                                valueAnimation: true,
+                                formatter: function (value) {
+                                    return Math.round(value) + '';
+                                },
+                                color: 'inherit'
+                            },
+                            data: [
+                                {
+                                    value: 1,
+                                    name: 'Severity Level'
+                                }
+                            ]
+                        }
+                    ]
+                };
                 var gaugeSeverityChartOptionsKPI = {
                     responsive: false,
                     maintainAspectRatio: false,
@@ -344,8 +438,8 @@
                     ]
                 };
 
-                let nowDateMoment = moment.utc();
-                //let nowDateMoment = moment.utc("2025-08-20T05:40:00");
+                //let nowDateMoment = moment.utc();
+                let nowDateMoment = moment.utc("2025-08-20T05:40:00");
             </script>
 
             <script>

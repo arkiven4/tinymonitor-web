@@ -509,12 +509,12 @@
                     gaugeSeverityChart.setOption(gaugeSeverityChartOptions);
                     window.addEventListener('resize', gaugeSeverityChart.resize);
                     
-                    gaugeSeverityChartOptions.series[0].data[0].value = percentage2priority(data['priority_data']);
-                    gaugeSeverityChartOptions.series[0].data[0].name = "Priority Level";
+                    gaugePriorityChartOptions.series[0].data[0].value = 7 - percentage2priority(data['priority_data']);
+                    gaugePriorityChartOptions.series[0].data[0].name = "Priority Level";
                     gaugeSeverityChart2 = echarts.init(document.getElementById('gauge_2'), null, {
                         renderer: 'canvas',
                     });
-                    gaugeSeverityChart2.setOption(gaugeSeverityChartOptions);
+                    gaugeSeverityChart2.setOption(gaugePriorityChartOptions);
                     window.addEventListener('resize', gaugeSeverityChart2.resize);
 
                     // canvasDoughnut

@@ -98,8 +98,6 @@ def kpi(request):
     #     # 'data_timestamp': data_timestamp,
     # }
     return Response(kpi_datas, status=status.HTTP_200_OK)
-    
-
 
 @api_view(['GET'])
 def severity_plot(request):
@@ -179,5 +177,14 @@ def advisory_detail(request, feat_id=0, minusdays=7):
         'correlation_nowparam': correlation_nowparam,
         'correlate_sensor_datas': correlate_sensor_datas,
         'correlate_trending_datas': correlate_trending_datas
+    }
+    return Response(data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def timeinfo_detail(request):
+    datetime_last, next_update  = helper_fun.get_TimeInformastion()
+    data = {
+        'datetime_last': datetime_last,
+        'next_update': next_update,
     }
     return Response(data, status=status.HTTP_200_OK)
