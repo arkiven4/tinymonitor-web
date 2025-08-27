@@ -188,3 +188,11 @@ def timeinfo_detail(request):
         'next_update': next_update,
     }
     return Response(data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def adjust_threshold_settings(request):
+    datetime_last  = helper_fun.get_adjustthr()
+    data = {
+        'datetime_last': datetime_last,
+    }
+    return Response(data, status=status.HTTP_200_OK)

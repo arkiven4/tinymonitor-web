@@ -46,5 +46,17 @@
         </div>
     </div>
 </div>
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: "/api/adjust_threshold_settings",
+            data: {},
+            success: function (data) {
 
+            }
+        })
+    })
+</script>
 {% endblock %}

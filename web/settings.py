@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-6#4cv52+et%kyj3c24ae^0#*dw^3^@df#bm8@5#+quz46+caze'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -138,6 +138,6 @@ if DEBUG:
     INSTALLED_APPS = INSTALLED_APPS + ["django_browser_reload"]
     MIDDLEWARE = MIDDLEWARE + ["django_browser_reload.middleware.BrowserReloadMiddleware"]
     
-MONITORINGDB_PATH = "/home/arkiven4/Documents/Project/Vale/cbm_vale/"
-#MONITORINGDB_PATH = "D:\\ITSTeam\\NewGen\\cbm_vale\\"
+#MONITORINGDB_PATH = "/home/arkiven4/Documents/Project/Vale/cbm_vale/"
+MONITORINGDB_PATH = "D:\\ITSTeam\\NewGen\\cbm_vale\\"
 

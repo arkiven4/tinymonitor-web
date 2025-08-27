@@ -89,6 +89,10 @@ def get_FixedDate(start_date=None, end_date=None, ignore=False):
 
     return start_date, end_date
 
+def get_adjustthr():
+    pass
+    return ""
+
 def get_TimeInformastion():
     conn = sqlite3.connect(settings.MONITORINGDB_PATH + "db/severity_trendings.db")
     cursor = conn.cursor()
@@ -105,7 +109,6 @@ def get_TimeInformastion():
     datetime_last = datetime_last.strftime("%Y-%m-%dT%H:%M:%S")
 
     return datetime_last, next_update
-
 
 def get_PanelSummary(start_date=None, end_date=None):
     start_date, end_date = get_FixedDate(start_date, end_date)
@@ -360,6 +363,7 @@ def get_SeverityNLoss(start_date=None, end_date=None):
                           for idx_sensor, sensor_thre in enumerate(now_fetched)}
 
         # Start Implement Adjsutment
+        print(threshold_pass['UGB cooling water flow'])
         threshold_pass['UGB cooling water flow'] = threshold_pass['UGB cooling water flow'] * 0.15
 
         threshold_percentages_sorted[idx_model] = dict(
@@ -423,9 +427,9 @@ def get_SeverityNLoss(start_date=None, end_date=None):
     loss_send = np.vstack(loss_send).T
     timings['feature_processing'] = time.perf_counter() - t5
 
-    # Print timing results
-    for step, duration in timings.items():
-        print(f"{step}: {duration:.4f} sec")
+    # # Print timing results
+    # for step, duration in timings.items():
+    #     print(f"{step}: {duration:.4f} sec")
 
     return counter_feature_s2, df_timestamp, df_feature_send, y_pred_send, loss_send, thr_now_model
 
