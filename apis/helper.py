@@ -331,17 +331,23 @@ def get_KPIData(start_date=None, end_date=None, units=None, noe_metric="noe"):
             'Duration_hours'].sum().unstack(fill_value=0)
         kpi_results['noe'] = {'data': groupen_df2, 'labels': groupen_df2.index}
 
-    loaded_df = pd.read_pickle(
-        settings.MONITORINGDB_PATH + "db/other_kpis.pickle")
-    loaded_df = loaded_df[(loaded_df['Start'] >= pd.to_datetime(start_date)) & (
-        loaded_df['Start'] <= pd.to_datetime(end_date))]
-    # loaded_df = loaded_df[loaded_df['Plant'].isin(units)]
-    values = loaded_df[['MTBF', 'MTTR', 'TEEP']].sum().to_frame().T.values[0]
-    labels = ['MTBF', 'MTTR', 'TEEP']
-    kpi_results['other_kpi'] = {
-        'data': values,
-        'labels': labels
-    }
+    try:
+        loaded_df = pd.read_pickle(
+            settings.MONITORINGDB_PATH + "db/other_kpis.pickle")
+        loaded_df = loaded_df[(loaded_df['Start'] >= pd.to_datetime(start_date)) & (
+            loaded_df['Start'] <= pd.to_datetime(end_date))]
+        # loaded_df = loaded_df[loaded_df['Plant'].isin(units)]
+        values = loaded_df[['MTBF', 'MTTR', 'TEEP']].sum().to_frame().T.values[0]
+        labels = ['MTBF', 'MTTR', 'TEEP']
+        kpi_results['other_kpi'] = {
+            'data': values,
+            'labels': labels
+        }
+    except:
+        kpi_results['other_kpi'] = {
+            'data': [],
+            'labels': []
+        }
 
     return kpi_results
 
