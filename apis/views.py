@@ -191,7 +191,10 @@ def timeinfo_detail(request):
 
 @api_view(['GET'])
 def adjust_threshold_settings(request):
-    datetime_last  = helper_fun.get_adjustthr()
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    datetime_last  = helper_fun.get_adjustthr(start_date, end_date)
     data = {
         'datetime_last': datetime_last,
     }

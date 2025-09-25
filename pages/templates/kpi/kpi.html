@@ -491,10 +491,7 @@
             url: "/api/kpi",
             data: { start_date: start_date, end_date: end_date, tags: tags, noe_metric: noe_metric },
             success: function (data) {
-                console.log(data)
                 const keysToAverage = ['oee', 'phy_avail', 'performance', 'uo_Avail'];
-                const keysToSum = ['aux_0', 'aux_1'];
-
                 const keys_unit = Object.keys(data).filter(key => key !== 'plant' && key !== 'noe' && key !== 'other_kpi');
                 const timestamps = data[keys_unit[0]].timestamp;
                 const combinedData = {
@@ -503,8 +500,6 @@
                     phy_avail: [],
                     performance: [],
                     uo_Avail: [],
-                    aux_0: [],
-                    aux_1: []
                 };
 
                 for (let i = 0; i < timestamps.length; i++) {
@@ -515,14 +510,6 @@
                         }
                         const avg = sum / keys_unit.length;
                         combinedData[key].push(avg);
-                    }
-
-                    for (const key of keysToSum) {
-                        let sum = 0;
-                        for (const unitKey of keys_unit) {
-                            sum += data[unitKey][key][i];
-                        }
-                        combinedData[key].push(sum);
                     }
                 }
 
@@ -625,7 +612,7 @@
                         const d = new Date(ts);
                         return `${d.getDate().toString().padStart(2, '0')}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getFullYear()}`;
                     });
-                    console.log(kpiDatasets[0].data)
+                    
                     line_chart1 = new Chart(document.getElementById(`kpi_trend_chart`).getContext('2d'), {
                         type: 'line',
                         data: {
@@ -640,7 +627,6 @@
                             responsive: false,
                             scales: {
                                 x: {
-                                    //type: 'time',
                                     time: {
                                         unit: 'auto',
                                         tooltipFormat: 'Do-MM-yyy',
@@ -709,8 +695,6 @@
                     const kpd_pct = [];
 
                     for (let i = 0; i < lpd.length; i++) {
-                        const total = lpd[i] + bpd[i] + kpd[i];
-
                         lpd_pct.push(lpd[i]);//lpd_pct.push((lpd[i] / total) * 100);
                         bpd_pct.push(bpd[i]);
                         kpd_pct.push(kpd[i]);
@@ -852,13 +836,14 @@
                         }, ChartDataLabels]
                     });
 
+                    var total_aux_0 = data.plant.aux_0.reduce((sum, value) => sum + value, 0);
+                    var total_aux_1 = data.plant.aux_1.reduce((sum, value) => sum + value, 0);
                     new Chart(document.getElementById(`grid_pie1`).getContext('2d'), {
                         type: 'pie',
                         data: {
                             labels: ['Aux', 'Furnace'],
                             datasets: [{ 
-                                data: [combinedData.aux_0[combinedData.aux_0.length - 1],
-                                combinedData.aux_1[combinedData.aux_1.length - 1]],
+                                data: [total_aux_0, total_aux_1],
                                 backgroundColor: ['#00807C', '#EEA722', '#FFC107'],
                                 hoverOffset: 4
                             }]
@@ -919,31 +904,13 @@
                         }, ChartDataLabels]
                     });
 
-                    const fceGridTrend = data.plant.hpd.map((val, i) => val);
-                    const auxGridTrend = combinedData.aux_0.map((val, i) => val + combinedData.aux_1[i]);
-
-                    // If your rules are like Python:
-                    // Fce Grid Trend = sum of corresponding values where grid tag ≠ 0
-                    // Aux Grid Trend = sum of corresponding values where grid tag = 0
-                    console.log(fceGridTrend.length)
-
-                    const aux0_pct = [];
-                    const aux1_pct = [];
-
-                    for (let i = 0; i < combinedData.aux_0.length; i++) {
-                        const total = combinedData.aux_0[i] + combinedData.aux_1[i];
-
-                        aux0_pct.push(combinedData.aux_0[i]) //aux0_pct.push((combinedData.aux_0[i] / total) * 100);
-                        aux1_pct.push(combinedData.aux_1[i]);
-                    }
-
                     line_chart3 = new Chart(document.getElementById(`grid_trendchart`).getContext('2d'), {
                         type: 'line',
                         data: {
                             labels: formattedLabels,
                             datasets: [{
                                 label: 'Aux',
-                                data: auxGridTrend,
+                                data: data.plant.aux_0,
                                 borderColor: '#e8b62e',
                                 backgroundColor: '#e8b62e',
                                 tension: 0.4,
@@ -951,7 +918,7 @@
                             },
                             {
                                 label: 'Furnace',
-                                data: fceGridTrend,
+                                data: data.plant.aux_1,
                                 borderColor: '#c2386f',
                                 backgroundColor: '#c2386f',
                                 tension: 0.4,

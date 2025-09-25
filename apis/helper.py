@@ -89,8 +89,29 @@ def get_FixedDate(start_date=None, end_date=None, ignore=False):
 
     return start_date, end_date
 
-def get_adjustthr():
-    pass
+def get_adjustthr(start_date=None, end_date=None):
+    start_date, end_date = get_FixedDate(start_date, end_date)
+
+    #multiplier_severity = commons.fetch_last_rows(1, settings.MONITORINGDB_PATH + "db/multiplier_severity.db", model_name)[-1, 2:]
+    mean_severity_percentage = {f: {"count": 0, "percentage": 0} for f in commons.feature_set}
+    for idx_model, model_name in enumerate(commons.model_array):
+        now_fetched = commons.fetch_last_rows(1, settings.MONITORINGDB_PATH + "db/threshold_data.db", model_name)[-1, 2:]
+        threshold_pass = {commons.feature_set[idx_sensor]: float(sensor_thre) for idx_sensor, sensor_thre in enumerate(now_fetched)}
+        for feature_name in commons.feature_set:
+            if threshold_pass[feature_name] >= 20:
+                mean_severity_percentage[feature_name]["count"] += 1
+                mean_severity_percentage[feature_name]["percentage"] += threshold_pass[feature_name]
+
+    for f, v in mean_severity_percentage.items():
+        if v["count"] >= 2:
+            v["count"] = round((v["count"] / len(commons.model_array)) * 100, 2)
+            v["percentage"] = round(v["percentage"] / len(commons.model_array))
+        else:
+            v["count"] = 0
+            v["percentage"] = 0
+
+    # print(mean_severity_percentage['UGB cooling water flow']["percentage"] * auto_adjust_constant)
+    # print(auto_adjust_constant)
     return ""
 
 def get_TimeInformastion():
@@ -264,10 +285,9 @@ def get_KPIData(start_date=None, end_date=None, units=None, noe_metric="noe"):
         units = ['LGS1', 'LGS2', 'LGS3', 'BGS1', 'BGS2', 'KGS1', 'KGS2']
 
     kpi_results = {}
+    aux_timeline = {}
     for unit in units:
-        kpi_data = commons.fetch_between_dates(
-            start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", unit
-        )
+        kpi_data = commons.fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", unit)
         if kpi_data is None or len(kpi_data) == 0:
             continue
 
@@ -290,38 +310,98 @@ def get_KPIData(start_date=None, end_date=None, units=None, noe_metric="noe"):
             'aux_1': aux_1,
         }
 
-    # Fetch plant-wide data (lpd, hpd, ahpa)
-    plant_data = commons.fetch_between_dates(
-        start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", "PowerProd"
-    )
+        ppl_data = commons.fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", unit + "_timeline", max_rows=2000)
+        if ppl_data is not None and len(ppl_data) > 0:
+            aux_timeline[unit] = {
+                'timestamp': ppl_data[:, 1],
+                'aux_0': ppl_data[:, 2].astype(float) * ppl_data[:, 4].astype(float),
+                'aux_1': ppl_data[:, 2].astype(float) * ppl_data[:, 5].astype(float),
+            }
 
-    if plant_data is not None and len(plant_data) > 0:
-        timestamps = plant_data[:, 1]
-        hpd = plant_data[:, 2].astype(float)
-        ahpa = plant_data[:, 3].astype(float)
-        lpd = plant_data[:, 4].astype(float)
-        bpd = plant_data[:, 5].astype(float)
-        kpd = plant_data[:, 6].astype(float)
+    reference_unit = list(aux_timeline.keys())[0]
+    common_timestamps = aux_timeline[reference_unit]['timestamp']
+    
+    # Group units by first letter (L, B, K)
+    lgs_units = [unit for unit in aux_timeline.keys() if unit.startswith('L')]
+    bgs_units = [unit for unit in aux_timeline.keys() if unit.startswith('B')]
+    kgs_units = [unit for unit in aux_timeline.keys() if unit.startswith('K')]
+    
+    # Initialize time-series arrays
+    num_points = len(common_timestamps)
+    lpd_timeseries = np.zeros(num_points)
+    bpd_timeseries = np.zeros(num_points)
+    kpd_timeseries = np.zeros(num_points)
+    aux_0_global_timeseries = np.zeros(num_points)
+    aux_1_global_timeseries = np.zeros(num_points)
 
-        plant_values = {
-            'timestamp': timestamps,
-            'hpd': hpd,
-            'ahpa': ahpa,
-            'lpd': lpd,
-            'bpd': bpd,
-            'kpd': kpd,
+    unit_power_timeseries = {}
+    for unit in aux_timeline:
+        aux_0_data = aux_timeline[unit]['aux_0']
+        aux_1_data = aux_timeline[unit]['aux_1']
+        total_power_data = aux_0_data + aux_1_data
+        
+        unit_power_timeseries[unit] = {
+            'aux_0': aux_0_data,
+            'aux_1': aux_1_data,
+            'total_power': total_power_data
         }
+        
+        # Add to global totals
+        aux_0_global_timeseries += aux_0_data
+        aux_1_global_timeseries += aux_1_data
+        
+        # Add to plant group totals
+        if unit in lgs_units:
+            lpd_timeseries += total_power_data
+        elif unit in bgs_units:
+            bpd_timeseries += total_power_data
+        elif unit in kgs_units:
+            kpd_timeseries += total_power_data
+    
+    # Calculate hpd (total of all plants) and ahpa (average)
+    hpd_timeseries = lpd_timeseries + bpd_timeseries + kpd_timeseries
+    ahpa_timeseries = hpd_timeseries / len(aux_timeline) if len(aux_timeline) > 0 else np.zeros(num_points)
+    
+    # Store calculated time-series values
+    kpi_results['plant'] = {
+        'timestamp': common_timestamps,
+        'lpd': lpd_timeseries,
+        'bpd': bpd_timeseries,
+        'kpd': kpd_timeseries,
+        'hpd': hpd_timeseries,  # Total of all plants
+        'ahpa': ahpa_timeseries,  # Average
+        'aux_0': aux_0_global_timeseries,
+        'aux_1': aux_1_global_timeseries,
+    }
 
-        kpi_results['plant'] = plant_values
+    # Fetch plant-wide data (lpd, hpd, ahpa)
+    # plant_data = commons.fetch_between_dates(
+    #     start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", "PowerProd"
+    # )
 
-    loaded_df = pd.read_pickle(
-        settings.MONITORINGDB_PATH + "db/number_of_event.pickle")
+    # if plant_data is not None and len(plant_data) > 0:
+    #     timestamps = plant_data[:, 1]
+    #     hpd = plant_data[:, 2].astype(float)
+    #     ahpa = plant_data[:, 3].astype(float)
+    #     lpd = plant_data[:, 4].astype(float)
+    #     bpd = plant_data[:, 5].astype(float)
+    #     kpd = plant_data[:, 6].astype(float)
+
+    #     plant_values = {
+    #         'timestamp': timestamps,
+    #         'hpd': hpd,
+    #         'ahpa': ahpa,
+    #         'lpd': lpd,
+    #         'bpd': bpd,
+    #         'kpd': kpd,
+    #     }
+    #     kpi_results['plant'] = plant_values
+
+    loaded_df = pd.read_pickle(settings.MONITORINGDB_PATH + "db/number_of_event.pickle")
     # loaded_df = loaded_df[(loaded_df['Start'] >= pd.to_datetime(start_date)) & (loaded_df['Start'] <= pd.to_datetime(end_date))]
     loaded_df = loaded_df[loaded_df['Plant'].isin(units)]
     loaded_df['Duration'] = loaded_df['End'] - loaded_df['Start']
-    loaded_df['Duration_hours'] = np.round(
-        loaded_df['Duration'].dt.total_seconds() / 3600, 2)
-
+    loaded_df['Duration_hours'] = np.round(loaded_df['Duration'].dt.total_seconds() / 3600, 2)
     if noe_metric == 'noe':
         groupen_df1 = loaded_df.groupby(
             ['Plant', 'Category']).size().unstack(fill_value=0)
@@ -349,6 +429,7 @@ def get_KPIData(start_date=None, end_date=None, units=None, noe_metric="noe"):
             'labels': []
         }
 
+    
     return kpi_results
 
 

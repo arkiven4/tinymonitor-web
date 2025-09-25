@@ -65,21 +65,49 @@ def denormalize3(a_norm, min_a, max_a):
     return a_norm * (max_a - min_a + 0.0001) + min_a
 
 
-def fetch_between_dates(start_date, end_date, db_name="data.db", table_name="sensor_data"):
+def fetch_between_dates(start_date, end_date, db_name="data.db", table_name="sensor_data", max_rows=1000):
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
     
+    cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.execute("PRAGMA synchronous=NORMAL;")
+    cursor.execute("PRAGMA cache_size=10000;")
+    cursor.execute("PRAGMA temp_store=memory;")
+
     cursor.execute(f"""
         SELECT * FROM {table_name} WHERE timestamp BETWEEN ? AND ?
     """, (start_date, end_date))
     
+    total_rows = cursor.fetchone()[0]
+    if total_rows == 0:
+        conn.close()
+        return np.array([])
+
+    if total_rows <= max_rows:
+        # If small dataset, fetch all
+        cursor.execute(f"""
+            SELECT * FROM {table_name} WHERE timestamp BETWEEN ? AND ?
+            ORDER BY timestamp
+        """, (start_date, end_date))
+    else:
+        # If large dataset, use systematic sampling
+        step_size = max(1, total_rows // max_rows)
+        cursor.execute(f"""
+            SELECT * FROM (
+                SELECT *, ROW_NUMBER() OVER (ORDER BY timestamp) as rn
+                FROM {table_name} 
+                WHERE timestamp BETWEEN ? AND ?
+            ) WHERE rn % ? = 1
+            ORDER BY timestamp
+        """, (start_date, end_date, step_size))
+
     rows = cursor.fetchall()
     conn.close()
-
-    if not rows:
-        return np.array([])
     
-    return np.array(rows)
+    if total_rows <= max_rows:
+        return np.array(rows)
+    else:
+        return np.array(rows)[:, :-1]
 
 def fetch_last_rows(num_row, db_name="data.db", table_name="sensor_data"):
     conn = sqlite3.connect(db_name)
