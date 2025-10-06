@@ -411,30 +411,32 @@
 
     const kpi_key = ["oee", "phy_avail", "performance", "uo_Avail"]
     const kpi_labels = ["OEE", "Physical Availability", "Performance", "Utilization of Availability"]
-    function getColorClassByValue(value) {
-        if (value < 20) return "bg-danger";         // dark red
-        if (value < 40) return "bg-danger-subtle";  // red
-        if (value < 60) return "bg-warning";        // orange
-        if (value < 80) return "bg-warning-subtle"; // dark yellow
-        return "bg-success";                        // green
+    function getColorClassByValue(value, kpi_key_now) {
+        return colors_line_chart1[kpi_key.indexOf(kpi_key_now) % colors_line_chart1.length]
+        // if (value < 20) return "bg-danger";         // dark red
+        // if (value < 40) return "bg-danger-subtle";  // red
+        // if (value < 60) return "bg-warning";        // orange
+        // if (value < 80) return "bg-warning-subtle"; // dark yellow
+        // return "bg-success";                        // green
     }
 
-    function getColorFromValue(value) {
-        const colorMap = [
-            [0.16, '#ff0000'],
-            [0.32, '#ff5500'],
-            [0.48, '#ffaa00'],
-            [0.64, '#e5e500'],
-            [0.80, '#99e500'],
-            [1.00, '#007e7a']
-        ];
+    function getColorFromValue(value, kpi_key_now) {
+        return colors_line_chart1[kpi_key.indexOf(kpi_key_now) % colors_line_chart1.length]
+        // const colorMap = [
+        //     [0.16, '#ff0000'],
+        //     [0.32, '#ff5500'],
+        //     [0.48, '#ffaa00'],
+        //     [0.64, '#e5e500'],
+        //     [0.80, '#99e500'],
+        //     [1.00, '#007e7a']
+        // ];
 
-        for (let i = 0; i < colorMap.length; i++) {
-            if (value <= colorMap[i][0]) {
-                return colorMap[i][1];
-            }
-        }
-        return colorMap[colorMap.length - 1][1];
+        // for (let i = 0; i < colorMap.length; i++) {
+        //     if (value <= colorMap[i][0]) {
+        //         return colorMap[i][1];
+        //     }
+        // }
+        // return colorMap[colorMap.length - 1][1];
     }
 
     function drawSegment(container, start, end, label, globalStart, totalDuration, categoryColorsNow) {
@@ -851,7 +853,7 @@
                         const nowKPIKey = kpi_key[index];
                         document.getElementById("prev_" + nowKPIKey).innerHTML = (combinedData[nowKPIKey][combinedData[nowKPIKey].length - 2] * 100) + "%";
                         gaugeSeverityChartOptionsKPI.series[0].data[0].value = combinedData[nowKPIKey][combinedData[nowKPIKey].length - 1] * 100;
-                        gaugeSeverityChartOptionsKPI.series[0].itemStyle.color = getColorFromValue(combinedData[nowKPIKey][combinedData[nowKPIKey].length - 1]);
+                        gaugeSeverityChartOptionsKPI.series[0].itemStyle.color = getColorFromValue(combinedData[nowKPIKey][combinedData[nowKPIKey].length - 1], nowKPIKey);
 
                         gaugeSeverityChart = echarts.init(document.getElementById('gauge_' + nowKPIKey), null, {
                             renderer: 'canvas',

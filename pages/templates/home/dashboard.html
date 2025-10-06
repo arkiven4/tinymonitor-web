@@ -142,9 +142,7 @@
 <div class="row">
     <div class="col-md-12 col-sm-12">
         <div class="x_panel tile">
-            <div class="x_content">
-                <p>Page Last Update <span id="last_update"></span>, Page Will be Update in <span
-                        id="refresh_page_time"></span>, Last Calculation:
+            <div class="x_content">Last Calculation:
                     <span id="last_calcdate"></span>, Next Calculation: <span id="next-update"></span>
                 </p>
             </div>
@@ -173,7 +171,7 @@
         { id: 'sensor_point17', top: 9, left: 24, name: "UGB metal Temp" },
         { id: 'sensor_point18', top: 47, left: 15, name: "LGB metal Temp 1" },
         { id: 'sensor_point19', top: 54, left: 15, name: "LGB metal Temp 2" },
-        { id: 'sensor_point20', top: 61, left: 16.5, name: "LGB oil Temp" },
+        { id: 'sensor_point20', top: 61, left: 16.5, name: "Thrus Metal Temp" },
         { id: 'sensor_point21', top: 79, left: 17, name: "Penstock Flow" },
         { id: 'sensor_point22', top: 86, left: 18, name: "Turbine flow" },
         { id: 'sensor_point23', top: 7.5, left: 57, name: "UGB CW flow" },
@@ -534,8 +532,8 @@
         });
 
         var now_date = new Date()
-        document.getElementById("last_update").textContent = now_date.toLocaleString();
-        document.getElementById("refresh_page_time").textContent = new Date(now_date.getTime() + 5 * 60 * 1000).toLocaleString();
+        // document.getElementById("last_update").textContent = now_date.toLocaleString();
+        // document.getElementById("refresh_page_time").textContent = new Date(now_date.getTime() + 5 * 60 * 1000).toLocaleString();
         $.ajax({
             type: "GET",
             dataType: "json",
