@@ -466,12 +466,20 @@
                         plugins: [ChartDataLabels]
                     });
 
+                    const renameMap = {
+                        Grid: "AUX",
+                        Furnace: "FCE"
+                    };
+                    const renamed_modeop = Object.fromEntries(
+                        Object.entries(data.operation_mode).map(([k, v]) => [renameMap[k] || k, v])
+                    );
+
                     new Chart(document.getElementById('operation_modeChart').getContext('2d'), {
                         type: 'pie',
                         data: {
-                            labels: Object.keys(data.operation_mode),
+                            labels: Object.keys(renamed_modeop),
                             datasets: [{
-                                data: Object.values(data.operation_mode),
+                                data: Object.values(renamed_modeop),
                                 hoverOffset: 4
                             }]
                         },
