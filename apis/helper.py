@@ -135,10 +135,11 @@ def get_PanelSummary(start_date=None, end_date=None):
     start_date, end_date = get_FixedDate(start_date, end_date)
 
     sensor_datas = commons.fetch_between_dates(
-        start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "original_data")
+        start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "original_data", resampling=False)
     severtrend_datas = commons.fetch_between_dates(
         start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
 
+    #print(f"Result : {sensor_datas.shape}")
     sensor_datas = sensor_datas[::-1]  # Reverse Array
     severtrend_datas = severtrend_datas[::-1]
 
@@ -450,7 +451,7 @@ def get_SeverityNLoss(start_date=None, end_date=None):
                           for idx_sensor, sensor_thre in enumerate(now_fetched)}
 
         # Start Implement Adjsutment
-        print(threshold_pass['UGB cooling water flow'])
+        #print(threshold_pass['UGB cooling water flow'])
         threshold_pass['UGB cooling water flow'] = threshold_pass['UGB cooling water flow'] * 0.15
 
         threshold_percentages_sorted[idx_model] = dict(
@@ -460,7 +461,7 @@ def get_SeverityNLoss(start_date=None, end_date=None):
 
     t2 = time.perf_counter()
     temp_original_data = commons.fetch_between_dates(
-        start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "original_data")
+        start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "original_data", resampling=False)
     df_timestamp, df_feature = temp_original_data[:, 1], temp_original_data[:, 2:].astype(
         np.float16)
     timings['fetch_original_data'] = time.perf_counter() - t2
@@ -469,7 +470,7 @@ def get_SeverityNLoss(start_date=None, end_date=None):
     temp_ypreds = {}
     for idx_model, model_name in enumerate(commons.model_array):
         temp_ypreds[idx_model] = commons.fetch_between_dates(
-            start_date, end_date, settings.MONITORINGDB_PATH + "db/pred_data.db", model_name)[:, 2:].astype(np.float16)
+            start_date, end_date, settings.MONITORINGDB_PATH + "db/pred_data.db", model_name, resampling=False)[:, 2:].astype(np.float16)
     timings['fetch_predictions'] = time.perf_counter() - t3
 
     t4 = time.perf_counter()

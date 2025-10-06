@@ -65,7 +65,7 @@ def denormalize3(a_norm, min_a, max_a):
     return a_norm * (max_a - min_a + 0.0001) + min_a
 
 
-def fetch_between_dates(start_date, end_date, db_name="data.db", table_name="sensor_data", max_rows=1000):
+def fetch_between_dates(start_date, end_date, db_name="data.db", table_name="sensor_data", max_rows=1000, resampling=True):
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
     
@@ -82,14 +82,15 @@ def fetch_between_dates(start_date, end_date, db_name="data.db", table_name="sen
     if total_rows == 0:
         conn.close()
         return np.array([])
-
-    if total_rows <= max_rows:
+    
+    #print(total_rows)
+    if total_rows <= max_rows or resampling == False:
         # If small dataset, fetch all
         cursor.execute(f"""
             SELECT * FROM {table_name} WHERE timestamp BETWEEN ? AND ?
             ORDER BY timestamp
         """, (start_date, end_date))
-    else:
+    elif resampling == True:
         # If large dataset, use systematic sampling
         step_size = max(1, total_rows // max_rows)
         cursor.execute(f"""
@@ -103,10 +104,14 @@ def fetch_between_dates(start_date, end_date, db_name="data.db", table_name="sen
 
     rows = cursor.fetchall()
     conn.close()
-    
-    if total_rows <= max_rows:
+
+    if total_rows <= max_rows or resampling == False:
         return np.array(rows)
     else:
+        # print(table_name)
+        # print(start_date)
+        # print(end_date)
+        # print(np.array(rows).shape)
         return np.array(rows)[:, :-1]
 
 def fetch_last_rows(num_row, db_name="data.db", table_name="sensor_data"):
