@@ -60,7 +60,7 @@
             <div class="x_content">
                 <div class="position-relative" style="background-color: rgb(243, 243, 243);">
                     <img src="{% static 'img/main_hydro2.png' %}" style="max-width: 100%;height: 85vh">
-                    <div id="sensor_point2" class="position-absolute" style="display: none;"></div>
+                    <div id="sensor_point2" class="position-absolute"></div>
                     <div id="sensor_point1" class="position-absolute"></div>
                     <div id="sensor_point3" class="position-absolute"></div>
                     <div id="sensor_point4" class="position-absolute"></div>
@@ -90,6 +90,7 @@
                     <div id="sensor_point28" class="position-absolute"></div>
                     <div id="sensor_point29" class="position-absolute"></div>
                     <div id="sensor_point30" class="position-absolute"></div>
+                    <div id="sensor_point31" class="position-absolute"></div>
                 </div>
             </div>
         </div>
@@ -141,26 +142,42 @@
 
 <div class="row">
     <div class="col-md-12 col-sm-12">
-        <div class="x_panel tile">
-            <div class="x_content">Last Calculation:
-                    <span id="last_calcdate"></span>, Next Calculation: <span id="next-update"></span>
-                </p>
-            </div>
+        <div class="x_panel tile" style="display:flex;justify-content:space-between;align-items:center;">
+    <div class="x_content">
+        Last Calculation: <span id="last_calcdate"></span>,
+        Next Calculation: <span id="next-update"></span>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+        <div style="display:flex;align-items:center;gap:4px;">
+            <span style="width:18px;height:18px;background:rgb(0,128,0);
+                         display:inline-block;border-radius:3px;"></span>
+            <span>Severity</span>
         </div>
+        <div style="display:flex;align-items:center;gap:4px;">
+            <span style="width:18px;height:18px;background:rgb(0,128,0);
+                         display:inline-block;border-radius:50%;"></span>
+            <span>Priority</span>
+        </div>
+
+    </div>
+</div>
+
     </div>
 </div>
 
 <script>
+    // TODO :  Severity angka, Priority itu Deskripsi
     const sensorPoints = [
         { id: 'sensor_point1', top: 0, left: 0, name: "Active Power" },
-        { id: 'sensor_point2', top: 0, left: 0, name: "Reac Power" },
-        { id: 'sensor_point3', top: 7, left: 0, name: "Governor Speed" },
+        { id: 'sensor_point2', top: 7, left: 0, name: "Reactive Power" },
+        { id: 'sensor_point3', top: 0, right: 0, name: "Governor Speed" },
         { id: 'sensor_point4', top: 8, left: 74, name: "UGB X displacement" },
         { id: 'sensor_point5', top: 15, left: 74, name: "UGB Y displacement" },
         { id: 'sensor_point6', top: 52, left: 58, name: "LGB X displacement" },
         { id: 'sensor_point7', top: 59, left: 58, name: "LGB Y displacement" },
         { id: 'sensor_point8', top: 71, left: 63, name: "TGB X displacement" },
         { id: 'sensor_point9', top: 78, left: 63, name: "TGB Y displacement" },
+        //{ id: 'sensor_point31', top: 85, left: 63, name: "TGB Y displacement" },
         { id: 'sensor_point10', top: 20.5, left: 0, name: "Stator winding T. 13" },
         { id: 'sensor_point11', top: 28, left: 0, name: "Stator winding T. 14" },
         { id: 'sensor_point12', top: 35, left: 0, name: "Stator winding T. 15" },
@@ -169,17 +186,17 @@
         { id: 'sensor_point15', top: 58, left: 79, name: "Surface Air Cooler Water Outlet T." },
         { id: 'sensor_point16', top: 42, left: 2, name: "Stator core T." },
         { id: 'sensor_point17', top: 9, left: 24, name: "UGB metal Temp" },
-        { id: 'sensor_point18', top: 47, left: 15, name: "LGB metal Temp 1" },
-        { id: 'sensor_point19', top: 54, left: 15, name: "LGB metal Temp 2" },
-        { id: 'sensor_point20', top: 61, left: 16.5, name: "Thrus Metal Temp" },
-        { id: 'sensor_point21', top: 79, left: 17, name: "Penstock Flow" },
-        { id: 'sensor_point22', top: 86, left: 18, name: "Turbine flow" },
+        { id: 'sensor_point18', top: 43, left: 22, name: "LGB metal Temp 1" },
+        { id: 'sensor_point19', top: 51, left: 22, name: "LGB metal Temp 2" },
+        { id: 'sensor_point20', top: 58, left: 22, name: "Thrust Metal Temp" },
+        { id: 'sensor_point21', top: 74, left: 18, name: "Penstock Flow" },
+        { id: 'sensor_point22', top: 82, left: 18, name: "Turbine flow" },
         { id: 'sensor_point23', top: 7.5, left: 57, name: "UGB CW flow" },
         { id: 'sensor_point24', top: 41, left: 61, name: "LGB CW flow" },
         { id: 'sensor_point25', top: 24, left: 82, name: "Generator CW flow" },
         { id: 'sensor_point26', top: 177, left: 11.5, name: "Governor Penstock Press" },
-        { id: 'sensor_point27', top: 72, left: 15.5, name: "Penstock pressure" },
-        { id: 'sensor_point28', top: 191, left: 10.5, name: "Opening Wicked Gate" },
+        { id: 'sensor_point27', top: 66, left: 18, name: "Penstock pressure" },
+        { id: 'sensor_point28', top: 90, left: 14, name: "Opening Wicked Gate" },
         { id: 'sensor_point29', top: 2, left: 22.5, name: "UGB Oil Contaminant" },
         { id: 'sensor_point30', top: 205, left: 9.5, name: "Gen Thrust Bearing Oil Contaminant" }
     ];
@@ -264,7 +281,11 @@
             url: "/api/panel_summary",
             data: { start_date: start_date, end_date: end_date },
             success: function (data) {
-                document.getElementById("last_calcdate").innerText = data.last_timestamp.replace("T", " ");
+                const lastUpdate = new Date(data.last_timestamp);
+                document.getElementById("last_calcdate").textContent = lastUpdate.toLocaleString();
+                const nextUpdate = new Date(lastUpdate.getTime() + 10 * 60 * 1000);
+                document.getElementById("next-update").textContent = nextUpdate.toLocaleString();
+
                 console.log(data)
                 for (const [i, p] of sensorPoints.entries()) {
                     const el = document.getElementById(p.id);
@@ -272,9 +293,11 @@
                     var current_severity_value = data.last_severity_featname[featureSet[i]];
                     var current_priority_value = data.priority_parameter[featureSet[i]];
 
+                    console.log(featureSet[i])
+
                     var current_unit = unitSet[i];
                     el.innerHTML = `<div class="btn custom_button_status" onclick="window.open('/advisory/chart?feat_id=${i}','_blank')" style="background-color: rgb(243, 243, 243); color: black">
-                                                    ${p.name} | <span class="badge" style="background-color: ${severity2color(current_severity_value)}; color: ${getContrastingTextColor(severity2color(current_severity_value))}">${current_severity_value}</span> <span class="badge" style="background-color: ${severity2color(percentage2priority(current_priority_value))}; color: ${getContrastingTextColor(severity2color(percentage2priority(current_priority_value)))}">${percentage2priority(current_priority_value)}</span><br> 
+                                                    ${p.name} | <span class="badge" style="background-color: ${severity2color(current_severity_value)}; color: ${getContrastingTextColor(severity2color(current_severity_value))}">${current_severity_value}</span> <span class="badge" style="display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background-color: ${severity2color(percentage2priority(current_priority_value))}; color: ${getContrastingTextColor(severity2color(percentage2priority(current_priority_value)))}">${percentage2alarmCode(current_priority_value)}</span><br> 
                                                     <span class="badge bg-dark text-light box_withborder">${current_sensor_value} ${current_unit}</span>`
                     if (current_severity_value > 1) {
                         el.innerHTML += `<span class="position-absolute translate-middle p-2 bg-danger border border-light rounded-circle" style="top:7%; left: 5%; background-color: ${severity2color(current_severity_value)}">
@@ -321,7 +344,7 @@
                         searching: false,
                         order: [[2, 'asc']]
                     });
-                    
+
                     for (var i = 0; i < data.ordered_feature_name.length; i++) {
                         var now_key = data.ordered_feature_name[i];
                         var dataPoints_raw = data.sensor_featname[now_key];
@@ -531,21 +554,23 @@
             }
         });
 
-        var now_date = new Date()
-        // document.getElementById("last_update").textContent = now_date.toLocaleString();
-        // document.getElementById("refresh_page_time").textContent = new Date(now_date.getTime() + 5 * 60 * 1000).toLocaleString();
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url: "/api/timeinfo_detail",
-            data: {},
-            success: function (data) {
-                const lastUpdate = new Date(data.datetime_last);
-                document.getElementById("last_calcdate").textContent = lastUpdate.toLocaleString();
-                const nextUpdate = new Date(data.next_update);
-                document.getElementById("next-update").textContent = nextUpdate.toLocaleString();
-            }
-        })
+        // var now_date = new Date()
+        // // document.getElementById("last_update").textContent = now_date.toLocaleString();
+        // // document.getElementById("refresh_page_time").textContent = new Date(now_date.getTime() + 5 * 60 * 1000).toLocaleString();
+        // $.ajax({
+        //     type: "GET",
+        //     dataType: "json",
+        //     url: "/api/timeinfo_detail",
+        //     data: {},
+        //     success: function (data) {
+        //         const lastUpdate = new Date(data.datetime_last);
+        //         console.log(lastUpdate.toLocaleString())
+        //         document.getElementById("last_calcdate").textContent = lastUpdate.toLocaleString();
+        //         const nextUpdate = new Date(data.next_update);
+        //         console.log(nextUpdate.toLocaleString())
+        //         document.getElementById("next-update").textContent = nextUpdate.toLocaleString();
+        //     }
+        // })
 
         setInterval(() => {
             location.reload();

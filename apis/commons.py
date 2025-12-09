@@ -65,54 +65,74 @@ def denormalize3(a_norm, min_a, max_a):
     return a_norm * (max_a - min_a + 0.0001) + min_a
 
 
-def fetch_between_dates(start_date, end_date, db_name="data.db", table_name="sensor_data", max_rows=1000, resampling=True):
+def fetch_between_dates(
+    start_date,
+    end_date,
+    db_name="data.db",
+    table_name="sensor_data",
+    max_rows=1000,
+    resampling=True,
+    columns="*",
+):
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
-    
+
     cursor.execute("PRAGMA journal_mode=WAL;")
     cursor.execute("PRAGMA synchronous=NORMAL;")
     cursor.execute("PRAGMA cache_size=10000;")
     cursor.execute("PRAGMA temp_store=memory;")
 
-    cursor.execute(f"""
-        SELECT * FROM {table_name} WHERE timestamp BETWEEN ? AND ?
-    """, (start_date, end_date))
-    
+    cursor.execute(
+        f"SELECT COUNT(*) FROM {table_name} WHERE timestamp BETWEEN ? AND ?",
+        (start_date, end_date),
+    )
     total_rows = cursor.fetchone()[0]
     if total_rows == 0:
         conn.close()
         return np.array([])
-    
-    #print(total_rows)
-    if total_rows <= max_rows or resampling == False:
-        # If small dataset, fetch all
-        cursor.execute(f"""
-            SELECT * FROM {table_name} WHERE timestamp BETWEEN ? AND ?
+
+    if isinstance(columns, (list, tuple)):
+        col_str = ", ".join(columns)
+    else:
+        col_str = columns
+
+    step_size = max(1, total_rows // max_rows)
+    if total_rows <= max_rows or resampling is False or step_size <= 1:
+        cursor.execute(
+            f"""
+            SELECT {col_str}
+            FROM {table_name}
+            WHERE timestamp BETWEEN ? AND ?
             ORDER BY timestamp
-        """, (start_date, end_date))
-    elif resampling == True:
-        # If large dataset, use systematic sampling
-        step_size = max(1, total_rows // max_rows)
-        cursor.execute(f"""
-            SELECT * FROM (
-                SELECT *, ROW_NUMBER() OVER (ORDER BY timestamp) as rn
-                FROM {table_name} 
-                WHERE timestamp BETWEEN ? AND ?
-            ) WHERE rn % ? = 1
-            ORDER BY timestamp
-        """, (start_date, end_date, step_size))
+            """,
+            (start_date, end_date),
+        )
+        rows = cursor.fetchall()
+        conn.close()
+        return np.array(rows)
+
+    cursor.execute(
+        f"""
+        SELECT {col_str}
+        FROM (
+            SELECT {col_str},
+                   ROW_NUMBER() OVER (ORDER BY timestamp) AS rn
+            FROM {table_name}
+            WHERE timestamp BETWEEN ? AND ?
+        ) AS sub
+        WHERE (rn - 1) % ? = 0
+        ORDER BY timestamp
+        """,
+        (start_date, end_date, step_size),
+    )
 
     rows = cursor.fetchall()
     conn.close()
 
-    if total_rows <= max_rows or resampling == False:
-        return np.array(rows)
-    else:
-        # print(table_name)
-        # print(start_date)
-        # print(end_date)
-        # print(np.array(rows).shape)
+    if col_str.strip() == "*":
         return np.array(rows)[:, :-1]
+
+    return np.array(rows)
 
 def fetch_last_rows(num_row, db_name="data.db", table_name="sensor_data"):
     conn = sqlite3.connect(db_name)

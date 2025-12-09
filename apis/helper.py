@@ -653,43 +653,46 @@ def get_advisoryTable(start_date, end_date):  # 2529
     return data_timestamp[-1], last_severity_featname, sever_1week_featname, sever_count_featname, severity_counter_overyear, priority_parameter
 
 
-def get_advisoryDetail(start_date, end_date, sensor_id, feat_correlate):
+def get_advisoryDetail(start_date, end_date, sensor_id, feat_correlate, maximum_points):
+    columns_tofetch = [sensor_id] + feat_correlate
+    columns_tofetch = ['id', 'timestamp', "Active_Power", "Reactive_Power", "Governor_speed_actual"] + [commons.feature_set[i].replace(" ", "_") for i in columns_tofetch] 
+    
     severity_trending_datas = commons.fetch_between_dates(
-        start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
+        start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings", max_rows=maximum_points, columns=columns_tofetch)
     sensor_datas = commons.fetch_between_dates(
-        start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor")
+        start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor", max_rows=maximum_points, columns=columns_tofetch)
 
     data_timestamp = sensor_datas[:, 1]
     severity_trending_datas = severity_trending_datas[:, 2:].astype(float)
     sensor_datas = sensor_datas[:, 2:]
 
     # Start Implement Adjsutment
-    severity_trending_datas[:, 22] = severity_trending_datas[:, 22] * 0.10
+    #severity_trending_datas[:, 22] = severity_trending_datas[:, 22] * 0.10
 
-    shutdown_periods = commons.process_shutdownTimestamp(
-        data_timestamp, sensor_datas)
-
-    selected_severity_trending_datas = severity_trending_datas[:, sensor_id].astype(
-        float)
-    selected_sensor_datas = sensor_datas[:, sensor_id].astype(float)
+    shutdown_periods = commons.process_shutdownTimestamp(data_timestamp, sensor_datas)
+    selected_severity_trending_datas = severity_trending_datas[:, columns_tofetch.index(commons.feature_set[sensor_id].replace(" ", "_")) - 2].astype(float)
+    selected_sensor_datas = sensor_datas[:, columns_tofetch.index(commons.feature_set[sensor_id].replace(" ", "_")) - 2].astype(float)
 
     window_size = 30
     kernel = np.ones(window_size) / window_size
     selected_severity_trending_datas = np.convolve(
         selected_severity_trending_datas, kernel, mode='same')
 
-    
     correlation_nowparam = correlation_param[commons.feature_set[sensor_id]]
     has_active_power = any("Active Power" in d for d in correlation_nowparam)
     if has_active_power == False:
         correlation_nowparam.append({'Active Power': '-'})
-    correlate_sensor_datas = sensor_datas[:, feat_correlate].astype(float)
-    correlate_trending_datas = severity_trending_datas[:, feat_correlate].astype(
-        float)
 
-    current_severity_fpriority = commons.percentage2severity(
-        float(selected_severity_trending_datas.mean()))
-    priority = calculate_priority(
-        commons.feature_set[sensor_id], recap_severity, current_severity_fpriority, equipment_critical_list)
+    if len(feat_correlate) > 0:
+        columns_map = [commons.feature_set[i].replace(" ", "_") for i in feat_correlate]
+        indice_header = [columns_tofetch.index(i) - 2 for i in columns_map]
+        correlate_sensor_datas = sensor_datas[:, indice_header].astype(float)
+        correlate_trending_datas = severity_trending_datas[:, indice_header].astype(float)
+    else:
+        correlate_sensor_datas = []
+        correlate_trending_datas = []
+
+    current_severity_fpriority = commons.percentage2severity(float(selected_severity_trending_datas.mean()))
+    priority = calculate_priority(commons.feature_set[sensor_id], recap_severity, current_severity_fpriority, equipment_critical_list)
 
     return data_timestamp, selected_severity_trending_datas, priority, selected_sensor_datas, shutdown_periods, correlation_nowparam, correlate_sensor_datas, correlate_trending_datas

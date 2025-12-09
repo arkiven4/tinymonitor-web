@@ -155,18 +155,19 @@ def advisory_table(request):
 
 
 @api_view(['GET'])
-def advisory_detail(request, feat_id=0, minusdays=7):
+def advisory_detail(request, feat_id=0):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     feat_correlate_param = request.GET.get('feat_correlate', '')
-    print(feat_correlate_param)
+    maximum_points = int(request.GET.get('maximum_points', 250)) if str(request.GET.get('maximum_points', '250')).isdigit() else 250
+    
     try:
         feat_correlate = [int(i) for i in feat_correlate_param.split(',') if i.strip().isdigit()]
     except ValueError:
         feat_correlate = []
 
     data_timestamp, severity_trending_datas, priority_data, sensor_datas, shutdown_periods, correlation_nowparam, correlate_sensor_datas, correlate_trending_datas = helper_fun.get_advisoryDetail(
-        start_date, end_date, feat_id, feat_correlate)
+        start_date, end_date, feat_id, feat_correlate, maximum_points)
     data = {
         'feat_id': feat_id,
         'data_timestamp': data_timestamp.tolist(),

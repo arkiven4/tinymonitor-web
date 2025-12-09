@@ -286,7 +286,7 @@
                                 lineStyle: {
                                     width: 10,
                                     color: [
-                                        [0.16, '#ff0000'], 
+                                        [0.16, '#ff0000'],
                                         [0.32, '#ff5500'],
                                         [0.48, '#ffaa00'],
                                         [0.64, '#ffff00'],
@@ -325,19 +325,19 @@
                                 rotate: 'tangential',
                                 formatter: function (value) {
                                     if (value === 0) {
-                                        return '0';
+                                        return 'HH';
                                     } else if (value === 1) {
-                                        return '1';
+                                        return 'HH';
                                     } else if (value === 2) {
-                                        return '2';
+                                        return 'H';
                                     } else if (value === 3) {
-                                        return '3';
+                                        return 'M';
                                     } else if (value === 4) {
-                                        return '4';
+                                        return 'L';
                                     } else if (value === 5) {
-                                        return '5';
+                                        return 'LL';
                                     } else if (value === 6) {
-                                        return '6';
+                                        return 'LL';
                                     }
                                     return '';
                                 }
@@ -351,7 +351,8 @@
                                 offsetCenter: [0, '-35%'],
                                 valueAnimation: true,
                                 formatter: function (value) {
-                                    return Math.round(value) + '';
+                                    const levelMap = { 0: "HH", 1: "HH", 2: "H", 3: "M", 4: "L", 5: "LL", 6: "LL" };
+                                    return levelMap[Math.round(value)] || "";
                                 },
                                 color: 'inherit'
                             },
@@ -439,7 +440,7 @@
                 };
 
                 let nowDateMoment = moment.utc();
-                //let nowDateMoment = moment.utc("2025-08-20T05:40:00");
+                //let nowDateMoment = moment.utc("2025-08-20T12:11:00");
             </script>
 
             <script>
@@ -458,6 +459,15 @@
                                 (value >= 34 && value < 60) ? 4 :
                                     (value >= 60 && value < 85) ? 5 :
                                         (value >= 85 && value <= 100) ? 6 : 0; // 0 for out-of-range
+                }
+
+                function percentage2alarmCode(value) {
+                    if (value < 0 || value > 100) return "OUT";
+                    if (value < 6) return "LL";
+                    if (value < 17) return "L";
+                    if (value < 34) return "M";
+                    if (value < 85) return "H";
+                    return "HH";
                 }
             </script>
 

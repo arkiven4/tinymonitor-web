@@ -48,11 +48,22 @@
 </div>
 <script>
     $(document).ready(function () {
+        var url = new URL(window.location.href);
+        var urlParams = new URLSearchParams(url.search);
+
+        if (urlParams.has('start_date')) {
+            end_date = moment.utc(urlParams.get('end_date')).format("YYYY-MM-DDTHH:mm:ss");
+            start_date = moment.utc(urlParams.get('start_date')).format("YYYY-MM-DDTHH:mm:ss");
+        } else {
+            end_date = nowDateMoment.format("YYYY-MM-DDTHH:mm:ss");
+            start_date = nowDateMoment.subtract(3, 'days').format("YYYY-MM-DDTHH:mm:ss");
+        }
+
         $.ajax({
             type: "GET",
             dataType: "json",
             url: "/api/adjust_threshold_settings",
-            data: {},
+            data: { start_date: start_date, end_date: end_date },
             success: function (data) {
 
             }

@@ -44,7 +44,7 @@
                             <table class="table">
                                 <tbody>
                                     <tr>
-                                        <th style="width:25%">Current Time</th>
+                                        <th style="width:25%">Server Time</th>
                                         <td id="current-time"></td>
                                     </tr>
                                     <tr>
@@ -312,7 +312,7 @@
             success: function (data) {
                 const lastUpdate = new Date(data.datetime_last);
                 document.getElementById("last-update").textContent = lastUpdate.toLocaleString();
-                const nextUpdate = new Date(data.next_update);
+                const nextUpdate = new Date(lastUpdate.getTime() + 10 * 60 * 1000);
                 document.getElementById("next-update").textContent = nextUpdate.toLocaleString();
             }
         })
