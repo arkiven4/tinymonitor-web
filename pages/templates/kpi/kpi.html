@@ -525,8 +525,12 @@
                     for (let index = 0; index < kpi_key.length; index++) {
                         const nowKPIKey = kpi_key[index];
                         document.getElementById("prev_" + nowKPIKey).innerHTML = (combinedData[nowKPIKey][combinedData[nowKPIKey].length - 2] * 100) + "%";
-                        gaugeSeverityChartOptionsKPI.series[0].data[0].value = combinedData[nowKPIKey][combinedData[nowKPIKey].length - 1] * 100;
-                        gaugeSeverityChartOptionsKPI.series[0].itemStyle.color = getColorFromValue(combinedData[nowKPIKey][combinedData[nowKPIKey].length - 1], nowKPIKey);
+
+                        const arr_kpidata = combinedData[nowKPIKey] || [];
+                        const mean_kpigauge = arr_kpidata.length ? Math.floor((arr_kpidata.reduce((s, v) => s + v, 0) / arr_kpidata.length)  * 100) : 0;
+
+                        gaugeSeverityChartOptionsKPI.series[0].data[0].value = mean_kpigauge;
+                        gaugeSeverityChartOptionsKPI.series[0].itemStyle.color = getColorFromValue(mean_kpigauge, nowKPIKey);
 
                         gaugeSeverityChart = echarts.init(document.getElementById('gauge_' + nowKPIKey), null, {
                             renderer: 'canvas',
