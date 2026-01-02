@@ -2,6 +2,7 @@ import pickle, os, sqlite3
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
+from django.conf import settings
 
 # from pathlib import Path
 # print(Path(__file__).resolve())
@@ -38,7 +39,8 @@ label_to_code = {
 def label_load(row):
     ap = row['Active Power']
     rpm = row['Governor speed actual']
-    if ap < 1 and rpm < 1:
+    cb = row['CB']
+    if cb != 1:
         return 'Shutdown'
     elif ap < 3 and rpm < 90:
         return 'Warming'
@@ -223,9 +225,16 @@ def order_objects_by_keys(data, key_order):
 
 
 def process_shutdownTimestamp(data_timestamp, sensor_datas):
-    activepower_data = sensor_datas[:, 0].astype(float)
-    rpm_data = sensor_datas[:, 2].astype(float)
-    shutdown_mask = (activepower_data <= 3) & (rpm_data <= 10)
+    sensor_datas = fetch_between_dates(
+        data_timestamp[0], data_timestamp[-1],
+        settings.MONITORINGDB_PATH + "db/kpi.db",
+        "LGS1_timeline", max_rows=300
+    )
+
+    data_timestamp_cb = sensor_datas[:, 1]
+    cb_data = sensor_datas[:, 4].astype(float)
+
+    shutdown_mask = (cb_data != 1)
     change_points = np.diff(shutdown_mask.astype(int), prepend=0)
 
     start_indices = np.where(change_points == 1)[0]
@@ -239,8 +248,8 @@ def process_shutdownTimestamp(data_timestamp, sensor_datas):
 
     shutdown_periods = []
     for start, end in zip(start_indices, end_indices):
-        start_time = data_timestamp[start]
-        end_time = data_timestamp[end - 1]
+        start_time = data_timestamp_cb[start]
+        end_time = data_timestamp_cb[end - 1]
         shutdown_periods.append((start_time, end_time))
     return shutdown_periods
 
@@ -315,7 +324,7 @@ def process_operationZone(start_date, end_date, db_name="data.db", table_name="s
     query = f"""
     SELECT
     CASE
-        WHEN "active_power" < 1 AND "rpm" < 1 THEN 'Shutdown'
+        WHEN "cb" != 1 THEN 'Shutdown'
         WHEN "active_power" < 3 AND "rpm" < 250 THEN 'Warming'
         WHEN "active_power" < 3 AND "rpm" > 250 THEN 'No Load'
         WHEN "active_power" >= 1 AND "active_power" < 20 AND "rpm" > 250 THEN 'Low Load'

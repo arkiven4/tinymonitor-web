@@ -136,15 +136,19 @@ def get_PanelSummary(start_date=None, end_date=None):
 
     sensor_datas = commons.fetch_between_dates(
         start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "original_data", resampling=False)
+    sensor_datas2 = commons.fetch_between_dates(
+        start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "additional_original_data", resampling=False)
     severtrend_datas = commons.fetch_between_dates(
         start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
 
     #print(f"Result : {sensor_datas.shape}")
     sensor_datas = sensor_datas[::-1]  # Reverse Array
+    sensor_datas2 = sensor_datas2[::-1]  # Reverse Array
     severtrend_datas = severtrend_datas[::-1]
 
     data_timestamp = sensor_datas[:, 1]
     sensor_datas = sensor_datas[:, 2:].astype(float)
+    sensor_datas2 = sensor_datas2[:, 2:].astype(float)
     severtrend_datas = severtrend_datas[:, 2:].astype(float)
 
     # Start Implement Adjsutment
@@ -196,6 +200,9 @@ def get_PanelSummary(start_date=None, end_date=None):
         priority = calculate_priority(
             feature_name, recap_severity, current_severity, equipment_critical_list)
         priority_parameter[feature_name] = float(priority)
+
+    # Additional Param
+    last_sensor_featname["TGB temperature"] = int(sensor_datas2[-1, 1])
     return data_timestamp[-1], last_sensor_featname, sensor_featname, last_severity_featname, sever_featname, ordered_feature_name, sever_count_featname, priority_parameter
 
 
@@ -217,15 +224,20 @@ def get_OperationDistributionTimeline(start_date=None, end_date=None, units=None
 
     sensor_datas = commons.fetch_between_dates(
         start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", units[0] + "_timeline")
+    
+    if len(sensor_datas) == 0:
+        return [], [], []
 
     data_timestamp = sensor_datas[:, 1]
     sensor_datas = sensor_datas[:, 2:].astype(float)
     activepow_data = sensor_datas[:, 0].astype(float)
     rpm_data = sensor_datas[:, 1].astype(float)
+    cb_data = sensor_datas[:, 4].astype(float)
     df = pd.DataFrame({
         'Timestap': data_timestamp,
         'Active Power': activepow_data,
-        'Governor speed actual': rpm_data
+        'Governor speed actual': rpm_data,
+        'CB': cb_data
     })
 
     aux_1 = sensor_datas[:, 3].astype(float)
@@ -253,11 +265,13 @@ def get_unit_status(start_date=None, end_date=None, unit='LGS1'):
     sensor_datas = sensor_datas[:, 2:].astype(float)
     activepow_data = sensor_datas[:, 0]
     rpm_data = sensor_datas[:, 1]
+    cb_data = sensor_datas[:, 4]
 
     df = pd.DataFrame({
         'Timestap': data_timestamp,
         'Active Power': activepow_data,
-        'Governor speed actual': rpm_data
+        'Governor speed actual': rpm_data,
+        'CB': cb_data
     })
 
     # Add Load Label and Load Code
@@ -661,7 +675,9 @@ def get_advisoryDetail(start_date, end_date, sensor_id, feat_correlate, maximum_
         start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings", max_rows=maximum_points, columns=columns_tofetch)
     sensor_datas = commons.fetch_between_dates(
         start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor", max_rows=maximum_points, columns=columns_tofetch)
-
+    addisensor_datas = commons.fetch_between_dates(
+        start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor", max_rows=maximum_points, columns=columns_tofetch)
+    
     data_timestamp = sensor_datas[:, 1]
     severity_trending_datas = severity_trending_datas[:, 2:].astype(float)
     sensor_datas = sensor_datas[:, 2:]
@@ -678,7 +694,9 @@ def get_advisoryDetail(start_date, end_date, sensor_id, feat_correlate, maximum_
     selected_severity_trending_datas = np.convolve(
         selected_severity_trending_datas, kernel, mode='same')
 
-    correlation_nowparam = correlation_param[commons.feature_set[sensor_id]]
+    print(commons.feature_set[sensor_id])
+    correlation_nowparam = correlation_param[commons.feature_set[sensor_id]]# + correlation_param['TGB temperature']
+    print(correlation_nowparam)
     has_active_power = any("Active Power" in d for d in correlation_nowparam)
     if has_active_power == False:
         correlation_nowparam.append({'Active Power': '-'})

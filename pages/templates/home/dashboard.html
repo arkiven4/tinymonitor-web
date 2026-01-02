@@ -143,30 +143,29 @@
 <div class="row">
     <div class="col-md-12 col-sm-12">
         <div class="x_panel tile" style="display:flex;justify-content:space-between;align-items:center;">
-    <div class="x_content">
-        Last Calculation: <span id="last_calcdate"></span>,
-        Next Calculation: <span id="next-update"></span>
-    </div>
-    <div style="display:flex;gap:10px;align-items:center;">
-        <div style="display:flex;align-items:center;gap:4px;">
-            <span style="width:18px;height:18px;background:rgb(0,128,0);
+            <div class="x_content">
+                Last Calculation: <span id="last_calcdate"></span>,
+                Next Calculation: <span id="next-update"></span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <div style="display:flex;align-items:center;gap:4px;">
+                    <span style="width:18px;height:18px;background:rgb(0,128,0);
                          display:inline-block;border-radius:3px;"></span>
-            <span>Severity</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:4px;">
-            <span style="width:18px;height:18px;background:rgb(0,128,0);
+                    <span>Severity</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:4px;">
+                    <span style="width:18px;height:18px;background:rgb(0,128,0);
                          display:inline-block;border-radius:50%;"></span>
-            <span>Priority</span>
-        </div>
+                    <span>Priority</span>
+                </div>
 
-    </div>
-</div>
+            </div>
+        </div>
 
     </div>
 </div>
 
 <script>
-    // TODO :  Severity angka, Priority itu Deskripsi
     const sensorPoints = [
         { id: 'sensor_point1', top: 0, left: 0, name: "Active Power" },
         { id: 'sensor_point2', top: 7, left: 0, name: "Reactive Power" },
@@ -177,7 +176,6 @@
         { id: 'sensor_point7', top: 59, left: 58, name: "LGB Y displacement" },
         { id: 'sensor_point8', top: 71, left: 63, name: "TGB X displacement" },
         { id: 'sensor_point9', top: 78, left: 63, name: "TGB Y displacement" },
-        //{ id: 'sensor_point31', top: 85, left: 63, name: "TGB Y displacement" },
         { id: 'sensor_point10', top: 20.5, left: 0, name: "Stator winding T. 13" },
         { id: 'sensor_point11', top: 28, left: 0, name: "Stator winding T. 14" },
         { id: 'sensor_point12', top: 35, left: 0, name: "Stator winding T. 15" },
@@ -199,6 +197,10 @@
         { id: 'sensor_point28', top: 90, left: 14, name: "Opening Wicked Gate" },
         { id: 'sensor_point29', top: 2, left: 22.5, name: "UGB Oil Contaminant" },
         { id: 'sensor_point30', top: 205, left: 9.5, name: "Gen Thrust Bearing Oil Contaminant" }
+    ];
+
+    const additisensorPoints = [
+        { id: 'sensor_point31', top: 85, left: 65, name: "TGB temperature" },
     ];
 
     function percentageToWidth(severity) {
@@ -293,8 +295,6 @@
                     var current_severity_value = data.last_severity_featname[featureSet[i]];
                     var current_priority_value = data.priority_parameter[featureSet[i]];
 
-                    console.log(featureSet[i])
-
                     var current_unit = unitSet[i];
                     el.innerHTML = `<div class="btn custom_button_status" onclick="window.open('/advisory/chart?feat_id=${i}','_blank')" style="background-color: rgb(243, 243, 243); color: black">
                                                     ${p.name} | <span class="badge" style="background-color: ${severity2color(current_severity_value)}; color: ${getContrastingTextColor(severity2color(current_severity_value))}">${current_severity_value}</span> <span class="badge" style="display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background-color: ${severity2color(percentage2priority(current_priority_value))}; color: ${getContrastingTextColor(severity2color(percentage2priority(current_priority_value)))}">${percentage2alarmCode(current_priority_value)}</span><br> 
@@ -309,6 +309,25 @@
                     el.style.left = `${p.left}%`;
                     el.style.right = `${p.right}%`;
                     el.style.zIndex = percentage2severity(current_severity_value);
+                }
+
+                for (const [i, p] of additisensorPoints.entries()) {
+                    const el = document.getElementById(p.id);
+                    var current_sensor_value = data.last_sensor_featname[addfeatureSet[i]];
+                    var current_unit = addunitSet[i];
+
+                    el.innerHTML = `<div class="btn custom_button_status" onclick="window.open('/advisory/chart?feat_id=${i}','_blank')" style="background-color: rgb(243, 243, 243); color: black">
+                                                    ${p.name} | <span class="badge" style="background-color: gray; ">x</span> <span class="badge" style="display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background-color: gray;">x</span><br> 
+                                                    <span class="badge bg-dark text-light box_withborder">${current_sensor_value} ${current_unit}</span>`
+                    if (current_severity_value > 1) {
+                        el.innerHTML += `<span class="position-absolute translate-middle p-2 bg-danger border border-light rounded-circle" style="top:7%; left: 5%; background-color: ${severity2color(current_severity_value)}">
+                                           <span class="visually-hidden">Warnings</span></span>`
+                    }
+                    el.innerHTML += "</div>"
+
+                    el.style.top = `${p.top}%`;
+                    el.style.left = `${p.left}%`;
+                    el.style.right = `${p.right}%`;
                 }
 
                 document.getElementById("advisory_maintable").innerHTML = ""
