@@ -1041,7 +1041,6 @@
                         section.innerHTML = `
                             <div class="x_panel tile" style="height: 30vh;">                
                             <div class="x_content" id="progress_${metric.key}" style="height: 100%;">
-                            
                             </div></div>`;
 
                         const wrapper = section.querySelector(`#progress_${metric.key}`);
@@ -1049,9 +1048,10 @@
                         keys_unit.forEach(unit => {
                             const unitData = data[unit];
                             if (!unitData || !unitData[metric.key]) return;
-
-                            const latestIndex = unitData.timestamp.length - 1;
-                            const value = Math.round(unitData[metric.key][latestIndex] * 100);
+                            
+                            const values = unitData[metric.key].filter(v => Number.isFinite(v));
+                            const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
+                            const value = Math.round(mean * 100);
 
                             const bar = document.createElement("div");
                             bar.classList.add("dummy-class");
