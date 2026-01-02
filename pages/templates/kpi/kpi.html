@@ -524,7 +524,7 @@
                     const checkboxContainer = document.getElementById('checkboxContainer');
                     for (let index = 0; index < kpi_key.length; index++) {
                         const nowKPIKey = kpi_key[index];
-                        document.getElementById("prev_" + nowKPIKey).innerHTML = (combinedData[nowKPIKey][combinedData[nowKPIKey].length - 2] * 100) + "%";
+                        document.getElementById("prev_" + nowKPIKey).innerHTML = Math.floor(combinedData[nowKPIKey][combinedData[nowKPIKey].length - 2] * 100) + "%";
 
                         const arr_kpidata = combinedData[nowKPIKey] || [];
                         const mean_kpigauge = arr_kpidata.length ? Math.floor((arr_kpidata.reduce((s, v) => s + v, 0) / arr_kpidata.length)  * 100) : 0;
