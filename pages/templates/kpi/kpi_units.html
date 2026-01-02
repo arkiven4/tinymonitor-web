@@ -520,8 +520,16 @@
             start_date = nowDateMoment.subtract(29, 'days').format("YYYY-MM-DDTHH:mm:ss");
         }
 
-        start_date_dist = moment().startOf('year').format("YYYY-MM-DDTHH:mm:ss");
-        end_date_dist = moment().format("YYYY-MM-DDTHH:mm:ss");
+        const endDateMoment = moment.utc(end_date);
+
+        // derive year boundaries from end_date's year
+        start_date_dist = endDateMoment.clone()
+            .startOf('year')
+            .format("YYYY-MM-DDTHH:mm:ss");
+
+        end_date_dist = endDateMoment.clone()
+            .endOf('year')
+            .format("YYYY-MM-DDTHH:mm:ss");
         // start_date_dist = start_date
         // end_date_dist = end_date
 
