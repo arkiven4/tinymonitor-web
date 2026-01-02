@@ -40,6 +40,20 @@
     /* body {
         overflow: hidden;
     } */
+
+    .machine-panel {
+        height: calc(100vh - 420px);
+        /* adaptive: header + KPIs */
+        min-height: 500px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .machine-panel>.x_content {
+        flex: 1 1 auto;
+        min-height: 0;
+        /* REQUIRED for nested scroll */
+    }
 </style>
 <style>
     .timeline-row {
@@ -98,25 +112,42 @@
 
     #timeline-container,
     #timeline-container-grid {
-        height: 60vh;
-        /* Set viewport-relative height */
-        max-height: 60vh;
-        /* Enforce max height */
+        flex: 1 1 50%;
+        min-height: 200px;
         overflow-y: auto;
-        /* Enable vertical scrolling if content overflows */
         overflow-x: auto;
-        /* Keep horizontal scrolling */
-        box-sizing: border-box;
-        border: 1px solid #aaa;
-        padding: 10px;
+    }
+
+    .timeline-wrapper {
         display: flex;
         flex-direction: column;
+        height: 100%;
+        min-height: 0;
     }
+
 
     .timeline-row {
         flex-shrink: 0;
         /* Prevent rows from shrinking */
         margin-bottom: 8px;
+    }
+
+    #stacked-bar {
+        width: 40px;
+        /* flex: 1 1 auto; */
+        min-height: 35vh;
+        max-height: 45vh;
+    }
+
+    .distribution-panel {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .distribution-panel .row {
+        flex: 1;
+        min-height: 0;
     }
 </style>
 
@@ -316,24 +347,15 @@
         <div class="x_content">
             <div class="row">
                 <div class="col-lg-12 col-md-12 col-sm-12 px-0">
-                    <div class="x_panel tile"
-                        style="height: 59vh;display: flex; flex-direction: column;overflow: hidden;">
+                    <div class="x_panel tile machine-panel">
                         <h2>Machine Status</h2>
                         <div class="x_content">
                             <div class="row">
                                 <div class="col-lg-10 col-md-10 col-sm-10 px-0">
                                     <div class="x_panel tile" style="border: 0px solid #E6E9ED;">
-                                        <div class="row">
-                                            <div class="col-lg-12 col-md-12 col-sm-12 px-0">
-                                                <div id="timeline-container"
-                                                    style="width: 100%; overflow-x: auto; border: 1px solid #aaa; padding: 10px;">
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12 col-md-12 col-sm-12 px-0">
-                                                <div id="timeline-container-grid"
-                                                    style="width: 100%; overflow-x: auto; border: 1px solid #aaa; padding: 10px;">
-                                                </div>
-                                            </div>
+                                        <div class="timeline-wrapper">
+                                            <div id="timeline-container" style="border: 1px solid #aaa; padding: 8px;"></div>
+                                            <div id="timeline-container-grid" style="border: 1px solid #aaa; padding: 8px;"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -344,7 +366,7 @@
                                             <div class="col-lg-12 col-md-12 col-sm-12 px-0" style="height: 100%;">
                                                 <div style="display: flex; height: 100%;">
                                                     <div id="stacked-bar"
-                                                        style="width: 40px; height: 45vh; border: 1px solid #000; display: flex; flex-direction: column-reverse;border-radius: 10px;">
+                                                        style="border: 1px solid #000; display: flex; flex-direction: column-reverse;border-radius: 10px;">
                                                     </div>
                                                     <div id="stacked-labels"
                                                         style="margin-left: 16px; display: flex; flex-direction: column; justify-content: flex-start;">
@@ -551,7 +573,7 @@
             document.getElementById('timeline-container').style.height = window.innerHeight * 0.42 + 'px';
             document.getElementById('timeline-container-grid').style.height = window.innerHeight * 0.2 + 'px';
         }
-        setTimelineHeight();
+        //setTimelineHeight();
         window.addEventListener('resize', setTimelineHeight);
 
         $.ajax({
@@ -632,7 +654,7 @@
                         labelDiv.style.marginBottom = '0.8vh'; // responsive spacing
                         labelDiv.innerHTML = `
                             <div style="width: 1.5vh; height: 1.5vh; background-color: ${color}; border-radius: 0.3vh; margin-right: 0.8vh;"></div>
-                            <div style="font-size: 1.8vh"><strong>${label}</strong></div>
+                            <div style="font-size: 1.2vh"><strong>${label}</strong></div>
                         `;
                         labelContainer.appendChild(labelDiv);
 
@@ -642,7 +664,7 @@
                         labelDiv2.style.alignItems = 'center';
                         labelDiv2.style.marginBottom = '2vh';
                         labelDiv2.innerHTML = `
-                            <div style="font-size: 2.0vh">${formatDuration(duration)} (${parseInt(percent)}%)</div>
+                            <div style="font-size: 1.5vh">${formatDuration(duration)} (${parseInt(percent)}%)</div>
                         `;
                         labelContainer.appendChild(labelDiv2);
                     }
@@ -771,7 +793,6 @@
                     const trackWidth = rowOverall.offsetWidth;
                     const trackLeftOffset = rowOverall.getBoundingClientRect().left - container.getBoundingClientRect().left - 10;
 
-
                     const axis = document.createElement('div');
                     axis.style.position = 'relative';
                     axis.style.width = `${trackWidth}px`;
@@ -783,7 +804,6 @@
                     axis.style.borderTop = '1px solid #ccc';
                     axis.style.paddingTop = '4px';
                     axis.style.fontSize = '1.3vh'
-
                     const numTicks = 7;
                     for (let i = 0; i <= numTicks; i++) {
                         const tick = document.createElement('div');
@@ -799,10 +819,11 @@
                         const minute = String(tickTime.getMinutes()).padStart(2, '0');
 
                         tick.textContent = `${day}-${month}-${year} ${hour}:${minute}`;
-
                         axis.appendChild(tick);
                     }
+
                     container.appendChild(axis);
+                    container_grid.appendChild(axis.cloneNode(true));
 
                 }, 500);
             }
@@ -863,7 +884,7 @@
                         document.getElementById("prev_" + nowKPIKey).innerHTML = Math.floor(combinedData[nowKPIKey][combinedData[nowKPIKey].length - 2] * 100) + "%";
 
                         const arr_kpidata = combinedData[nowKPIKey] || [];
-                        const mean_kpigauge = arr_kpidata.length ? Math.floor((arr_kpidata.reduce((s, v) => s + v, 0) / arr_kpidata.length)  * 100) : 0;
+                        const mean_kpigauge = arr_kpidata.length ? Math.floor((arr_kpidata.reduce((s, v) => s + v, 0) / arr_kpidata.length) * 100) : 0;
 
                         gaugeSeverityChartOptionsKPI.series[0].data[0].value = mean_kpigauge;
                         gaugeSeverityChartOptionsKPI.series[0].itemStyle.color = getColorFromValue(mean_kpigauge / 100, nowKPIKey);
