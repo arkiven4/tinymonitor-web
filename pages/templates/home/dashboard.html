@@ -200,7 +200,7 @@
     ];
 
     const additisensorPoints = [
-        { id: 'sensor_point31', top: 85, left: 65, name: "TGB temperature" },
+        { id: 'sensor_point31', top: 86, left: 65, name: "TGB temperature" },
     ];
 
     function percentageToWidth(severity) {
@@ -288,7 +288,6 @@
                 const nextUpdate = new Date(lastUpdate.getTime() + 10 * 60 * 1000);
                 document.getElementById("next-update").textContent = nextUpdate.toLocaleString();
 
-                console.log(data)
                 for (const [i, p] of sensorPoints.entries()) {
                     const el = document.getElementById(p.id);
                     var current_sensor_value = data.last_sensor_featname[featureSet[i]];
@@ -310,11 +309,11 @@
                     el.style.right = `${p.right}%`;
                     el.style.zIndex = percentage2severity(current_severity_value);
                 }
-
+                
                 for (const [i, p] of additisensorPoints.entries()) {
                     const el = document.getElementById(p.id);
-                    var current_sensor_value = data.last_sensor_featname[addfeatureSet[i]];
-                    var current_unit = addunitSet[i];
+                    var current_sensor_value = data.last_sensor_featname[p.name];
+                    var current_unit = addunitSet[addfeatureSet.indexOf(p.name)];
 
                     el.innerHTML = `<div class="btn custom_button_status" onclick="window.open('/advisory/chart?feat_id=${i}','_blank')" style="background-color: rgb(243, 243, 243); color: black">
                                                     ${p.name} | <span class="badge" style="background-color: gray; ">x</span> <span class="badge" style="display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background-color: gray;">x</span><br> 

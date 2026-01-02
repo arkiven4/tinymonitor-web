@@ -675,6 +675,8 @@ def get_advisoryTable(start_date, end_date):  # 2529
 
 
 def get_advisoryDetail(start_date, end_date, sensor_id, feat_correlate, feat_correlate_addi, maximum_points):
+    print(start_date)
+    print(end_date)
     columns_tofetch = [sensor_id] + feat_correlate
     columns_tofetch = ['id', 'timestamp', "Active_Power", "Reactive_Power",
                        "Governor_speed_actual"] + [commons.feature_set[i].replace(" ", "_") for i in columns_tofetch]
@@ -706,8 +708,6 @@ def get_advisoryDetail(start_date, end_date, sensor_id, feat_correlate, feat_cor
     selected_sensor_datas = sensor_datas[:, columns_tofetch.index(
         commons.feature_set[sensor_id].replace(" ", "_")) - 2].astype(float)
 
-    print(selected_severity_trending_datas.shape)
-
     window_size = 30
     kernel = np.ones(window_size) / window_size
     selected_severity_trending_datas = np.convolve(selected_severity_trending_datas, kernel, mode='same')
@@ -722,7 +722,6 @@ def get_advisoryDetail(start_date, end_date, sensor_id, feat_correlate, feat_cor
         indice_header = [columns_tofetch.index(i) - 2 for i in columns_map]
         correlate_sensor_datas = sensor_datas[:, indice_header].astype(float)
         correlate_trending_datas = severity_trending_datas[:, indice_header].astype(float)
-        print(correlate_trending_datas.shape)
     else:
         correlate_sensor_datas = []
         correlate_trending_datas = []

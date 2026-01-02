@@ -234,7 +234,7 @@ def process_shutdownTimestamp(data_timestamp, sensor_datas):
     )
 
     data_timestamp_cb = sensor_datas[:, 1]
-    cb_data = sensor_datas[:, 4].astype(float)
+    cb_data = sensor_datas[:, 6].astype(float)
 
     shutdown_mask = (cb_data != 1)
     change_points = np.diff(shutdown_mask.astype(int), prepend=0)
