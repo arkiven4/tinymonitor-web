@@ -310,10 +310,34 @@
             url: "/api/timeinfo_detail",
             data: { start_date: start_date, end_date: end_date },
             success: function (data) {
-                const lastUpdate = new Date(data.datetime_last);
-                document.getElementById("last-update").textContent = lastUpdate.toLocaleString();
-                const nextUpdate = new Date(lastUpdate.getTime() + 10 * 60 * 1000);
-                document.getElementById("next-update").textContent = nextUpdate.toLocaleString();
+                const lastUpdateUtc = new Date(
+                    data.datetime_last.endsWith('Z')
+                        ? data.datetime_last
+                        : data.datetime_last + 'Z'
+                );
+
+                document.getElementById("last-update").textContent =
+                    lastUpdateUtc.toLocaleString('en-GB', {
+                        timeZone: 'Asia/Makassar',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+
+                const nextUpdate = new Date(lastUpdateUtc.getTime() + 10 * 60 * 1000);
+                document.getElementById("next-update").textContent =
+                    nextUpdate.toLocaleString('en-GB', {
+                        timeZone: 'Asia/Makassar',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
             }
         })
 

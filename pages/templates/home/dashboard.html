@@ -283,10 +283,38 @@
             url: "/api/panel_summary",
             data: { start_date: start_date, end_date: end_date },
             success: function (data) {
-                const lastUpdate = new Date(data.last_timestamp);
-                document.getElementById("last_calcdate").textContent = lastUpdate.toLocaleString();
-                const nextUpdate = new Date(lastUpdate.getTime() + 10 * 60 * 1000);
-                document.getElementById("next-update").textContent = nextUpdate.toLocaleString();
+                // Force UTC parsing from DB
+                const lastUpdateUtc = new Date(
+                    data.last_timestamp.endsWith('Z')
+                        ? data.last_timestamp
+                        : data.last_timestamp + 'Z'
+                );
+
+                // Display in WITA (UTC+8)
+                document.getElementById("last_calcdate").textContent =
+                    lastUpdateUtc.toLocaleString('en-GB', {
+                        timeZone: 'Asia/Makassar',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+
+                // Next update (+10 minutes, still UTC math)
+                const nextUpdateUtc = new Date(lastUpdateUtc.getTime() + 10 * 60 * 1000);
+
+                document.getElementById("next-update").textContent =
+                    nextUpdateUtc.toLocaleString('en-GB', {
+                        timeZone: 'Asia/Makassar',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
 
                 for (const [i, p] of sensorPoints.entries()) {
                     const el = document.getElementById(p.id);
@@ -309,7 +337,7 @@
                     el.style.right = `${p.right}%`;
                     el.style.zIndex = percentage2severity(current_severity_value);
                 }
-                
+
                 for (const [i, p] of additisensorPoints.entries()) {
                     const el = document.getElementById(p.id);
                     var current_sensor_value = data.last_sensor_featname[p.name];
