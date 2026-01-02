@@ -52,7 +52,7 @@
                     <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
                 </div>
                 <div class="pull-left" style="background:#fff;cursor:pointer;padding:5px 10px;border:1px solid #ccc">
-                    <i class="fa fa-spinner"></i> Sampling Rate <input type="text" id="typebox_samplingrate">
+                    <i class="fa fa-spinner"></i> Sampling Points <input type="text" id="typebox_samplingrate">
                     <button id="setBtn_samplingrate">Set</button>
                 </div>
             </div>
@@ -398,7 +398,7 @@
             type: "GET",
             dataType: "json",
             url: "/api/advisory_detail/" + idx_sensor,
-            data: { feat_id: idx_sensor, start_date: start_date, end_date: end_date, feat_correlate: urlParams.get('feat_correlate'), maximum_points: maxPoints },
+            data: { feat_id: idx_sensor, start_date: start_date, end_date: end_date, feat_correlate: urlParams.get('feat_correlate'), feat_correlate_addi: urlParams.get('feat_correlate_addi'), maximum_points: maxPoints },
             success: function (data) {
                 const parsedShutdowns = data.shutdown_periods.map(([start, end]) => [new Date(start), new Date(end)]);
                 document.getElementById("title_featureRaw").innerText = featureSet[data.feat_id];
@@ -421,6 +421,7 @@
                     })
                 }
 
+                //console.log(data['severity_trending_datas'])
                 current_max = current_max * 1.03
                 for (var i = 0; i < data['data_timestamp'].length; i++) {
                     const timestamp = new Date(data['data_timestamp'][i]);
@@ -430,16 +431,17 @@
                         continue;
                     }
 
-                    if (data['severity_trending_datas'][i] >= 5) {
-                        var severity = percentage2severity(data['severity_trending_datas'][i]);
-                        severityCounts[severity]++;
-                        current_severity_data.push({
-                            x: data['data_timestamp'][i], y: current_max, severity_value: data['severity_trending_datas'][i]
-                        })
-                        current_severity_color_data.push(severity2color(severity))
-                    } else {
-                        severityCounts[1]++;
-                    }
+                    // if (data['severity_trending_datas'][i] >= 5) {
+
+                    // } else {
+                    //     severityCounts[1]++;
+                    // }
+                    var severity = percentage2severity(data['severity_trending_datas'][i]);
+                    severityCounts[severity]++;
+                    current_severity_data.push({
+                        x: data['data_timestamp'][i], y: current_max, severity_value: data['severity_trending_datas'][i]
+                    })
+                    current_severity_color_data.push(severity2color(severity))
                 }
 
                 // ==========================
@@ -447,6 +449,9 @@
                 // ==========================
                 const selectedIndices_correlate = new Set(
                     urlParams.get('feat_correlate')?.split(',').map(x => parseInt(x.trim())).filter(n => !isNaN(n)) || []
+                );
+                const selectedIndicesAddi_correlate = new Set(
+                    urlParams.get('feat_correlate_addi')?.split(',').map(x => parseInt(x.trim())).filter(n => !isNaN(n)) || []
                 );
                 const checkboxContainer = document.getElementById('checkboxContainer');
 
@@ -465,7 +470,7 @@
                 data.correlation_nowparam.forEach((item) => {
                     const correlatedFeature = Object.keys(item)[0];
                     const value = item[correlatedFeature];
-                    const index = featureSet.indexOf(correlatedFeature);
+                    var index = featureSet.indexOf(correlatedFeature);
 
                     if (index !== -1) {
                         var mustCheck = "";
@@ -475,6 +480,16 @@
                         checkboxContainer.innerHTML += `<div class="form-check form-check-inline">
                                                             <input class="form-check-input" type="checkbox" name="features_corr" id="chk_${index}" value="${index}" ${mustCheck}>
                                                             <label class="form-check-label" for="chk_${index}">${correlatedFeature} (corr: ${value})</label>
+                                                        </div>`
+                    } else {
+                        index = addfeatureSet.indexOf(correlatedFeature);
+                        var mustCheck = "";
+                        if (selectedIndicesAddi_correlate.has(index)) {
+                            mustCheck = "checked";
+                        }
+                        checkboxContainer.innerHTML += `<div class="form-check form-check-inline">
+                                                            <input class="form-check-input" type="checkbox" name="feat_correlate_addi" id="chk_addi_${index}" value="${index}" ${mustCheck}>
+                                                            <label class="form-check-label" for="chk_addi_${index}">${correlatedFeature} (corr: ${value})</label>
                                                         </div>`
                     }
                 });
@@ -579,6 +594,7 @@
                     // Trending Chart
                     // ==========================
                     var current_correlateArrray = urlParams.get('feat_correlate')?.split(',').map(x => parseInt(x.trim())).filter(n => !isNaN(n)) || []
+                    var current_correlate_addiArrray = urlParams.get('feat_correlate_addi')?.split(',').map(x => parseInt(x.trim())).filter(n => !isNaN(n)) || []
 
                     let obj_correlateTrendData = [
                         {
@@ -654,6 +670,47 @@
                             cubicInterpolationMode: 'monotone'
                         })
                     }
+
+                    for (let index = 0; index < current_correlate_addiArrray.length; index++) {
+                        var now_correSensorIndex = current_correlate_addiArrray[index]
+                        let current_correlateSensorData = [];
+                        for (var i = 0; i < data['data_timestamp_addi'].length; i++) {
+                            current_correlateSensorData.push({
+                                x: data['data_timestamp_addi'][i], y: data.correlate_sensor_addi_datas[i][index]
+                            })
+                        }
+                        var current_CorrelateSensorUnit = addunitSet[now_correSensorIndex];
+
+                        var count_yAxis = 0;
+                        for (const element of obj_correlateData) {
+                            if (element['unit'] == current_CorrelateSensorUnit) {
+                                count_yAxis = 1;
+                                break
+                            }
+                        }
+                        if (count_yAxis == 0) {
+                            count_yAxis = Object.keys(yIndexObj).length + 1
+                            yIndexObj['y' + count_yAxis.toString()] = {
+                                type: 'linear',
+                                position: 'right',
+                                offset: true,
+                                title: {
+                                    display: true,
+                                    text: current_CorrelateSensorUnit
+                                },
+                                grid: {
+                                    drawOnChartArea: false,
+                                }
+                            }
+                        }
+                        obj_correlateData.push({
+                            label: addfeatureSet[now_correSensorIndex],
+                            data: current_correlateSensorData,
+                            unit: addunitSet[now_correSensorIndex],
+                            yAxisID: 'y' + count_yAxis.toString()
+                        })
+                    }
+
                     const chartColors = Chart.defaults.color;
                     obj_correlateData.forEach((ds, index) => {
                         if (!ds.borderColor) {
@@ -665,7 +722,7 @@
                         }
                     });
 
-
+                    console.log(yIndexObj)
                     Object.keys(yIndexObj).forEach(axisID => {
                         const dataset = obj_correlateData.find(ds => ds.yAxisID === axisID);
                         if (dataset && dataset.borderColor) {
@@ -796,8 +853,6 @@
                             }
                         },
                     });
-
-                    console.log(obj_correlateData)
                 }, 500);
             }
         });
@@ -815,13 +870,30 @@
 
     document.getElementById('correlationForm').addEventListener('submit', (e) => {
         e.preventDefault();
-        const selected = Array.from(document.querySelectorAll('input[name="features_corr"]:checked'))
-            .map(cb => cb.value)
-            .join(',');
+
+        const getCheckedValues = (name) =>
+            Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
+                .map(cb => cb.value)
+                .join(',');
+
+        const featCorrelate = getCheckedValues('features_corr');
+        const featCorrelateAddi = getCheckedValues('feat_correlate_addi');
 
         const url = new URL(window.location.href);
-        url.searchParams.set('feat_correlate', selected);
-        window.location.href = url.toString(); // reload with updated param
+
+        if (featCorrelate) {
+            url.searchParams.set('feat_correlate', featCorrelate);
+        } else {
+            url.searchParams.delete('feat_correlate');
+        }
+
+        if (featCorrelateAddi) {
+            url.searchParams.set('feat_correlate_addi', featCorrelateAddi);
+        } else {
+            url.searchParams.delete('feat_correlate_addi');
+        }
+
+        window.location.href = url.toString();
     });
 
     document.getElementById("setBtn_samplingrate").addEventListener("click", () => {

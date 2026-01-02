@@ -159,24 +159,29 @@ def advisory_detail(request, feat_id=0):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     feat_correlate_param = request.GET.get('feat_correlate', '')
+    feat_correlate_addi_param = request.GET.get('feat_correlate_addi', '')
     maximum_points = int(request.GET.get('maximum_points', 250)) if str(request.GET.get('maximum_points', '250')).isdigit() else 250
     
     try:
         feat_correlate = [int(i) for i in feat_correlate_param.split(',') if i.strip().isdigit()]
+        feat_correlate_addi = [int(i) for i in feat_correlate_addi_param.split(',') if i.strip().isdigit()]
     except ValueError:
         feat_correlate = []
+        feat_correlate_addi = []
 
-    data_timestamp, severity_trending_datas, priority_data, sensor_datas, shutdown_periods, correlation_nowparam, correlate_sensor_datas, correlate_trending_datas = helper_fun.get_advisoryDetail(
-        start_date, end_date, feat_id, feat_correlate, maximum_points)
+    data_timestamp, data_timestamp_addi, severity_trending_datas, priority_data, sensor_datas, shutdown_periods, correlation_nowparam, correlate_sensor_datas, correlate_sensor_addi_datas, correlate_trending_datas = helper_fun.get_advisoryDetail(
+        start_date, end_date, feat_id, feat_correlate, feat_correlate_addi, maximum_points)
     data = {
         'feat_id': feat_id,
         'data_timestamp': data_timestamp.tolist(),
+        'data_timestamp_addi': data_timestamp_addi.tolist(),
         'severity_trending_datas': severity_trending_datas.tolist(),
         'priority_data': priority_data,
         'sensor_datas': sensor_datas.tolist(),
         'shutdown_periods': shutdown_periods,
         'correlation_nowparam': correlation_nowparam,
         'correlate_sensor_datas': correlate_sensor_datas,
+        'correlate_sensor_addi_datas': correlate_sensor_addi_datas,
         'correlate_trending_datas': correlate_trending_datas
     }
     return Response(data, status=status.HTTP_200_OK)

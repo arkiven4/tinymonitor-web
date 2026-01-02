@@ -22,6 +22,8 @@ feature_set = ['Active Power', 'Reactive Power', 'Governor speed actual', 'UGB X
     'Penstock pressure', 'Opening Wicked Gate', 'UGB Oil Contaminant',
     'Gen Thrust Bearing Oil Contaminant']
 
+addifeature_set = ["Grid Selection", 'TGB temperature']
+
 model_array = ["Attention", "DTAAD", "MAD_GAN", "TranAD", "DAGMM", "USAD", "OmniAnomaly"]
 
 label_to_code = {
