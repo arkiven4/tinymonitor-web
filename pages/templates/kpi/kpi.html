@@ -495,7 +495,8 @@
             success: function (data) {
                 const keysToAverage = ['oee', 'phy_avail', 'performance', 'uo_Avail'];
                 const keys_unit = Object.keys(data).filter(key => key !== 'plant' && key !== 'noe' && key !== 'other_kpi');
-                const timestamps = data[keys_unit[0]].timestamp;
+                // TODO: Handle Mistatch Timestamp
+                const timestamps = data[keys_unit[1]].timestamp;
                 const combinedData = {
                     data_timestamp: timestamps,
                     oee: [],
