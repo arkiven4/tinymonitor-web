@@ -1,4 +1,5 @@
 @echo off
 cd /d "%~dp0"
-@REM python manage.py collectstatic --noinput
-python manage.py runserver 0.0.0.0:8000
+python manage.py collectstatic --noinput
+@REM python manage.py runserver 0.0.0.0:8000
+waitress-serve --listen=0.0.0.0:8000 web.wsgi:application

@@ -3,5 +3,6 @@ django-browser-reload
 djangorestframework
 statsmodels
 whitenoise
+waitress
 pandas 
 openpyxl
