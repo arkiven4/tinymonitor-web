@@ -1,83 +1,124 @@
-import pickle, os, sqlite3
-import pandas as pd
-import numpy as np
+"""
+This module contains utility functions and constants for data processing and analysis.
+"""
+
+import pickle
+import os
+import sqlite3
 from datetime import datetime, timedelta
+
+import numpy as np
+import pandas as pd
 from django.conf import settings
 
-# from pathlib import Path
-# print(Path(__file__).resolve())
+# Feature sets
+FEATURE_SET = [
+    'Active Power', 'Reactive Power', 'Governor speed actual', 'UGB X displacement',
+    'UGB Y displacement', 'LGB X displacement', 'LGB Y displacement', 'TGB X displacement',
+    'TGB Y displacement', 'Stator winding temperature 13', 'Stator winding temperature 14',
+    'Stator winding temperature 15', 'Surface Air Cooler Air Outlet Temperature',
+    'Surface Air Cooler Water Inlet Temperature', 'Surface Air Cooler Water Outlet Temperature',
+    'Stator core temperature', 'UGB metal temperature', 'LGB metal temperature 1',
+    'LGB metal temperature 2', 'LGB oil temperature', 'Penstock Flow', 'Turbine flow',
+    'UGB cooling water flow', 'LGB cooling water flow', 'Generator cooling water flow',
+    'Governor Penstock Pressure', 'Penstock pressure', 'Opening Wicked Gate',
+    'UGB Oil Contaminant', 'Gen Thrust Bearing Oil Contaminant'
+]
 
-feature_set = ['Active Power', 'Reactive Power', 'Governor speed actual', 'UGB X displacement', 'UGB Y displacement',
-    'LGB X displacement', 'LGB Y displacement', 'TGB X displacement',
-    'TGB Y displacement', 'Stator winding temperature 13',
-    'Stator winding temperature 14', 'Stator winding temperature 15',
-    'Surface Air Cooler Air Outlet Temperature',
-    'Surface Air Cooler Water Inlet Temperature',
-    'Surface Air Cooler Water Outlet Temperature',
-    'Stator core temperature', 'UGB metal temperature',
-    'LGB metal temperature 1', 'LGB metal temperature 2',
-    'LGB oil temperature', 'Penstock Flow', 'Turbine flow',
-    'UGB cooling water flow', 'LGB cooling water flow',
-    'Generator cooling water flow', 'Governor Penstock Pressure',
-    'Penstock pressure', 'Opening Wicked Gate', 'UGB Oil Contaminant',
-    'Gen Thrust Bearing Oil Contaminant']
+ADDITIONAL_FEATURE_SET = ["Grid Selection", 'TGB temperature']
 
-addifeature_set = ["Grid Selection", 'TGB temperature']
+MODEL_ARRAY = [
+    "Attention", "DTAAD", "MAD_GAN", "TranAD", "DAGMM", "USAD", "OmniAnomaly"
+]
 
-model_array = ["Attention", "DTAAD", "MAD_GAN", "TranAD", "DAGMM", "USAD", "OmniAnomaly"]
-
-label_to_code = {
-        'Shutdown': 0,
-        'Warming': 1,
-        'No Load': 2,
-        'Low Load': 3,
-        'Rough Zone': 4,
-        'Part Load': 5,
-        'Efficient Load': 6,
-        'High Load': 7,
-        'Undefined': 8
-    }
+LABEL_TO_CODE = {
+    'Shutdown': 0,
+    'Warming': 1,
+    'No Load': 2,
+    'Low Load': 3,
+    'Rough Zone': 4,
+    'Part Load': 5,
+    'Efficient Load': 6,
+    'High Load': 7,
+    'Undefined': 8
+}
 
 def label_load(row):
+    """
+    Label the load based on active power, RPM, and CB status.
+
+    Args:
+        row (dict): A dictionary containing 'Active Power', 'Governor speed actual', and 'CB'.
+
+    Returns:
+        str: The load label.
+    """
     ap = row['Active Power']
     rpm = row['Governor speed actual']
     cb = row['CB']
+
     if cb != 1:
         return 'Shutdown'
-    elif ap < 3 and rpm < 90:
-        return 'Warming'
-    elif ap < 3 and rpm > 90:
-        return 'No Load'
-    elif 1 <= ap < 20 and rpm > 90:
+    if ap < 3:
+        return 'Warming' if rpm < 90 else 'No Load'
+    if 1 <= ap < 20:
         return 'Low Load'
-    elif 20 <= ap < 40 and rpm > 90:
+    if 20 <= ap < 40:
         return 'Rough Zone'
-    elif 40 <= ap < 50 and rpm > 90:
+    if 40 <= ap < 50:
         return 'Part Load'
-    elif 50 <= ap < 65 and rpm > 90:
+    if 50 <= ap < 65:
         return 'Efficient Load'
-    elif ap >= 65 and rpm > 90:
+    if ap >= 65:
         return 'High Load'
-    else:
-        return 'Undefined'
+    return 'Undefined'
 
 def normalize3(a, min_a=None, max_a=None):
-    if min_a is None: min_a, max_a = np.min(a, axis=0), np.max(a, axis=0)
-    return ((a - min_a) / (max_a - min_a + 0.0001)), min_a, max_a
+    """
+    Normalize an array to the range [0, 1].
+
+    Args:
+        a (np.ndarray): Input array.
+        min_a (float, optional): Minimum value for normalization. Defaults to None.
+        max_a (float, optional): Maximum value for normalization. Defaults to None.
+
+    Returns:
+        tuple: Normalized array, minimum value, maximum value.
+    """
+    if min_a is None or max_a is None:
+        min_a, max_a = np.min(a, axis=0), np.max(a, axis=0)
+    return (a - min_a) / (max_a - min_a + 1e-4), min_a, max_a
 
 def denormalize3(a_norm, min_a, max_a):
-    return a_norm * (max_a - min_a + 0.0001) + min_a
+    """
+    Denormalize an array from the range [0, 1] back to its original range.
 
+    Args:
+        a_norm (np.ndarray): Normalized array.
+        min_a (float): Minimum value used for normalization.
+        max_a (float): Maximum value used for normalization.
 
-def fetch_between_dates(
-    start_date,
-    end_date,
-    db_name="data.db",
-    table_name="sensor_data",
-    max_rows=1000,
-    resampling=True,
-    columns="*",
-):
+    Returns:
+        np.ndarray: Denormalized array.
+    """
+    return a_norm * (max_a - min_a + 1e-4) + min_a
+
+def fetch_between_dates(start_date, end_date, db_name="data.db", table_name="sensor_data", max_rows=1000, resampling=True, columns="*"):
+    """
+    Fetch rows from a database table between two dates, with optional resampling.
+
+    Args:
+        start_date (str): Start date in ISO format.
+        end_date (str): End date in ISO format.
+        db_name (str): Database name. Defaults to "data.db".
+        table_name (str): Table name. Defaults to "sensor_data".
+        max_rows (int): Maximum number of rows to fetch. Defaults to 1000.
+        resampling (bool): Whether to resample rows. Defaults to True.
+        columns (str or list): Columns to fetch. Defaults to "*".
+
+    Returns:
+        np.ndarray: Fetched rows as a NumPy array.
+    """
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
@@ -95,13 +136,10 @@ def fetch_between_dates(
         conn.close()
         return np.array([])
 
-    if isinstance(columns, (list, tuple)):
-        col_str = ", ".join(columns)
-    else:
-        col_str = columns
+    col_str = ", ".join(columns) if isinstance(columns, (list, tuple)) else columns
 
     step_size = max(1, total_rows // max_rows)
-    if total_rows <= max_rows or resampling is False or step_size <= 1:
+    if total_rows <= max_rows or not resampling or step_size <= 1:
         cursor.execute(
             f"""
             SELECT {col_str}
@@ -133,12 +171,20 @@ def fetch_between_dates(
     rows = cursor.fetchall()
     conn.close()
 
-    if col_str.strip() == "*":
-        return np.array(rows)[:, :-1]
-
-    return np.array(rows)
+    return np.array(rows)[:, :-1] if col_str.strip() == "*" else np.array(rows)
 
 def fetch_last_rows(num_row, db_name="data.db", table_name="sensor_data"):
+    """
+    Fetch the last N rows from a database table.
+
+    Args:
+        num_row (int): Number of rows to fetch.
+        db_name (str): Database name. Defaults to "data.db".
+        table_name (str): Table name. Defaults to "sensor_data".
+
+    Returns:
+        np.ndarray: Fetched rows as a NumPy array.
+    """
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
@@ -158,6 +204,15 @@ def fetch_last_rows(num_row, db_name="data.db", table_name="sensor_data"):
     return np.array(rows)
 
 def get_LastdateLastRow(db_path):
+    """
+    Get the last date and time from a database.
+
+    Args:
+        db_path (str): Database path.
+
+    Returns:
+        datetime: The last date and time.
+    """
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute(f"""SELECT * FROM original_data ORDER BY timestamp DESC LIMIT 1""")
@@ -168,10 +223,28 @@ def get_LastdateLastRow(db_path):
     return datetime_last
 
 def convert_timestamp(timestamp_str):
+    """
+    Convert a timestamp string to a pandas Timestamp.
+
+    Args:
+        timestamp_str (str): Timestamp string.
+
+    Returns:
+        pd.Timestamp: The converted timestamp.
+    """
     dt = datetime.fromisoformat(timestamp_str)
     return pd.Timestamp(dt.strftime('%Y-%m-%d %H:%M:%S'))
 
 def percentage2severity(value):
+    """
+    Convert a percentage value to a severity level.
+
+    Args:
+        value (float): Percentage value.
+
+    Returns:
+        int: Severity level.
+    """
     return (
         1 if 0 <= value < 5 else
         2 if 5 <= value < 20 else
@@ -182,6 +255,15 @@ def percentage2severity(value):
     )
 
 def calc_counterPercentage(threshold_percentages):
+    """
+    Calculate the counter percentage for each feature.
+
+    Args:
+        threshold_percentages (dict): A dictionary of threshold percentages.
+
+    Returns:
+        tuple: Counter feature dictionary, counter feature plot.
+    """
     counter_feature = {}
     for modex_idx, values_pred in threshold_percentages.items():
         values_pred = dict(sorted(values_pred.items(), key=lambda item: item[1], reverse=True)[:10])
@@ -219,6 +301,16 @@ def calc_counterPercentage(threshold_percentages):
 
 
 def order_objects_by_keys(data, key_order):
+    """
+    Order objects by keys.
+
+    Args:
+        data (dict): A dictionary of objects.
+        key_order (list): A list of keys.
+
+    Returns:
+        dict: Ordered dictionary.
+    """
     ordered_dict = {}
     for key in key_order:
         if key in data:
@@ -227,6 +319,16 @@ def order_objects_by_keys(data, key_order):
 
 
 def process_shutdownTimestamp(data_timestamp, sensor_datas):
+    """
+    Process shutdown timestamps.
+
+    Args:
+        data_timestamp (list): A list of timestamps.
+        sensor_datas (np.ndarray): A NumPy array of sensor data.
+
+    Returns:
+        list: Shutdown periods.
+    """
     sensor_datas = fetch_between_dates(
         data_timestamp[0], data_timestamp[-1],
         settings.MONITORINGDB_PATH + "db/kpi.db",
@@ -256,6 +358,16 @@ def process_shutdownTimestamp(data_timestamp, sensor_datas):
     return shutdown_periods
 
 def process_SNLTimestamp(data_timestamp, sensor_datas):
+    """
+    Process SNL timestamps.
+
+    Args:
+        data_timestamp (list): A list of timestamps.
+        sensor_datas (np.ndarray): A NumPy array of sensor data.
+
+    Returns:
+        list: Shutdown periods.
+    """
     activepower_data = sensor_datas[:, 0].astype(float)
     rpm_data = sensor_datas[:, 2].astype(float)
     shutdown_mask = (activepower_data <= 3) & (rpm_data >= 259.35) & (rpm_data <= 286.65)
@@ -278,6 +390,18 @@ def process_SNLTimestamp(data_timestamp, sensor_datas):
     return shutdown_periods
 
 def fetch_column_threshold_counts(start_date, db_name="data.db", table_name="sensor_data", threshold=5):
+    """
+    Fetch column threshold counts.
+
+    Args:
+        start_date (str): Start date in ISO format.
+        db_name (str): Database name. Defaults to "data.db".
+        table_name (str): Table name. Defaults to "sensor_data".
+        threshold (float): Threshold value.
+
+    Returns:
+        dict: Column threshold counts.
+    """
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
@@ -320,6 +444,18 @@ def fetch_column_threshold_counts(start_date, db_name="data.db", table_name="sen
     return result
 
 def process_operationZone(start_date, end_date, db_name="data.db", table_name="sensor_data"):
+    """
+    Process operation zone.
+
+    Args:
+        start_date (str): Start date in ISO format.
+        end_date (str): End date in ISO format.
+        db_name (str): Database name. Defaults to "data.db".
+        table_name (str): Table name. Defaults to "sensor_data".
+
+    Returns:
+        list: Operation zone results.
+    """
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
@@ -348,6 +484,18 @@ def process_operationZone(start_date, end_date, db_name="data.db", table_name="s
     return results
 
 def process_operationMode(start_date, end_date, db_name="data.db", table_name="sensor_data"):
+    """
+    Process operation mode.
+
+    Args:
+        start_date (str): Start date in ISO format.
+        end_date (str): End date in ISO format.
+        db_name (str): Database name. Defaults to "data.db".
+        table_name (str): Table name. Defaults to "sensor_data".
+
+    Returns:
+        list: Operation mode results.
+    """
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
@@ -370,6 +518,17 @@ def process_operationMode(start_date, end_date, db_name="data.db", table_name="s
     return results
 
 def hampel_filter(series, window_size=3, n_sigmas=3):
+    """
+    Hampel filter.
+
+    Args:
+        series (np.ndarray): Input series.
+        window_size (int): Window size.
+        n_sigmas (int): Number of sigmas.
+
+    Returns:
+        np.ndarray: Filtered series.
+    """
     new_series = series.copy()
     k = 1.4826  # scale factor for Gaussian distribution
     n = len(series)

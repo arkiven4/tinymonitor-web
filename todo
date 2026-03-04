@@ -12,3 +12,11 @@ Note meet progress:
 - Finishing untuk halaman CBM (opsional adjustment thd)
 - Data yang tersedia dicoba paling tidak mulai dari tahun 2020 (tapi kalau ada issue terkait memory dsb nanti bisa dikomunikasikan)
 
+
+
+###########################################################################################
+- TGB temperature
+- TGB temperature masuk di data korelasi (hanya untuk data, tapi tidak untuk severity percentage)
+- cek nilai surface air cooler temp per 6/11
+- mungkin salah tag di air inlet outlet temp
+

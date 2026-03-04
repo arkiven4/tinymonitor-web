@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    #"whitenoise.runserver_nostatic",
     'django.contrib.staticfiles',
     'rest_framework'    
 ]
@@ -132,12 +131,19 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True
 
 ###### Custom Var
 if DEBUG:
     INSTALLED_APPS = INSTALLED_APPS + ["django_browser_reload"]
     MIDDLEWARE = MIDDLEWARE + ["django_browser_reload.middleware.BrowserReloadMiddleware"]
+else:
+    INSTALLED_APPS = INSTALLED_APPS + ["whitenoise.runserver_nostatic"]
     
-#MONITORINGDB_PATH = "/home/arkiven4/Documents/Project/Vale/cbm_vale/"
-MONITORINGDB_PATH = "D:\\ITSTeam\\NewGen\\cbm_vale\\"
+MONITORINGDB_PATH = "/home/arkiven4/Documents/Project/Vale/cbm_vale/"
+#MONITORINGDB_PATH = "D:\\ITSTeam\\NewGen\\cbm_vale\\"
 
