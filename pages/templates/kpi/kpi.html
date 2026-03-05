@@ -5,28 +5,43 @@
 {% block content %}
 
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
     #custom-tooltip {
         position: absolute;
-        background: white;
-        border: 1px solid black;
-        padding: 10px;
-        border-radius: 5px;
+        background: rgba(255,255,255,0.96);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(0,0,0,0.08);
+        padding: 8px 12px;
+        border-radius: 8px;
         pointer-events: auto;
         display: none;
         z-index: 1000;
+        font-size: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
     .checkbox-list {
         max-height: 300px;
         overflow-y: auto;
-        border: 1px solid #ccc;
+        border: 1px solid #e2e8f0;
         padding: 10px;
+        border-radius: 6px;
     }
 
     .x_content {
         padding: 0 3px 0 !important;
         clear: both !important;
         margin-top: 0px !important;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
     }
 
     .resetZoom {
@@ -37,54 +52,347 @@
         cursor: pointer;
     }
 
-    body {
+    html, body {
+        overflow: hidden !important;
+        background: #f0f2f5 !important;
+        height: 100vh !important;
+        margin: 0 !important;
+    }
+
+    .right_col {
+        padding: 4px 10px 0 !important;
+        background: #f0f2f5 !important;
+        height: 100vh !important;
+        box-sizing: border-box;
+        overflow: hidden !important;
+    }
+
+    footer {
+        display: none !important;
+    }
+
+    /* Single grid layout for entire page */
+    .kpi-grid-wrapper {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 27vh 27vh 37vh;
+        gap: 3px;
+        height: calc(100vh - 12px);
         overflow: hidden;
     }
 
-    /* Option 2: force override */
+    .x_panel {
+        border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+        border: 1px solid rgba(226,232,240,0.8);
+        padding: 8px 12px;
+        margin-bottom: 0;
+        background: #ffffff;
+        transition: box-shadow 0.2s ease;
+        box-sizing: border-box;
+        height: 100%;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .x_panel:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .row {
+        margin-bottom: 0;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    /* Content rows */
+    .kpi-content-row {
+        display: grid;
+        gap: 3px;
+        overflow: hidden;
+        min-height: 0;
+    }
+    .kpi-content-row.cols-8-4 {
+        grid-template-columns: 2fr 1fr;
+    }
+
+    /* Sub-grid for 2x2 gauge layout */
+    .kpi-gauge-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 3px;
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    /* Right stacked panels */
+    .kpi-right-stack {
+        display: grid;
+        grid-template-rows: 1fr 1fr;
+        gap: 3px;
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    /* Constrain chart canvas wrappers */
+    .chart-wrap {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    h2 {
+        font-size: 12px !important;
+        margin: 1px 0 4px !important;
+        font-weight: 600 !important;
+        color: #1e293b;
+        letter-spacing: -0.01em;
+        text-transform: uppercase;
+        opacity: 0.75;
+    }
+
     .bg-success {
         background-color: #007e7a !important;
     }
-</style>
-<div class="row" id="chart_container">
-    <div class="col-md-12 col-sm-12 px-0">
-        <div class="x_panel" style="padding: 0;display: flex;align-items: center;justify-content: space-between;align-content: center;flex-wrap: nowrap;flex-direction: row;">
-            <div style="display: flex; align-items: center; gap: 10px; justify-content: space-between;">
-                <div id="reportrange_right" class="pull-left"
-                    style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc;">
-                    <i class="fa fa-calendar"></i>
-                    <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
-                </div>
-                <div
-                    style="background: #fff; cursor: pointer; padding: 5px 10px; margin-left: 5px; display: flex; align-items: center; gap: 10px; justify-content: space-between;">
-                    <div
-                        style="background: #fff; cursor: pointer; padding: 5px 10px; margin-left: 5px; display: flex; align-items: center; gap: 10px; justify-content: space-between;">
-                        <!-- Group Checkboxes -->
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input group-checkbox" type="checkbox" id="group_Larona"
-                                data-group="Larona">
-                            <label class="form-check-label" for="group_Larona">Larona</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input group-checkbox" type="checkbox" id="group_Balambano"
-                                data-group="Balambano">
-                            <label class="form-check-label" for="group_Balambano">Balambano</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input group-checkbox" type="checkbox" id="group_Karebbe"
-                                data-group="Karebbe">
-                            <label class="form-check-label" for="group_Karebbe">Karebbe</label>
-                        </div>
 
-                        <!-- Individual Checkboxes -->
-                        <div id="tagCheckboxes"></div>
+    /* Modern toolbar */
+    .kpi-toolbar {
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 5px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid rgba(226,232,240,0.8);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+        margin-bottom: 3px;
+        flex-shrink: 0;
+    }
+
+    .kpi-toolbar .form-check-label {
+        color: #475569;
+        font-size: 11.5px;
+        font-weight: 500;
+    }
+
+    .kpi-toolbar .form-check-input {
+        border-color: #cbd5e1;
+    }
+
+    .kpi-toolbar .form-check-input:checked {
+        background-color: #007e7a;
+        border-color: #007e7a;
+    }
+
+    .kpi-toolbar .btn-update {
+        background: #007e7a;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 3px 14px;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .kpi-toolbar .btn-update:hover {
+        background: #006560;
+    }
+
+    .kpi-toolbar .daterange-btn {
+        background: #f8fafc;
+        color: #334155;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 5px 14px;
+        font-size: 12px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+
+    .kpi-toolbar .daterange-btn:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+
+    .kpi-toolbar .daterange-btn i {
+        color: #007e7a;
+        font-size: 13px;
+    }
+
+    .kpi-toolbar .daterange-btn .caret {
+        border-top-color: #94a3b8;
+        margin-left: 2px;
+    }
+
+    .kpi-toolbar .toolbar-label {
+        color: #94a3b8;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Unit card (severity-card inspired) */
+    .unit-card {
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        transition: box-shadow 0.2s;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 0;
+    }
+    .unit-card:hover {
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    .unit-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2px;
+    }
+    .unit-card-name {
+        font-weight: 600;
+        font-size: clamp(8px, 1.2vh, 13px);
+        color: #334155;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .unit-card-value {
+        font-weight: 700;
+        font-size: clamp(8px, 1.2vh, 13px);
+        white-space: nowrap;
+    }
+    .unit-card-bar {
+        height: clamp(4px, 0.6vh, 10px);
+        background: #e2e8f0;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    .unit-card-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.5s ease;
+    }
+
+    /* Progress grid container */
+    .progress-grid {
+        display: grid;
+        gap: 3px;
+        height: 100%;
+        align-content: stretch;
+        overflow: hidden;
+    }
+    .progress-grid.cols-1 {
+        grid-template-columns: 1fr;
+    }
+    .progress-grid.cols-2 {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    /* Modern select */
+    select {
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 3px 8px;
+        font-size: 11px;
+        background: #fff;
+        color: #334155;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    select:focus {
+        border-color: #007e7a;
+    }
+
+    /* Modern progress bars */
+    .progress {
+        background: #e2e8f0;
+        border-radius: 20px !important;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        border-radius: 20px !important;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        transition: width 0.6s ease;
+    }
+
+    /* Sparkline area */
+    .sparkline {
+        border-radius: 4px;
+    }
+
+    /* Prev label */
+    .prev-label {
+        font-size: 10px;
+        margin: 1px 0 0;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .prev-label span {
+        color: #007e7a;
+        font-weight: 700;
+    }
+</style>
+<div class="kpi-grid-wrapper">
+<div class="kpi-toolbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="display: flex; flex-direction: column; gap: 1px;">
+                    <div id="reportrange_right" class="pull-left daterange-btn">
+                        <i class="fa fa-calendar"></i>
+                        <span>December 30, 2014 - January 28, 2015</span>
+                        <b class="caret"></b>
                     </div>
-                    <script>
-                        const tagMap = {
-                            Larona: ["LGS1", "LGS2", "LGS3"],
-                            Balambano: ["BGS1", "BGS2"],
-                            Karebbe: ["KGS1", "KGS2"]
-                        };
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; border-left: 1px solid #e2e8f0; padding-left: 12px;">
+                    <!-- Group Checkboxes -->
+                    <div class="form-check form-check-inline" style="margin-bottom: 0;">
+                        <input class="form-check-input group-checkbox" type="checkbox" id="group_Larona"
+                            data-group="Larona">
+                        <label class="form-check-label" for="group_Larona">Larona</label>
+                    </div>
+                    <div class="form-check form-check-inline" style="margin-bottom: 0;">
+                        <input class="form-check-input group-checkbox" type="checkbox" id="group_Balambano"
+                            data-group="Balambano">
+                        <label class="form-check-label" for="group_Balambano">Balambano</label>
+                    </div>
+                    <div class="form-check form-check-inline" style="margin-bottom: 0;">
+                        <input class="form-check-input group-checkbox" type="checkbox" id="group_Karebbe"
+                            data-group="Karebbe">
+                        <label class="form-check-label" for="group_Karebbe">Karebbe</label>
+                    </div>
+                    <span style="width: 1px; height: 18px; background: #e2e8f0; display: inline-block;"></span>
+                    <!-- Individual Checkboxes -->
+                    <div id="tagCheckboxes" style="display: flex; align-items: center; gap: 6px;"></div>
+                </div>
+            </div>
+            <a class="btn-update" href="{% url 'kpi_manualdata' %}"><i class="fa fa-pencil" style="margin-right: 4px;"></i>Update</a>
+        </div>
+
+<script>
+    const tagMap = {
+        Larona: ["LGS1", "LGS2", "LGS3"],
+        Balambano: ["BGS1", "BGS2"],
+        Karebbe: ["KGS1", "KGS2"]
+    };
 
                         // Hardcoded status for now
                         const tagStatus = {
@@ -110,7 +418,7 @@
 
                             wrapper.innerHTML = `
                             <input class="form-check-input tag-checkbox" type="checkbox" id="tag_${tag}" value="${tag}">
-                            <label class="form-check-label" for="tag_${tag}" style="color:${color}">${tag} (${status})</label>
+                            <label class="form-check-label" for="tag_${tag}" style="color:${color}; font-size: 11px;">${tag} <span style="opacity:0.6">(${status})</span></label>
                         `;
                             tagContainer.appendChild(wrapper);
                         });
@@ -185,160 +493,147 @@
 
                         const urlTags = getURLTags();
                         setCheckboxStatesFromURL(urlTags);
-                    </script>
-                </div>
-            </div>
-            <a class="btn btn-link" href="{% url 'kpi_manualdata' %}">Update</a>
-        </div>
-    </div>
-</div>
+</script>
 
-<div class="row">
-    <div class="col-md-8 px-0">
-        <div class="x_content">
-            <div class="row">
-                <div class="col-lg-3 col-md-3 col-sm-6 px-0">
-                    <div class="x_panel tile" style="height: 30vh;">
-                        <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
-                            <h2>OEE</h2>
-                            <div id="gauge_oee" style="height: 70%; box-sizing: border-box;"></div>
-                            <canvas id="sparkline_oee" class="sparkline" style="height: 15%; width: 100%;"></canvas>
-                            <div style="height: 5%; margin-top: 5px;">
-                                <p>Previously Period: <span id="prev_oee">100%</span></p>
-                            </div>
+    <!-- Row 2: OEE + Phy Avail (left) | Power Production (right) -->
+    <div class="kpi-content-row cols-8-4">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px; overflow: hidden; min-height: 0;">
+            <!-- OEE -->
+            <div class="x_panel tile">
+                <div class="x_content">
+                    <h2>OEE</h2>
+                    <div style="flex: 1; min-height: 0; display: flex; overflow: hidden;">
+                        <div style="flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden;">
+                            <div id="gauge_oee" style="flex: 1; min-height: 0;"></div>
+                            <canvas id="sparkline_oee" class="sparkline" style="height: 2.5vh; width: 100%; flex-shrink: 0;"></canvas>
+                            <p class="prev-label">Prev: <span id="prev_oee">-</span></p>
+                        </div>
+                        <div style="flex: 1; overflow: hidden; border-left: 1px solid #e2e8f0; margin-left: 8px; padding-left: 8px; min-height: 0;">
+                            <div id="progress_oee" class="progress-grid cols-1"></div>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-3 col-sm-6 px-0">
-                    <div class="x_panel tile" style="height: 30vh;">
-                        <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
-                            <h2>Physical Availability</h2>
-                            <div id="gauge_phy_avail" style="height: 70%; box-sizing: border-box;"></div>
-                            <canvas id="sparkline_phy_avail" class="sparkline"
-                                style="height: 15%; width: 100%;"></canvas>
-                            <div style="height: 5%; margin-top: 5px;">
-                                <p>Previously Period: <span id="prev_phy_avail">100%</span></p>
-                            </div>
+            </div>
+            <!-- Physical Availability -->
+            <div class="x_panel tile">
+                <div class="x_content">
+                    <h2>Physical Availability</h2>
+                    <div style="flex: 1; min-height: 0; display: flex; overflow: hidden;">
+                        <div style="flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden;">
+                            <div id="gauge_phy_avail" style="flex: 1; min-height: 0;"></div>
+                            <canvas id="sparkline_phy_avail" class="sparkline" style="height: 2.5vh; width: 100%; flex-shrink: 0;"></canvas>
+                            <p class="prev-label">Prev: <span id="prev_phy_avail">-</span></p>
                         </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-3 col-sm-6 px-0">
-                    <div class="x_panel tile" style="height: 30vh;">
-                        <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
-                            <h2>Performance</h2>
-                            <div id="gauge_performance" style="height: 70%; box-sizing: border-box;"></div>
-                            <canvas id="sparkline_performance" class="sparkline"
-                                style="height: 15%; width: 100%;"></canvas>
-                            <div style="height: 5%; margin-top: 5px;">
-                                <p>Previously Period: <span id="prev_performance">100%</span></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-3 col-sm-6 px-0">
-                    <div class="x_panel tile" style="height: 30vh;">
-                        <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
-                            <h2>Utilization of Availability</h2>
-                            <div id="gauge_uo_Avail" style="height: 70%; box-sizing: border-box;"></div>
-                            <canvas id="sparkline_uo_Avail" class="sparkline"
-                                style="height: 15%; width: 100%;"></canvas>
-                            <div style="height: 5%; margin-top: 5px;">
-                                <p>Previously Period: <span id="prev_uo_Avail">100%</span></p>
-                            </div>
+                        <div style="flex: 1; overflow: hidden; border-left: 1px solid #e2e8f0; margin-left: 8px; padding-left: 8px; min-height: 0;">
+                            <div id="progress_phy_avail" class="progress-grid cols-1"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="">
+        <!-- Power Production -->
+        <div class="x_panel tile">
             <div class="x_content">
-                <div class="row">
-                    <div class="col-lg-12 col-md-12 col-sm-12 px-0">
-                        <div class="x_panel tile" style="height: 30vh;">
-                            <div class="x_content" style="height: 100%;">
-                                <h2>Power Production (<span style="text-align: center;" id="hp_total"></span>)</h2>
-                                <div class="row" style="height: 78%;">
-                                    <div class="col-lg-6 col-md-6 col-sm-6 px-0" style="height: 100%;">
-                                        <canvas id="production_powerpie1" style="width: 100%; height: 25vh;"></canvas>
-                                    </div>
-                                    <div class="col-lg-6 col-md-6 col-sm-6" style="height: 100%;">
-                                        <canvas id="production_trendchart" style="width: 100%; height: 22vh;"></canvas>
-                                    </div>
-                                </div>
-                            </div>
+                <h2>Power Production (<span id="hp_total"></span>)</h2>
+                <div class="chart-wrap">
+                    <div style="display: flex; height: 100%;">
+                        <div style="flex: 1; min-width: 0; position: relative;">
+                            <canvas id="production_powerpie1"></canvas>
+                        </div>
+                        <div style="flex: 1; min-width: 0; position: relative;">
+                            <canvas id="production_trendchart"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-md-8 px-0">
-        <div class="x_content">
-            <div class="row" id="kpiProgressBarsByMetric">
+    <!-- Row 3: Performance + UoA (left) | Grid Units (right) -->
+    <div class="kpi-content-row cols-8-4">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3px; overflow: hidden; min-height: 0;">
+            <!-- Performance -->
+            <div class="x_panel tile">
+                <div class="x_content">
+                    <h2>Performance</h2>
+                    <div style="flex: 1; min-height: 0; display: flex; overflow: hidden;">
+                        <div style="flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden;">
+                            <div id="gauge_performance" style="flex: 1; min-height: 0;"></div>
+                            <canvas id="sparkline_performance" class="sparkline" style="height: 2.5vh; width: 100%; flex-shrink: 0;"></canvas>
+                            <p class="prev-label">Prev: <span id="prev_performance">-</span></p>
+                        </div>
+                        <div style="flex: 1; overflow: hidden; border-left: 1px solid #e2e8f0; margin-left: 8px; padding-left: 8px; min-height: 0;">
+                            <div id="progress_performance" class="progress-grid cols-1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Utilization of Availability -->
+            <div class="x_panel tile">
+                <div class="x_content">
+                    <h2>Utilization of Availability</h2>
+                    <div style="flex: 1; min-height: 0; display: flex; overflow: hidden;">
+                        <div style="flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden;">
+                            <div id="gauge_uo_Avail" style="flex: 1; min-height: 0;"></div>
+                            <canvas id="sparkline_uo_Avail" class="sparkline" style="height: 2.5vh; width: 100%; flex-shrink: 0;"></canvas>
+                            <p class="prev-label">Prev: <span id="prev_uo_Avail">-</span></p>
+                        </div>
+                        <div style="flex: 1; overflow: hidden; border-left: 1px solid #e2e8f0; margin-left: 8px; padding-left: 8px; min-height: 0;">
+                            <div id="progress_uo_Avail" class="progress-grid cols-1"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="">
+        <!-- Grid Units -->
+        <div class="x_panel tile">
             <div class="x_content">
-                <div class="row">
-                    <div class="col-lg-12 col-md-12 col-sm-12 px-0">
-                        <div class="x_panel tile" style="height: 30vh;">
-                            <div class="x_content" style="height: 100%;">
-                                <h2>Grid Units</h2>
-                                <div class="row" style="height: 78%;">
-                                    <div class="col-lg-6 col-md-6 col-sm-6 px-0" style="height: 100%;">
-                                        <canvas id="grid_pie1" style="width: 100%; height: 25vh;"></canvas>
-                                    </div>
-                                    <div class="col-lg-6 col-md-6 col-sm-6" style="height: 100%;">
-                                        <canvas id="grid_trendchart" style="width: 100%; height: 22vh;"></canvas>
-                                    </div>
-                                </div>
-                            </div>
+                <h2>Grid Units</h2>
+                <div class="chart-wrap">
+                    <div style="display: flex; height: 100%;">
+                        <div style="flex: 1; min-width: 0; position: relative;">
+                            <canvas id="grid_pie1"></canvas>
+                        </div>
+                        <div style="flex: 1; min-width: 0; position: relative;">
+                            <canvas id="grid_trendchart"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-md-8 col-sm-8 px-0">
-        <div class="x_panel tile" style="height: 30vh;">
+    <!-- Row 4: KPI Trend (left) | Number of Event (right) -->
+    <div class="kpi-content-row cols-8-4">
+        <div class="x_panel tile">
             <div class="x_content">
-                <div style="display: flex; align-items: center; gap: 10px; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px; justify-content: space-between; flex-shrink: 0;">
                     <h2 style="margin: 0;">KPI Trend</h2>
-                    <button type="button" onclick="resetZoom(line_chart1)"><i class="fa fa-search-minus"
-                            aria-hidden="true"></i></button>
-                    <form id="checkboxContainer" class="d-flex align-items-center gap-2 flex-wrap m-0 p-0"></form>
+                    <button type="button" onclick="resetZoom(line_chart1)" style="border: 1px solid #e2e8f0; background: #fff; cursor: pointer; border-radius: 5px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: #64748b; transition: all 0.2s;"><i class="fa fa-search-minus" aria-hidden="true" style="font-size: 11px;"></i></button>
+                    <form id="checkboxContainer" class="d-flex align-items-center gap-2 flex-wrap m-0 p-0" style="font-size: 11px;"></form>
                 </div>
-
                 <div id="custom-tooltip0"
-                    style=" position: absolute; background: white; border: 1px solid black; padding: 10px; border-radius: 5px; pointer-events: auto; display: none; z-index: 1000; ">
+                    style="position: absolute; background: rgba(255,255,255,0.96); backdrop-filter: blur(8px); border: 1px solid rgba(0,0,0,0.08); padding: 8px 12px; border-radius: 8px; pointer-events: auto; display: none; z-index: 1000; font-size: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                 </div>
-                <canvas id="kpi_trend_chart" style="width: 100%; height: 25vh"></canvas>
+                <div class="chart-wrap">
+                    <canvas id="kpi_trend_chart"></canvas>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-4 col-sm-4 px-0">
-        <div class="x_panel tile" style="height: 30vh;">
+        <div class="x_panel tile">
             <div class="x_content">
-                <div style="display: flex; align-items: center; gap: 10px; justify-content: space-between;">
-                    <h2>Number of Event</h2>
+                <div style="display: flex; align-items: center; gap: 8px; justify-content: space-between; flex-shrink: 0;">
+                    <h2 style="margin: 0;">Number of Event</h2>
                     <form method="get" style="margin: 0;">
-                        <select id="noe_metric_select">
+                        <select id="noe_metric_select" style="font-size: 11px; padding: 2px 4px;">
                             <option value="noe">Default</option>
                             <option value="duration">Duration</option>
                         </select>
                     </form>
                 </div>
-                <canvas id="stackedChart" style="width: 100%; height: 23vh"></canvas>
+                <div class="chart-wrap">
+                    <canvas id="stackedChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -631,7 +926,8 @@
                             }]
                         },
                         options: {
-                            responsive: false,
+                            responsive: true,
+                            maintainAspectRatio: false,
                             scales: {
                                 x: {
                                     time: {
@@ -737,7 +1033,8 @@
                             }]
                         },
                         options: {
-                            responsive: false,
+                            responsive: true,
+                            maintainAspectRatio: false,
                             scales: {
                                 x: {
                                     //type: 'time',
@@ -788,11 +1085,13 @@
                             }]
                         },
                         options: {
-                            responsive: false,
+                            responsive: true,
+                            maintainAspectRatio: false,
                             plugins: {
                                 legend: {
+                                    display: true,
                                     position: 'bottom',
-                                    labels: { font: { size: 10 } }
+                                    labels: { font: { size: 10 }, padding: 6 }
                                 },
                                 tooltip: {
                                     callbacks: {
@@ -856,11 +1155,13 @@
                             }]
                         },
                         options: {
-                            responsive: false,
+                            responsive: true,
+                            maintainAspectRatio: false,
                             plugins: {
                                 legend: {
+                                    display: true,
                                     position: 'bottom',
-                                    labels: { font: { size: 10 } }
+                                    labels: { font: { size: 10 }, padding: 8 }
                                 },
                                 tooltip: {
                                     callbacks: {
@@ -933,7 +1234,8 @@
                             }]
                         },
                         options: {
-                            responsive: false,
+                            responsive: true,
+                            maintainAspectRatio: false,
                             scales: {
                                 x: {
                                     //type: 'time',
@@ -997,6 +1299,7 @@
                         },
                         options: {
                             responsive: true,
+                            maintainAspectRatio: false,
                             plugins: {
                                 legend: {
                                     position: 'top'
@@ -1021,30 +1324,27 @@
                     });
 
 
-                    /////////////// LOLOPLSAD{Okas[pdokas]}
-                    const kpiProgressContainer = document.getElementById("kpiProgressBarsByMetric");
-
+                    /////////////// Progress bars into existing containers
                     const kpiMetrics = [
-                        { key: "oee", label: "OEE", color: "bg-success" },
-                        { key: "phy_avail", label: "Physical Availability", color: "bg-info" },
-                        { key: "performance", label: "Performance", color: "bg-warning" },
-                        { key: "uo_Avail", label: "Utilization of Availability", color: "bg-warning" }
+                        { key: "oee", label: "OEE" },
+                        { key: "phy_avail", label: "Physical Availability" },
+                        { key: "performance", label: "Performance" },
+                        { key: "uo_Avail", label: "Utilization of Availability" }
                     ];
 
-                    const lgsUnits = ["lgs1", "lgs2", "lgs3"];
-
+                    // Determine column layout based on unit count
+                    const unitCount = keys_unit.length;
+                    const useTwoCols = unitCount > 4;
+                    const rowCount = useTwoCols ? Math.ceil(unitCount / 2) : unitCount;
 
                     kpiMetrics.forEach(metric => {
-                        const section = document.createElement("div");
-                        section.className = "col-lg-3 col-md-3 col-sm-6 px-0";
+                        const wrapper = document.getElementById(`progress_${metric.key}`);
+                        if (!wrapper) return;
 
-                        // <h2>${metric.label}</h2>
-                        section.innerHTML = `
-                            <div class="x_panel tile" style="height: 30vh;">                
-                            <div class="x_content" id="progress_${metric.key}" style="height: 100%;">
-                            </div></div>`;
-
-                        const wrapper = section.querySelector(`#progress_${metric.key}`);
+                        // Set grid columns and rows based on unit count
+                        wrapper.classList.remove('cols-1', 'cols-2');
+                        wrapper.classList.add(useTwoCols ? 'cols-2' : 'cols-1');
+                        wrapper.style.gridTemplateRows = `repeat(${rowCount}, 1fr)`;
 
                         keys_unit.forEach(unit => {
                             const unitData = data[unit];
@@ -1053,22 +1353,20 @@
                             const values = unitData[metric.key].filter(v => Number.isFinite(v));
                             const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
                             const value = Math.round(mean * 100);
+                            const color = getColorClassByValue(value, metric.key);
 
-                            const bar = document.createElement("div");
-                            bar.classList.add("dummy-class");
-                            bar.innerHTML = `
-                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.2vh;">
-                                    <strong style="white-space: nowrap;">${unit.toUpperCase()}</strong>
-                                    <div class="progress" style="flex: 1; height: 2.2vh; margin-bottom: 0px; border-radius: 8px;">
-                                        <div class="progress-bar ${getColorClassByValue(value, metric.key)}" role="progressbar"
-                                            style="width: ${value}%; border-radius: 8px; background-color: ${getColorClassByValue(value, metric.key)}" aria-valuenow="${value}" aria-valuemin="0" aria-valuemax="100"> ${value}%
-                                        </div>
-                                    </div>
+                            const card = document.createElement("div");
+                            card.className = "unit-card";
+                            card.innerHTML = `
+                                <div class="unit-card-header">
+                                    <span class="unit-card-name">${unit.toUpperCase()}</span>
+                                    <span class="unit-card-value" style="color: ${color}">${value}%</span>
+                                </div>
+                                <div class="unit-card-bar">
+                                    <div class="unit-card-bar-fill" style="width: ${value}%; background: ${color}"></div>
                                 </div>`;
-                            wrapper.appendChild(bar);
+                            wrapper.appendChild(card);
                         });
-
-                        kpiProgressContainer.appendChild(section);
                     });
 
 

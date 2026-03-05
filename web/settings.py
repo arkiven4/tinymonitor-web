@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-6#4cv52+et%kyj3c24ae^0#*dw^3^@df#bm8@5#+quz46+caze'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -130,12 +130,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-SECURE_CROSS_ORIGIN_OPENER_POLICY = None
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = True
 
 ###### Custom Var
 if DEBUG:
@@ -143,7 +137,13 @@ if DEBUG:
     MIDDLEWARE = MIDDLEWARE + ["django_browser_reload.middleware.BrowserReloadMiddleware"]
 else:
     INSTALLED_APPS = INSTALLED_APPS + ["whitenoise.runserver_nostatic"]
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    #SECURE_SSL_REDIRECT = True
     
-MONITORINGDB_PATH = "/home/arkiven4/Documents/Project/Vale/cbm_vale/"
-#MONITORINGDB_PATH = "D:\\ITSTeam\\NewGen\\cbm_vale\\"
+#MONITORINGDB_PATH = "/home/arkiven4/Documents/Project/Vale/cbm_vale/"
+MONITORINGDB_PATH = "D:\\ITSTeam\\NewGen\\cbm_vale\\"
 

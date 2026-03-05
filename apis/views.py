@@ -104,13 +104,14 @@ def severity_plot(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
 
-    counter_feature_s2, df_timestamp, df_feature_send, y_pred_send, loss_send, thr_now_model = helper_fun.get_SeverityNLoss(
+    counter_feature_s2, df_timestamp, df_feature_send, y_pred_send, y_pred_std_send, loss_send, thr_now_model = helper_fun.get_SeverityNLoss(
         start_date, end_date)
     data = {
         'counter_feature_s2': counter_feature_s2,
         'df_timestamp': df_timestamp.tolist(),
         'df_feature_send': df_feature_send.tolist(),
         'y_pred_send': y_pred_send.tolist(),
+        'y_pred_std_send': y_pred_std_send.tolist(),
         'loss_send': loss_send.tolist(),
         'thr_now_model': thr_now_model,
     }

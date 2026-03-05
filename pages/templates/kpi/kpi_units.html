@@ -5,22 +5,32 @@
 {% block content %}
 
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
     #custom-tooltip {
         position: absolute;
-        background: white;
-        border: 1px solid black;
-        padding: 10px;
-        border-radius: 5px;
+        background: rgba(255,255,255,0.96);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(0,0,0,0.08);
+        padding: 8px 12px;
+        border-radius: 8px;
         pointer-events: auto;
         display: none;
         z-index: 1000;
+        font-size: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
     .checkbox-list {
         max-height: 300px;
         overflow-y: auto;
-        border: 1px solid #ccc;
+        border: 1px solid #e2e8f0;
         padding: 10px;
+        border-radius: 6px;
     }
 
     .x_content {
@@ -37,47 +47,217 @@
         cursor: pointer;
     }
 
-    /* body {
-        overflow: hidden;
-    } */
+    html, body {
+        overflow: hidden !important;
+        background: #f0f2f5 !important;
+        height: 100vh !important;
+        margin: 0 !important;
+    }
 
-    .machine-panel {
-        height: calc(100vh - 420px);
-        /* adaptive: header + KPIs */
-        min-height: 500px;
+    .right_col {
+        padding: 4px 10px 0 !important;
+        background: #f0f2f5 !important;
+        height: 100vh !important;
+        box-sizing: border-box;
+        overflow: hidden !important;
         display: flex;
         flex-direction: column;
     }
 
-    .machine-panel>.x_content {
+    footer {
+        display: none !important;
+    }
+
+    /* Make main content area fill remaining height */
+    .right_col > .row {
+        flex-shrink: 0;
+    }
+    .right_col > .row:last-of-type {
         flex: 1 1 auto;
         min-height: 0;
-        /* REQUIRED for nested scroll */
     }
-</style>
-<style>
+
+    .x_panel {
+        border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+        border: 1px solid rgba(226,232,240,0.8);
+        padding: 8px 12px;
+        margin-bottom: 2px;
+        background: #ffffff;
+        transition: box-shadow 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .x_panel:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .row {
+        margin-bottom: 0px;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    h2 {
+        font-size: 12px !important;
+        margin: 1px 0 4px !important;
+        font-weight: 600 !important;
+        color: #1e293b;
+        letter-spacing: -0.01em;
+        text-transform: uppercase;
+        opacity: 0.75;
+    }
+
+    .bg-success {
+        background-color: #007e7a !important;
+    }
+
+    /* Modern toolbar */
+    .kpi-toolbar {
+        background: #ffffff;
+        border-radius: 10px;
+        padding: 5px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid rgba(226,232,240,0.8);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+        margin-bottom: 3px;
+    }
+
+    .kpi-toolbar .form-check-label {
+        color: #475569;
+        font-size: 11.5px;
+        font-weight: 500;
+    }
+
+    .kpi-toolbar .form-check-input {
+        border-color: #cbd5e1;
+    }
+
+    .kpi-toolbar .form-check-input:checked {
+        background-color: #007e7a;
+        border-color: #007e7a;
+    }
+
+    .kpi-toolbar .daterange-btn {
+        background: #f8fafc;
+        color: #334155;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 5px 14px;
+        font-size: 12px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+
+    .kpi-toolbar .daterange-btn:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+
+    .kpi-toolbar .daterange-btn i {
+        color: #007e7a;
+        font-size: 13px;
+    }
+
+    .kpi-toolbar .daterange-btn .caret {
+        border-top-color: #94a3b8;
+        margin-left: 2px;
+    }
+
+    .kpi-toolbar .toolbar-label {
+        color: #94a3b8;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Modern select */
+    select {
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 3px 8px;
+        font-size: 11px;
+        background: #fff;
+        color: #334155;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    select:focus {
+        border-color: #007e7a;
+    }
+
+    /* Sparkline area */
+    .sparkline {
+        border-radius: 4px;
+    }
+
+    /* Prev label */
+    .prev-label {
+        font-size: 10px;
+        margin: 1px 0 0;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .prev-label span {
+        color: #007e7a;
+        font-weight: 700;
+    }
+
+    /* Machine panel - fill remaining height */
+    .machine-panel {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .machine-panel > .x_content {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    /* Timeline styles */
     .timeline-row {
-        margin-bottom: 12px;
+        margin-bottom: 0;
         display: flex;
         flex-wrap: nowrap;
-        justify-content: center;
         align-items: center;
+        overflow: hidden;
     }
 
     .row-label {
-        width: 180px;
-        display: inline-block;
-        font-weight: bold;
-        vertical-align: top;
+        width: clamp(80px, 12vw, 160px);
+        min-width: 0;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        font-weight: 600;
+        color: #334155;
+        font-size: clamp(7px, 1.1vh, 11px);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-right: clamp(2px, 0.4vw, 8px);
     }
 
     .row-track {
-        display: inline-block;
-        height: 20px;
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 70%;
         position: relative;
-        background: #e7e7e7;
-        width: 90%;
-        border: 1px solid #b4b4b4;
+        background: #e2e8f0;
+        border: 1px solid #cbd5e1;
+        border-radius: 3px;
     }
 
     .segment {
@@ -87,35 +267,55 @@
     }
 
     .legend {
-        margin-top: 10px;
-        font-size: 12px;
+        margin-top: 0.5vh;
+        font-size: clamp(10px, 1.3vh, 14px);
     }
 
     .legend span {
         display: inline-block;
-        width: 12px;
-        height: 12px;
+        width: 1.4vh;
+        height: 1.4vh;
         margin-right: 5px;
     }
 
     .timeline-axis {
-        width: 90%;
-        margin-left: auto;
-        /* shifts axis to the right */
-        color: #444;
+        color: #64748b;
         display: flex;
         justify-content: space-between;
-        font-size: 12px;
-        border-top: 1px solid #ccc;
-        padding-top: 4px;
+        font-size: clamp(7px, 1vh, 10px);
+        border-top: 1px solid #e2e8f0;
+        padding-top: clamp(1px, 0.3vh, 4px);
+        margin-top: clamp(2px, 0.4vh, 6px);
+        overflow: hidden;
     }
 
     #timeline-container,
     #timeline-container-grid {
-        flex: 1 1 50%;
-        min-height: 200px;
-        overflow-y: auto;
-        overflow-x: auto;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #timeline-container {
+        flex: 3 1 0;
+    }
+
+    #timeline-container-grid {
+        flex: 1 1 0;
+        margin-top: clamp(2px, 0.4vh, 4px);
+    }
+
+    #timeline-container .timeline-row,
+    #timeline-container-grid .timeline-row {
+        flex: 1 1 0;
+        min-height: 0;
+    }
+
+    /* Axis should not grow */
+    #timeline-container .timeline-axis,
+    #timeline-container-grid .timeline-axis {
+        flex: 0 0 auto;
     }
 
     .timeline-wrapper {
@@ -123,20 +323,15 @@
         flex-direction: column;
         height: 100%;
         min-height: 0;
-    }
-
-
-    .timeline-row {
-        flex-shrink: 0;
-        /* Prevent rows from shrinking */
-        margin-bottom: 8px;
+        overflow: hidden;
+        gap: clamp(2px, 0.3vh, 4px);
     }
 
     #stacked-bar {
-        width: 40px;
-        /* flex: 1 1 auto; */
-        min-height: 35vh;
-        max-height: 45vh;
+        width: clamp(28px, 3vw, 48px);
+        flex: 1 1 auto;
+        min-height: 0;
+        flex-shrink: 0;
     }
 
     .distribution-panel {
@@ -149,192 +344,175 @@
         flex: 1;
         min-height: 0;
     }
+
+    /* Other KPI cards */
+    .other-kpi-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 4px 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3px;
+        transition: box-shadow 0.2s;
+    }
+
+    .other-kpi-card:hover {
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .other-kpi-card h2 {
+        margin: 0 !important;
+        font-size: 11px !important;
+    }
 </style>
 
 <div class="row" id="chart_container">
     <div class="col-md-12 col-sm-12 px-0">
-        <div class="x_panel tile">
-            <div id="reportrange_right" class="pull-left"
-                style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc">
-                <i class="fa fa-calendar"></i>
-                <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
-            </div>
-            <div class="pull-left"
-                style="background: #fff; cursor: pointer; padding: 5px 10px; margin-left: 5px; display: flex; align-items: center; gap: 10px; justify-content: space-between;">
-
-                <!-- Label -->
-                <label for="tagDropdown">Select Tag:</label>
-
-                <!-- Single-select dropdown -->
-                <select id="tagDropdown" style="min-width: 200px;">
-                    <!-- Options will be added dynamically -->
-                </select>
-
-                <script>
-                    const tagMap = {
-                        Larona: ["LGS1", "LGS2", "LGS3"],
-                        Balambano: ["BGS1", "BGS2"],
-                        Karebbe: ["KGS1", "KGS2"]
-                    };
-                    const DEFAULT_TAG = "LGS1";
-
-                    const tagDropdown = document.getElementById("tagDropdown");
-
-                    // Populate dropdown options
-                    const allTags = Object.values(tagMap).flat();
-                    allTags.forEach(tag => {
-                        const option = document.createElement("option");
-                        option.value = tag;
-                        option.textContent = tag;
-                        tagDropdown.appendChild(option);
-                    });
-
-                    function getURLTag() {
-                        const params = new URLSearchParams(window.location.search);
-                        return params.get("tag");
-                    }
-
-                    function setDropdownFromURL(tagInURL) {
-                        const tagToSelect = tagInURL || DEFAULT_TAG;
-                        tagDropdown.value = tagToSelect;
-                    }
-
-                    function updateURLFromDropdown() {
-                        const selectedTag = tagDropdown.value;
-                        const params = new URLSearchParams(window.location.search);
-
-                        if (selectedTag) {
-                            params.set("tag", selectedTag);
-                        } else {
-                            params.delete("tag");
-                        }
-
-                        // Only reload if value changed
-                        const newQuery = params.toString();
-                        if (window.location.search !== "?" + newQuery) {
-                            window.location.search = newQuery;
-                        }
-                    }
-
-                    // Listener
-                    tagDropdown.addEventListener("change", updateURLFromDropdown);
-
-                    // Init
-                    const urlTag = getURLTag();
-                    setDropdownFromURL(urlTag);
-
-                    // If no tag in URL, set it to default in the URL immediately
-                    if (!urlTag) {
-                        updateURLFromDropdown();  // Will set ?tag=LGS1
-                    }
-                </script>
+        <div class="kpi-toolbar">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="display: flex; flex-direction: column; gap: 1px;">
+                    <div id="reportrange_right" class="pull-left daterange-btn">
+                        <i class="fa fa-calendar"></i>
+                        <span>December 30, 2014 - January 28, 2015</span>
+                        <b class="caret"></b>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; border-left: 1px solid #e2e8f0; padding-left: 12px;">
+                    <span class="toolbar-label" style="margin-right: 2px;">Unit</span>
+                    <select id="tagDropdown" style="min-width: 140px;">
+                        <!-- Options will be added dynamically -->
+                    </select>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+<script>
+    const tagMap = {
+        Larona: ["LGS1", "LGS2", "LGS3"],
+        Balambano: ["BGS1", "BGS2"],
+        Karebbe: ["KGS1", "KGS2"]
+    };
+    const DEFAULT_TAG = "LGS1";
+
+    const tagDropdown = document.getElementById("tagDropdown");
+
+    // Populate dropdown options with optgroups
+    for (const [group, tags] of Object.entries(tagMap)) {
+        const optgroup = document.createElement("optgroup");
+        optgroup.label = group;
+        tags.forEach(tag => {
+            const option = document.createElement("option");
+            option.value = tag;
+            option.textContent = tag;
+            optgroup.appendChild(option);
+        });
+        tagDropdown.appendChild(optgroup);
+    }
+
+    function getURLTag() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("tag");
+    }
+
+    function setDropdownFromURL(tagInURL) {
+        const tagToSelect = tagInURL || DEFAULT_TAG;
+        tagDropdown.value = tagToSelect;
+    }
+
+    function updateURLFromDropdown() {
+        const selectedTag = tagDropdown.value;
+        const params = new URLSearchParams(window.location.search);
+
+        if (selectedTag) {
+            params.set("tag", selectedTag);
+        } else {
+            params.delete("tag");
+        }
+
+        const newQuery = params.toString();
+        if (window.location.search !== "?" + newQuery) {
+            window.location.search = newQuery;
+        }
+    }
+
+    tagDropdown.addEventListener("change", updateURLFromDropdown);
+
+    const urlTag = getURLTag();
+    setDropdownFromURL(urlTag);
+
+    if (!urlTag) {
+        updateURLFromDropdown();
+    }
+</script>
+
 <div class="row">
-    <div class="col-md-8 px-0">
-        <div class="x_content">
-            <div class="row">
-                <div class="col-lg-3 col-md-3 col-sm-6 px-0">
-                    <div class="x_panel tile" style="height: 30vh;">
-                        <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
-                            <h2>OEE</h2>
-                            <div id="gauge_oee" style="height: 70%; box-sizing: border-box;"></div>
-                            <canvas id="sparkline_oee" class="sparkline" style="height: 15%; width: 100%;"></canvas>
-                            <div style="height: 5%; margin-top: 5px;">
-                                <p>Previously Period: <span id="prev_oee">100%</span></p>
-                            </div>
-                        </div>
+    <div class="col-md-9 px-0">
+        <div class="row">
+            <div class="col-lg-3 col-md-3 col-sm-6 px-0">
+                <div class="x_panel tile" style="height: 26vh;">
+                    <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
+                        <h2>OEE</h2>
+                        <div id="gauge_oee" style="flex: 1 1 auto; min-height: 0; box-sizing: border-box;"></div>
+                        <canvas id="sparkline_oee" class="sparkline" style="height: 15%; width: 100%;"></canvas>
+                        <p class="prev-label">Previous: <span id="prev_oee">100%</span></p>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-3 col-sm-6 px-0">
-                    <div class="x_panel tile" style="height: 30vh;">
-                        <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
-                            <h2>Physical Availability</h2>
-                            <div id="gauge_phy_avail" style="height: 70%; box-sizing: border-box;"></div>
-                            <canvas id="sparkline_phy_avail" class="sparkline"
-                                style="height: 15%; width: 100%;"></canvas>
-                            <div style="height: 5%; margin-top: 5px;">
-                                <p>Previously Period: <span id="prev_phy_avail">100%</span></p>
-                            </div>
-                        </div>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-6 px-0">
+                <div class="x_panel tile" style="height: 26vh;">
+                    <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
+                        <h2>Physical Availability</h2>
+                        <div id="gauge_phy_avail" style="flex: 1 1 auto; min-height: 0; box-sizing: border-box;"></div>
+                        <canvas id="sparkline_phy_avail" class="sparkline" style="height: 15%; width: 100%;"></canvas>
+                        <p class="prev-label">Previous: <span id="prev_phy_avail">100%</span></p>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-3 col-sm-6 px-0">
-                    <div class="x_panel tile" style="height: 30vh;">
-                        <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
-                            <h2>Performance</h2>
-                            <div id="gauge_performance" style="height: 70%; box-sizing: border-box;"></div>
-                            <canvas id="sparkline_performance" class="sparkline"
-                                style="height: 15%; width: 100%;"></canvas>
-                            <div style="height: 5%; margin-top: 5px;">
-                                <p>Previously Period: <span id="prev_performance">100%</span></p>
-                            </div>
-                        </div>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-6 px-0">
+                <div class="x_panel tile" style="height: 26vh;">
+                    <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
+                        <h2>Performance</h2>
+                        <div id="gauge_performance" style="flex: 1 1 auto; min-height: 0; box-sizing: border-box;"></div>
+                        <canvas id="sparkline_performance" class="sparkline" style="height: 15%; width: 100%;"></canvas>
+                        <p class="prev-label">Previous: <span id="prev_performance">100%</span></p>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-3 col-sm-6 px-0">
-                    <div class="x_panel tile" style="height: 30vh;">
-                        <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
-                            <h2>Utilization of Availability</h2>
-                            <div id="gauge_uo_Avail" style="height: 70%; box-sizing: border-box;"></div>
-                            <canvas id="sparkline_uo_Avail" class="sparkline"
-                                style="height: 15%; width: 100%;"></canvas>
-                            <div style="height: 5%; margin-top: 5px;">
-                                <p>Previously Period: <span id="prev_uo_Avail">100%</span></p>
-                            </div>
-                        </div>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-6 px-0">
+                <div class="x_panel tile" style="height: 26vh;">
+                    <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
+                        <h2>Utilization of Availability</h2>
+                        <div id="gauge_uo_Avail" style="flex: 1 1 auto; min-height: 0; box-sizing: border-box;"></div>
+                        <canvas id="sparkline_uo_Avail" class="sparkline" style="height: 15%; width: 100%;"></canvas>
+                        <p class="prev-label">Previous: <span id="prev_uo_Avail">100%</span></p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="">
-            <div class="x_content">
-                <div class="row">
-                    <div class="col-lg-12 col-md-12 col-sm-12 px-0">
-                        <div class="x_panel tile" style="height: 30vh;">
-                            <div class="x_content" style="height: 100%;">
-                                <div
-                                    style="display: flex;flex-wrap: nowrap;justify-content: space-between;align-items: center;">
-                                    <h2>Other KPIs</h2><a class="btn btn-link"
-                                        href="{% url 'kpi_manualdata' %}">Update</a>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-lg-12 col-md-12 col-sm-12 px-0">
-                                        <div class="x_panel tile">
-                                            <div class="x_content"
-                                                style="height: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center; align-content: center; flex-wrap: nowrap;">
-                                                <h2>TEEP</h2>
-                                                <h2>96.98% / 59.59%</h2>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-12 col-md-12 col-sm-12 px-0">
-                                        <div class="x_panel tile">
-                                            <div class="x_content"
-                                                style="height: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center; align-content: center; flex-wrap: nowrap;">
-                                                <h2>MTTR</h2>
-                                                <h2>1,950sec / 1,800sec</h2>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-12 col-md-12 col-sm-12 px-0">
-                                        <div class="x_panel tile">
-                                            <div class="x_content"
-                                                style="height: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center; align-content: center; flex-wrap: nowrap;">
-                                                <h2>MTBF</h2>
-                                                <h2>9,499.75sec / 8,914.29sec</h2>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+    <div class="col-md-3 px-0">
+        <div class="x_panel tile" style="height: 26vh;">
+            <div class="x_content" style="height: 100%; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <h2 style="margin: 0;">Other KPIs</h2>
+                    <a href="{% url 'kpi_manualdata' %}" style="font-size: 11px; color: #007e7a; text-decoration: none; font-weight: 500;"><i class="fa fa-pencil" style="margin-right: 3px;"></i>Update</a>
+                </div>
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+                    <div class="other-kpi-card">
+                        <h2>TEEP</h2>
+                        <h2 style="color: #007e7a;">96.98% / 59.59%</h2>
+                    </div>
+                    <div class="other-kpi-card">
+                        <h2>MTTR</h2>
+                        <h2 style="color: #007e7a;">1,950sec / 1,800sec</h2>
+                    </div>
+                    <div class="other-kpi-card">
+                        <h2>MTBF</h2>
+                        <h2 style="color: #007e7a;">9,499.75sec / 8,914.29sec</h2>
                     </div>
                 </div>
             </div>
@@ -342,40 +520,26 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-12 px-0">
-        <div class="x_content">
-            <div class="row">
-                <div class="col-lg-12 col-md-12 col-sm-12 px-0">
-                    <div class="x_panel tile machine-panel">
-                        <h2>Machine Status</h2>
-                        <div class="x_content">
-                            <div class="row">
-                                <div class="col-lg-10 col-md-10 col-sm-10 px-0">
-                                    <div class="x_panel tile" style="border: 0px solid #E6E9ED;">
-                                        <div class="timeline-wrapper">
-                                            <div id="timeline-container" style="border: 1px solid #aaa; padding: 8px;"></div>
-                                            <div id="timeline-container-grid" style="border: 1px solid #aaa; padding: 8px;"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-2 col-md-2 col-sm-2 px-0">
-                                    <div class="x_panel tile" style="border: 0px solid #E6E9ED;">
-                                        <h2>Distribution</h2>
-                                        <div class="row">
-                                            <div class="col-lg-12 col-md-12 col-sm-12 px-0" style="height: 100%;">
-                                                <div style="display: flex; height: 100%;">
-                                                    <div id="stacked-bar"
-                                                        style="border: 1px solid #000; display: flex; flex-direction: column-reverse;border-radius: 10px;">
-                                                    </div>
-                                                    <div id="stacked-labels"
-                                                        style="margin-left: 16px; display: flex; flex-direction: column; justify-content: flex-start;">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+<div class="row" style="flex: 1 1 auto; min-height: 0;">
+    <div class="col-md-12 px-0" style="height: 100%;">
+        <div class="x_panel tile machine-panel">
+            <h2>Machine Status</h2>
+            <div class="x_content" style="flex: 1 1 auto; min-height: 0; overflow: hidden;">
+                <div style="display: flex; height: 100%; gap: 4px;">
+                    <div style="flex: 1 1 auto; min-width: 0; height: 100%; overflow: hidden;">
+                        <div style="height: 100%; padding: 4px 4px 4px 0; overflow: hidden;">
+                            <div class="timeline-wrapper">
+                                <div id="timeline-container" style="border: 1px solid #e2e8f0; border-radius: 6px; padding: clamp(2px, 0.5vh, 6px); background: #fafbfc;"></div>
+                                <div id="timeline-container-grid" style="border: 1px solid #e2e8f0; border-radius: 6px; padding: clamp(2px, 0.5vh, 6px); background: #fafbfc;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="flex: 0 0 clamp(160px, 15vw, 280px); height: 100%; overflow: hidden;">
+                        <div style="height: 100%; overflow: hidden;">
+                            <h2>Distribution</h2>
+                            <div style="display: flex; height: calc(100% - 20px); overflow: hidden;">
+                                <div id="stacked-bar" style="border: 1px solid #e2e8f0; display: flex; flex-direction: column-reverse; border-radius: 8px; overflow: hidden;"></div>
+                                <div id="stacked-labels" style="margin-left: clamp(4px, 0.5vw, 8px); display: flex; flex-direction: column; justify-content: flex-start; overflow: hidden; min-width: 0;"></div>
                             </div>
                         </div>
                     </div>
@@ -569,12 +733,7 @@
             noe_metric = "noe";
         }
 
-        function setTimelineHeight() {
-            document.getElementById('timeline-container').style.height = window.innerHeight * 0.42 + 'px';
-            document.getElementById('timeline-container-grid').style.height = window.innerHeight * 0.2 + 'px';
-        }
-        //setTimelineHeight();
-        window.addEventListener('resize', setTimelineHeight);
+        // Heights are now controlled by CSS flex ratios - no JS needed
 
         $.ajax({
             type: "GET",
@@ -651,10 +810,10 @@
                         const labelDiv = document.createElement('div');
                         labelDiv.style.display = 'flex';
                         labelDiv.style.alignItems = 'center';
-                        labelDiv.style.marginBottom = '0.8vh'; // responsive spacing
+                        labelDiv.style.marginBottom = 'clamp(1px, 0.3vh, 4px)';
                         labelDiv.innerHTML = `
-                            <div style="width: 1.5vh; height: 1.5vh; background-color: ${color}; border-radius: 0.3vh; margin-right: 0.8vh;"></div>
-                            <div style="font-size: 1.2vh"><strong>${label}</strong></div>
+                            <div style="width: clamp(10px, 1.5vh, 16px); height: clamp(10px, 1.5vh, 16px); background-color: ${color}; border-radius: 2px; margin-right: clamp(4px, 0.5vw, 8px); flex-shrink: 0;"></div>
+                            <div style="font-size: clamp(11px, 1.5vh, 16px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>${label}</strong></div>
                         `;
                         labelContainer.appendChild(labelDiv);
 
@@ -662,9 +821,9 @@
                         const labelDiv2 = document.createElement('div');
                         labelDiv2.style.display = 'flex';
                         labelDiv2.style.alignItems = 'center';
-                        labelDiv2.style.marginBottom = '2vh';
+                        labelDiv2.style.marginBottom = 'clamp(2px, 0.6vh, 8px)';
                         labelDiv2.innerHTML = `
-                            <div style="font-size: 1.5vh">${formatDuration(duration)} (${parseInt(percent)}%)</div>
+                            <div style="font-size: clamp(10px, 1.4vh, 15px); color: #64748b;">${formatDuration(duration)} (${parseInt(percent)}%)</div>
                         `;
                         labelContainer.appendChild(labelDiv2);
                     }
@@ -695,7 +854,7 @@
                     // ===== Overall Track =====
                     const overallTrack = document.createElement('div');
                     overallTrack.className = 'timeline-row';
-                    overallTrack.innerHTML = `<div class="row-label" style="margin-right:10px">Overall</div><div class="row-track" id="row-overall"></div>`;
+                    overallTrack.innerHTML = `<div class="row-label">Overall</div><div class="row-track" id="row-overall"></div>`;
                     container.appendChild(overallTrack);
                     const rowOverall = overallTrack.querySelector('.row-track');
 
@@ -716,7 +875,7 @@
                         const row = document.createElement('div');
                         row.className = 'timeline-row';
                         const trackId = `row-${label.replace(/\s+/g, '-')}`;
-                        row.innerHTML = `<div class="row-label" style="display: flex;align-content: center; justify-content: flex-start; align-items: center; margin-right:10px; font-size: 1.3vh;"><div style="width: 12px; height: 2vh; background-color: ${color};border-radius: 2px;flex-shrink: 0;margin-right:4px"></div>${label} ${labelMapaddti[label]}</div><div class="row-track" id="${trackId}"></div>`;
+                        row.innerHTML = `<div class="row-label"><div style="width: 1.2vh; height: 1.2vh; background-color: ${color};border-radius: 2px;flex-shrink: 0;margin-right: 0.4vw"></div><span style="overflow:hidden;text-overflow:ellipsis">${label} ${labelMapaddti[label]}</span></div><div class="row-track" id="${trackId}"></div>`;
                         container.appendChild(row);
 
                         const rowTrack = row.querySelector('.row-track');
@@ -744,7 +903,7 @@
                     // =====================================
                     const overallTrackGrid = document.createElement('div');
                     overallTrackGrid.className = 'timeline-row';
-                    overallTrackGrid.innerHTML = `<div class="row-label" style="margin-right:10px">Overall</div><div class="row-track" id="row-overall-grid"></div>`;
+                    overallTrackGrid.innerHTML = `<div class="row-label">Overall</div><div class="row-track" id="row-overall-grid"></div>`;
                     container_grid.appendChild(overallTrackGrid);
                     const rowOverallGrid = overallTrackGrid.querySelector('.row-track');
 
@@ -765,7 +924,7 @@
                         const row = document.createElement('div');
                         row.className = 'timeline-row';
                         const trackId = `row-${label.replace(/\s+/g, '-')}`;
-                        row.innerHTML = `<div class="row-label" style="display: flex;align-content: center; justify-content: flex-start; align-items: center; margin-right:10px;font-size:1.3vh"><div style="width: 12px; height: 12px; background-color: ${color};border-radius: 2px;flex-shrink: 0;margin-right:4px"></div>${label}</div><div class="row-track" id="${trackId}"></div>`;
+                        row.innerHTML = `<div class="row-label"><div style="width: 1.2vh; height: 1.2vh; background-color: ${color};border-radius: 2px;flex-shrink: 0;margin-right: 0.4vw"></div><span style="overflow:hidden;text-overflow:ellipsis">${label}</span></div><div class="row-track" id="${trackId}"></div>`;
                         container_grid.appendChild(row);
 
                         const rowTrack = row.querySelector('.row-track');
@@ -794,16 +953,9 @@
                     const trackLeftOffset = rowOverall.getBoundingClientRect().left - container.getBoundingClientRect().left - 10;
 
                     const axis = document.createElement('div');
-                    axis.style.position = 'relative';
+                    axis.className = 'timeline-axis';
                     axis.style.width = `${trackWidth}px`;
-                    axis.style.left = `${trackLeftOffset}px`;
-                    axis.style.display = 'flex';
-                    axis.style.justifyContent = 'space-between';
-                    axis.style.fontSize = '12px';
-                    axis.style.marginTop = '8px';
-                    axis.style.borderTop = '1px solid #ccc';
-                    axis.style.paddingTop = '4px';
-                    axis.style.fontSize = '1.3vh'
+                    axis.style.marginLeft = `${trackLeftOffset}px`;
                     const numTicks = 7;
                     for (let i = 0; i <= numTicks; i++) {
                         const tick = document.createElement('div');

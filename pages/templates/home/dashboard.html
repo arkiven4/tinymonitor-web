@@ -7,221 +7,279 @@
 {% block content %}
 
 <style>
-    #custom-tooltip {
-        position: absolute;
-        background: white;
-        border: 1px solid black;
-        padding: 10px;
-        border-radius: 5px;
-        pointer-events: auto;
-        display: none;
-        z-index: 1000;
-    }
-</style>
-<style>
-    .custom_button_status {
-        /* height: 5vh; */
-        font-size: 0.9rem;
-        border-radius: 5px;
-        /* border-color: black;
-        border-width: 2px; */
+    /* ── Full-viewport, no-scroll layout ── */
+    html, body {
+        overflow: hidden !important;
+        height: 100vh !important;
+        margin: 0;
+        padding: 0;
     }
 
+    .nav-sm .container.body .right_col {
+        padding: 0 !important;
+        margin-left: 0 !important;
+    }
+
+    #dashboard-wrapper {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    /* ── Header bar ── */
+    #dashboard-header {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.4vh 1vw;
+        background: #fff;
+        border-bottom: 1px solid #e6e9ed;
+    }
+    #dashboard-header .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.5vw;
+    }
+    #dashboard-header .brand img {
+        border-radius: 20%;
+        width: clamp(20px, 2vw, 35px);
+    }
+    #dashboard-header .brand h2 {
+        margin: 0;
+        font-size: clamp(0.7rem, 1.1vw, 1.3rem);
+        white-space: nowrap;
+    }
+    #dashboard-header .legend {
+        display: flex;
+        gap: 0.8vw;
+        align-items: center;
+        font-size: clamp(0.55rem, 0.7vw, 0.85rem);
+    }
+    #dashboard-header .legend .swatch {
+        width: clamp(10px, 1vw, 18px);
+        height: clamp(10px, 1vw, 18px);
+        background: rgb(0,128,0);
+        display: inline-block;
+    }
+    #dashboard-header .legend .swatch-severity { border-radius: 3px; }
+    #dashboard-header .legend .swatch-priority  { border-radius: 50%; }
+
+    /* ── Main diagram area ── */
+    #dashboard-main {
+        flex: 1;
+        min-height: 0;
+        position: relative;
+        background-color: rgb(243, 243, 243);
+        overflow: hidden;
+    }
+    #dashboard-main > img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+    }
+
+    /* ── Footer bar ── */
+    #dashboard-footer {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.3vh 1vw;
+        background: #fff;
+        border-top: 1px solid #e6e9ed;
+        font-size: clamp(0.55rem, 0.7vw, 0.85rem);
+    }
+
+    /* ── Sensor point buttons (original btn style, responsive) ── */
+    .sensor-point {
+        position: absolute;
+        z-index: 1;
+    }
+    .custom_button_status {
+        font-size: clamp(0.45rem, 0.6vw, 0.9rem);
+        border-radius: 6px;
+        background: rgba(255,255,255,0.92);
+        color: black;
+        padding: clamp(2px, 0.3vh, 6px) clamp(3px, 0.4vw, 8px);
+        white-space: nowrap;
+        line-height: 1.4;
+        border: 1px solid rgba(0,0,0,0.15);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    .custom_button_status .badge {
+        font-size: clamp(0.38rem, 0.52vw, 0.75rem);
+        padding: clamp(1px, 0.15vh, 3px) clamp(3px, 0.3vw, 6px);
+        vertical-align: middle;
+    }
     .box_withborder {
         border-radius: 5px;
         border-color: black;
         border-width: 2px;
     }
 
-    .sparkline {
-        width: 110px;
-        height: 20px;
+    /* ── Floating pie-chart panel (bottom-right of diagram) ── */
+    #floating-charts {
+        position: absolute;
+        bottom: 1vh;
+        right: 1vw;
+        z-index: 10;
+        display: flex;
+        align-items: flex-start;  /* titles align at top */
+        gap: 0.8vw;
+        pointer-events: none;
     }
-</style>
-<style>
+    #floating-charts .chart-box {
+        pointer-events: auto;
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(0,0,0,0.15);
+        border-radius: 6px;
+        padding: clamp(3px, 0.4vw, 8px);
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    #floating-charts .chart-box .chart-title {
+        font-size: clamp(0.42rem, 0.55vw, 0.75rem);
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+    #floating-charts canvas {
+        padding-bottom: 4px;
+    }
+    #floating-charts .chart-legend {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2px 6px;
+        margin-top: 3px;
+        max-width: clamp(80px, 9vw, 160px);
+    }
+    #floating-charts .chart-legend .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        font-size: clamp(0.35rem, 0.45vw, 0.65rem);
+        white-space: nowrap;
+    }
+    #floating-charts .chart-legend .legend-swatch {
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+
+    /* ── DataTables margin fix ── */
     div.dt-container div.dt-layout-row {
         margin: 0 !important;
     }
-
-    .nav-sm .container.body .right_col {
-        padding: 0 !important;
-        margin-left: 0 !important;
-    }
-
-    .nav-sm .container.body .right_col {
-        padding: 0 !important;
-        margin-left: 0 !important;
-    }
-
-    .right-panel {
-        display: flex;
-        flex-direction: column;
-        height: 87vh;
-        overflow: hidden;
-    }
 </style>
 
-<div class="row" id="chart_container">
-    <div class="col-lg-7 col-md-7 col-sm-12 px-0">
-        <div class="x_panel tile">
-            <div class="x_content">
-                <div class="position-relative" style="background-color: rgb(243, 243, 243);">
-                    <img src="{% static 'img/main_hydro2.png' %}"
-                        style="width: 100%; height: 87vh; object-fit: contain;">
-                    <div id="sensor_point2" class="position-absolute"></div>
-                    <div id="sensor_point1" class="position-absolute"></div>
-                    <div id="sensor_point3" class="position-absolute"></div>
-                    <div id="sensor_point4" class="position-absolute"></div>
-                    <div id="sensor_point5" class="position-absolute"></div>
-                    <div id="sensor_point6" class="position-absolute"></div>
-                    <div id="sensor_point7" class="position-absolute"></div>
-                    <div id="sensor_point8" class="position-absolute"></div>
-                    <div id="sensor_point9" class="position-absolute"></div>
-                    <div id="sensor_point10" class="position-absolute"></div>
-                    <div id="sensor_point11" class="position-absolute"></div>
-                    <div id="sensor_point12" class="position-absolute"></div>
-                    <div id="sensor_point13" class="position-absolute"></div>
-                    <div id="sensor_point14" class="position-absolute"></div>
-                    <div id="sensor_point15" class="position-absolute"></div>
-                    <div id="sensor_point16" class="position-absolute"></div>
-                    <div id="sensor_point17" class="position-absolute"></div>
-                    <div id="sensor_point18" class="position-absolute"></div>
-                    <div id="sensor_point19" class="position-absolute"></div>
-                    <div id="sensor_point20" class="position-absolute"></div>
-                    <div id="sensor_point21" class="position-absolute"></div>
-                    <div id="sensor_point22" class="position-absolute"></div>
-                    <div id="sensor_point23" class="position-absolute"></div>
-                    <div id="sensor_point24" class="position-absolute"></div>
-                    <div id="sensor_point25" class="position-absolute"></div>
-                    <div id="sensor_point26" class="position-absolute"></div>
-                    <div id="sensor_point27" class="position-absolute"></div>
-                    <div id="sensor_point28" class="position-absolute"></div>
-                    <div id="sensor_point29" class="position-absolute"></div>
-                    <div id="sensor_point30" class="position-absolute"></div>
-                    <div id="sensor_point31" class="position-absolute"></div>
-                </div>
+<div id="dashboard-wrapper">
+    <!-- ── Header ── -->
+    <div id="dashboard-header">
+        <div class="brand">
+            <img src="{% static 'img/vale_logo.jpeg' %}">
+            <h2>Condition Based Monitoring System Plant - LGS1</h2>
+        </div>
+        <div class="legend">
+            <div style="display:flex;align-items:center;gap:3px;">
+                <span class="swatch swatch-severity"></span><span>Severity</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:3px;">
+                <span class="swatch swatch-priority"></span><span>Priority</span>
             </div>
         </div>
     </div>
-    <div class="col-lg-5 col-md-5 col-sm-12 px-0 right-panel">
-        <div class="row">
-            <div class="col-lg-12 col-md-12 col-sm-12">
-                <div class="x_panel tile">
-                    <div>
-                        <div style="display: flex; align-items: center;">
-                            <img src="{% static 'img/vale_logo.jpeg' %}" style="border-radius: 20%; width: 35px;">
-                            <h2 style="margin-left: 10px;">Condition Based Monitoring System Plant - LGS1</h2>
-                        </div>
-                    </div>
-                </div>
+
+    <!-- ── Main diagram ── -->
+    <div id="dashboard-main">
+        <img src="{% static 'img/main_hydro2.png' %}">
+        <!-- sensor point divs generated dynamically by JS -->
+
+        <!-- Floating pie charts -->
+        <div id="floating-charts">
+            <div class="chart-box">
+                <div class="chart-title">Operation Mode (YTD)</div>
+                <canvas id="operation_modeChart"></canvas>
+                <div id="mode_legend" class="chart-legend"></div>
             </div>
-            <div class="col-lg-12 col-md-12 col-sm-12">
-                <div class="x_panel tile">
-                    <div class="row">
-                        <div class="col-lg-6 col-md-6 col-sm-6">
-                            <canvas id="operation_modeChart" style="width: 100%; height: 25vh;"></canvas>
-                        </div>
-                        <div class="col-lg-6 col-md-6 col-sm-6">
-                            <canvas id="operation_zoneChart" style="width: 100%; height: 30vh;"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-12 col-md-12 col-sm-12">
-                <div class="">
-                    <table id="example" class="table table-bordered" style="width:100%; background-color: white;">
-                        <thead>
-                            <tr>
-                                <th>Assets Name</th>
-                                <th>Priority</th>
-                                <th>Severity</th>
-                                <th>Sensor Sparkline</th>
-                                <th>Severity Counter</th>
-                            </tr>
-                        </thead>
-                        <tbody id="advisory_maintable">
-                        </tbody>
-                    </table>
-                </div>
+            <div class="chart-box">
+                <div class="chart-title">Load Distribution (YTD)</div>
+                <canvas id="operation_zoneChart"></canvas>
+                <div id="zone_legend" class="chart-legend"></div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-md-12 col-sm-12">
-        <div class="x_panel tile" style="display:flex;justify-content:space-between;align-items:center;">
-            <div class="x_content">
-                Last Calculation: <span id="last_calcdate"></span>,
-                Next Calculation: <span id="next-update"></span>
-            </div>
-            <div style="display:flex;gap:10px;align-items:center;">
-                <div style="display:flex;align-items:center;gap:4px;">
-                    <span style="width:18px;height:18px;background:rgb(0,128,0);
-                         display:inline-block;border-radius:3px;"></span>
-                    <span>Severity</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:4px;">
-                    <span style="width:18px;height:18px;background:rgb(0,128,0);
-                         display:inline-block;border-radius:50%;"></span>
-                    <span>Priority</span>
-                </div>
-
-            </div>
+    <!-- ── Footer ── -->
+    <div id="dashboard-footer">
+        <div>
+            Last Calculation: <span id="last_calcdate">—</span> &nbsp;|&nbsp;
+            Next Calculation: <span id="next-update">—</span>
         </div>
-
     </div>
 </div>
 
 <script>
+    // ── Sensor point definitions ──
+    // sensorPoints[i] matches featureSet[i] / unitSet[i] from base.html
+    // name = short display label, top/left/right = position %
+    // null entries = features not displayed on the diagram
     const sensorPoints = [
-        { id: 'sensor_point1', top: 0, left: 0, name: "Active Power" },
-        { id: 'sensor_point2', top: 7, left: 0, name: "Reactive Power" },
-        { id: 'sensor_point3', top: 0, right: 0, name: "Governor Speed" },
-        { id: 'sensor_point4', top: 8, left: 74, name: "UGB X displacement" },
-        { id: 'sensor_point5', top: 15, left: 74, name: "UGB Y displacement" },
-        { id: 'sensor_point6', top: 52, left: 58, name: "LGB X displacement" },
-        { id: 'sensor_point7', top: 59, left: 58, name: "LGB Y displacement" },
-        { id: 'sensor_point8', top: 71, left: 63, name: "TGB X displacement" },
-        { id: 'sensor_point9', top: 78, left: 63, name: "TGB Y displacement" },
-        { id: 'sensor_point10', top: 20.5, left: 0, name: "Stator winding T. 13" },
-        { id: 'sensor_point11', top: 28, left: 0, name: "Stator winding T. 14" },
-        { id: 'sensor_point12', top: 35, left: 0, name: "Stator winding T. 15" },
-        { id: 'sensor_point13', top: 38, left: 79, name: "Surface Air Cooler Air Outlet T." },
-        { id: 'sensor_point14', top: 48, left: 79, name: "Surface Air Cooler Water Inlet T." },
-        { id: 'sensor_point15', top: 58, left: 79, name: "Surface Air Cooler Water Outlet T." },
-        { id: 'sensor_point16', top: 42, left: 2, name: "Stator core T." },
-        { id: 'sensor_point17', top: 9, left: 24, name: "UGB metal Temp" },
-        { id: 'sensor_point18', top: 43, left: 22, name: "LGB metal Temp 1" },
-        { id: 'sensor_point19', top: 51, left: 22, name: "LGB metal Temp 2" },
-        { id: 'sensor_point20', top: 58, left: 22, name: "Thrust Metal Temp" },
-        { id: 'sensor_point21', top: 74, left: 18, name: "Penstock Flow" },
-        { id: 'sensor_point22', top: 82, left: 18, name: "Turbine flow" },
-        { id: 'sensor_point23', top: 7.5, left: 57, name: "UGB CW flow" },
-        { id: 'sensor_point24', top: 41, left: 61, name: "LGB CW flow" },
-        { id: 'sensor_point25', top: 24, left: 82, name: "Generator CW flow" },
-        { id: 'sensor_point26', top: 177, left: 11.5, name: "Governor Penstock Press" },
-        { id: 'sensor_point27', top: 66, left: 18, name: "Penstock pressure" },
-        { id: 'sensor_point28', top: 90, left: 14, name: "Opening Wicked Gate" },
-        { id: 'sensor_point29', top: 2, left: 22.5, name: "UGB Oil Contaminant" },
-        { id: 'sensor_point30', top: 205, left: 9.5, name: "Gen Thrust Bearing Oil Contaminant" }
+        /* 0  Active Power                          */ { top: 0,    left: 0,    name: "Active Power" },
+        /* 1  Reactive Power                         */ { top: 7,    left: 0,    name: "Reactive Power" },
+        /* 2  Governor speed actual                  */ { top: 0,    right: 0,   name: "Governor Speed" },
+        /* 3  Opening Wicked Gate                    */ { top: 90,   left: 14,   name: "Opening Wicked Gate" },
+        /* 4  Penstock pressure                      */ { top: 66,   left: 18,   name: "Penstock pressure" },
+        /* 5  Governor Penstock Pressure              */ { top: 88,   left: 11.5, name: "Governor Penstock Press" },
+        /* 6  Penstock Flow                          */ { top: 74,   left: 18,   name: "Penstock Flow" },
+        /* 7  Turbine flow                           */ { top: 82,   left: 18,   name: "Turbine flow" },
+        /* 8  Gen Voltage Phase 1                    */ { top: 14,   left: 0,    name: "Gen Voltage Ph.1" },
+        /* 9  Gen Voltage Phase 2                    */ { top: 7,    right: 0,   name: "Gen Voltage Ph.2" },
+        /* 10 Gen Voltage Phase 3                    */ { top: 14,   right: 0,   name: "Gen Voltage Ph.3" },
+        /* 11 Gen Current Phase 1                    */ { top: 49,   left: 0,    name: "Gen Current Ph.1" },
+        /* 12 Gen Current Phase 2                    */ { top: 21,   right: 0,   name: "Gen Current Ph.2" },
+        /* 13 Gen Current Phase 3                    */ { top: 28,   right: 0,   name: "Gen Current Ph.3" },
+        /* 14 UGB X displacement                     */ { top: 8,    left: 74,   name: "UGB X displacement" },
+        /* 15 UGB Y displacement                     */ { top: 15,   left: 74,   name: "UGB Y displacement" },
+        /* 16 LGB X displacement                     */ { top: 52,   left: 58,   name: "LGB X displacement" },
+        /* 17 LGB Y displacement                     */ { top: 59,   left: 58,   name: "LGB Y displacement" },
+        /* 18 TGB X displacement                     */ { top: 71,   left: 63,   name: "TGB X displacement" },
+        /* 19 TGB Y displacement                     */ { top: 78,   left: 63,   name: "TGB Y displacement" },
+        /* 20 Surface Air Cooler Air Outlet Temp     */ { top: 38,   left: 79,   name: "SAC Air Outlet T." },
+        /* 21 Surface Air Cooler Water Inlet Temp    */ { top: 48,   left: 79,   name: "SAC Water Inlet T." },
+        /* 22 Surface Air Cooler Water Outlet Temp   */ { top: 58,   left: 79,   name: "SAC Water Outlet T." },
+        /* 23 Stator core temperature                */ { top: 42,   left: 2,    name: "Stator core T." },
+        /* 24 Stator winding temperature 13          */ { top: 56,   left: 0,    name: "Stator winding T. 13" },
+        /* 25 Stator winding temperature 14          */ { top: 63,   left: 0,    name: "Stator winding T. 14" },
+        /* 26 Stator winding temperature 15          */ { top: 70,   left: 0,    name: "Stator winding T. 15" },
+        /* 27 UGB metal temperature                  */ { top: 9,    left: 24,   name: "UGB metal Temp" },
+        /* 28 LGB metal temperature 1                */ { top: 43,   left: 22,   name: "LGB metal Temp 1" },
+        /* 29 LGB metal temperature 2                */ { top: 51,   left: 22,   name: "LGB metal Temp 2" },
+        /* 30 UGB oil temperature                    */ { top: 2,    left: 36,   name: "UGB oil Temp" },
+        /* 31 LGB oil temperature                    */ { top: 58,   left: 22,   name: "LGB oil Temp" },
+        /* 32 UGB Oil Contaminant                    */ { top: 2,    left: 22.5, name: "UGB Oil Contaminant" },
+        /* 33 Gen Thrust Bearing Oil Contaminant     */ { top: 93,   left: 9.5,  name: "Gen Thrust Bearing Oil Contam." },
+        /* 34 UGB cooling water flow                 */ { top: 7.5,  left: 57,   name: "UGB CW flow" },
+        /* 35 LGB cooling water flow                 */ { top: 41,   left: 61,   name: "LGB CW flow" },
+        /* 36 Generator cooling water flow           */ { top: 24,   left: 82,   name: "Generator CW flow" },
     ];
 
+    // Additional sensor points (not in the severity model, data-only display)
+    // additisensorPoints[i] matches addfeatureSet[i] / addunitSet[i] from base.html
     const additisensorPoints = [
-        { id: 'sensor_point31', top: 86, left: 65, name: "TGB temperature" },
+        /* 1  TGB temperature  */ { top: 86,   left: 65,   name: "TGB temperature" },
     ];
 
-    function percentageToWidth(severity) {
-        return (severity / 6) * 100;
-    }
-
+    // ── Helper functions ──
     function severity2color(severity) {
-        const norm = (severity - 1) / 5; // Normalize severity to range [0,1]
+        const norm = (severity - 1) / 5;
         const colorScale = d3.scaleLinear()
-            .domain([0, 0.5, 1]) // Normalized values
-            .range(["green", "yellow", "red"]); // Corresponding colors
-
-        return colorScale(norm); // Return the mapped color
+            .domain([0, 0.5, 1])
+            .range(["green", "yellow", "red"]);
+        return colorScale(norm);
     }
 
     function getContrastingTextColor(bgColor) {
@@ -230,406 +288,245 @@
         return luminance > 0.7 ? "black" : "white";
     }
 
-    function percentage2color(severity) {
-        const norm = severity / 100; // Normalize severity to range [0,1]
-        const colorScale = d3.scaleLinear()
-            .domain([0, 0.5, 1]) // Normalized values
-            .range(["green", "yellow", "red"]); // Corresponding colors
-
-        return colorScale(norm); // Return the mapped color
-    }
-
-    function parseData_fromserver(data) {
-        const timestamps = data.df_timestamp;
-        const predictions = data.y_pred_send;
-        const originalData = data.df_feature_send;
-
-        const severityData = data.counter_feature_s2
-        const severityLabels = Object.keys(severityData);
-        const severityValues = severityLabels.map(label => severityData[label].severity);
-        const severityCounts = severityLabels.map(label => parseInt(severityData[label].count) + "%");
-
-        const colors = severityValues.map(value => severity2color(value));
-
-        return [timestamps, predictions, originalData, severityData, severityLabels, severityValues, severityCounts, colors]
-    }
-
-    let chart_array = [];
-    let barchart = null;
-
-    function updateChart() {
-        var end_date = nowDateMoment.format("YYYY-MM-DDTHH:mm:ss"); // moment.utc();
-        var start_date = nowDateMoment.subtract(2, 'hours').format("YYYY-MM-DDTHH:mm:ss");
-
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            data: { start_date: start_date, end_date: end_date },
-            url: "/api/severity_plot",
-            success: function (data) {
-                [timestamps, predictions, originalData, severityData,
-                    severityLabels, severityValues, severityCounts, colors] = parseData_fromserver(data)
-
-                // Bar Chart 
-                // barchart.data.labels = severityLabels
-                // barchart.data.datasets[0] = { label: "Severity", data: severityValues, backgroundColor: colors, count: severityCounts }
-                // barchart.update();
-            }
+    // ── Create sensor point DOM elements dynamically ──
+    function createSensorDivs() {
+        const container = document.getElementById('dashboard-main');
+        const allPoints = [
+            ...sensorPoints.map((p, i) => ({ ...p, id: `sp${i}` })),
+            ...additisensorPoints.map((p, i) => ({ ...p, id: `sp_add${i}` }))
+        ];
+        allPoints.forEach(p => {
+            if (!p) return;
+            const div = document.createElement('div');
+            div.id = p.id;
+            div.className = 'sensor-point';
+            div.style.top = `${p.top}%`;
+            if (p.left !== undefined)  div.style.left  = `${p.left}%`;
+            if (p.right !== undefined) div.style.right = `${p.right}%`;
+            container.appendChild(div);
         });
     }
 
+    // ── Main ──
     $(document).ready(function () {
-        document.body.style.overflowY = 'hidden';
+        createSensorDivs();
 
-        var end_date = nowDateMoment.format("YYYY-MM-DDTHH:mm:ss");
-        var start_date = nowDateMoment.subtract(2, 'hours').format("YYYY-MM-DDTHH:mm:ss");
-        var start_dateNewyear = nowDateMoment.startOf('year').format("YYYY-MM-DDTHH:mm:ss");
+        function fetchAndRender() {
+            var end_date = moment.utc().format("YYYY-MM-DDTHH:mm:ss");
+            var start_date = moment.utc().subtract(2, 'hours').format("YYYY-MM-DDTHH:mm:ss");
 
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url: "/api/panel_summary",
-            data: { start_date: start_date, end_date: end_date },
-            success: function (data) {
-                // Force UTC parsing from DB
-                const lastUpdateUtc = new Date(
-                    data.last_timestamp.endsWith('Z')
-                        ? data.last_timestamp
-                        : data.last_timestamp + 'Z'
-                );
-
-                // Display in WITA (UTC+8)
-                document.getElementById("last_calcdate").textContent =
-                    lastUpdateUtc.toLocaleString('en-GB', {
-                        timeZone: 'Asia/Makassar',
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                    });
-
-                // Next update (+10 minutes, still UTC math)
-                const nextUpdateUtc = new Date(lastUpdateUtc.getTime() + 10 * 60 * 1000);
-
-                document.getElementById("next-update").textContent =
-                    nextUpdateUtc.toLocaleString('en-GB', {
-                        timeZone: 'Asia/Makassar',
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                    });
-
-                for (const [i, p] of sensorPoints.entries()) {
-                    const el = document.getElementById(p.id);
-                    var current_sensor_value = data.last_sensor_featname[featureSet[i]];
-                    var current_severity_value = data.last_severity_featname[featureSet[i]];
-                    var current_priority_value = data.priority_parameter[featureSet[i]];
-
-                    var current_unit = unitSet[i];
-                    el.innerHTML = `<div class="btn custom_button_status" onclick="window.open('/advisory/chart?feat_id=${i}','_blank')" style="background-color: rgb(243, 243, 243); color: black">
-                                                    ${p.name} | <span class="badge" style="background-color: ${severity2color(current_severity_value)}; color: ${getContrastingTextColor(severity2color(current_severity_value))}">${current_severity_value}</span> <span class="badge" style="display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background-color: ${severity2color(percentage2priority(current_priority_value))}; color: ${getContrastingTextColor(severity2color(percentage2priority(current_priority_value)))}">${percentage2alarmCode(current_priority_value)}</span><br> 
-                                                    <span class="badge bg-dark text-light box_withborder">${current_sensor_value} ${current_unit}</span>`
-                    if (current_severity_value > 1) {
-                        el.innerHTML += `<span class="position-absolute translate-middle p-2 bg-danger border border-light rounded-circle" style="top:7%; left: 5%; background-color: ${severity2color(current_severity_value)}">
-                                           <span class="visually-hidden">Warnings</span></span>`
-                    }
-                    el.innerHTML += "</div>"
-
-                    el.style.top = `${p.top}%`;
-                    el.style.left = `${p.left}%`;
-                    el.style.right = `${p.right}%`;
-                    el.style.zIndex = percentage2severity(current_severity_value);
-                }
-
-                for (const [i, p] of additisensorPoints.entries()) {
-                    const el = document.getElementById(p.id);
-                    var current_sensor_value = data.last_sensor_featname[p.name];
-                    var current_unit = addunitSet[addfeatureSet.indexOf(p.name)];
-
-                    el.innerHTML = `<div class="btn custom_button_status" onclick="window.open('/advisory/chart?feat_id=${i}','_blank')" style="background-color: rgb(243, 243, 243); color: black">
-                                                    ${p.name} | <span class="badge" style="background-color: gray; ">x</span> <span class="badge" style="display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background-color: gray;">x</span><br> 
-                                                    <span class="badge bg-dark text-light box_withborder">${current_sensor_value} ${current_unit}</span>`
-                    if (current_severity_value > 1) {
-                        el.innerHTML += `<span class="position-absolute translate-middle p-2 bg-danger border border-light rounded-circle" style="top:7%; left: 5%; background-color: ${severity2color(current_severity_value)}">
-                                           <span class="visually-hidden">Warnings</span></span>`
-                    }
-                    el.innerHTML += "</div>"
-
-                    el.style.top = `${p.top}%`;
-                    el.style.left = `${p.left}%`;
-                    el.style.right = `${p.right}%`;
-                }
-
-                document.getElementById("advisory_maintable").innerHTML = ""
-                for (var i = 0; i < data.ordered_feature_name.length; i++) {
-                    var now_key = data.ordered_feature_name[i];
-                    var now_value = data.last_severity_featname[now_key];
-
-                    document.getElementById("advisory_maintable").innerHTML += `
-                        <tr>
-                            <td>${now_key}</td>
-                            <td>
-                                <div class="progress">
-                                    <div class="progress-bar" role="progressbar" style="width: ${data.priority_parameter[now_key]}%; background-color: ${percentage2color(data.priority_parameter[now_key])}" aria-valuenow="${data.priority_parameter[now_key]}"
-                                        aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="progress">
-                                    <div class="progress-bar" role="progressbar" style="width: ${percentageToWidth(now_value)}%; background-color: ${severity2color(now_value)}" aria-valuenow="${now_value}"
-                                        aria-valuemin="0" aria-valuemax="6"></div>
-                                </div>
-                            </td>
-                            <td><canvas id="sparkline_${i}" class="sparkline"></canvas></td>
-                            <td><canvas id="barchart_${i}" class="sparkline"></canvas></td>
-                        </tr>`
-                }
-
-                setTimeout(() => {
-                    new DataTable('#example', {
-                        paging: false,
-                        info: false,
-                        searchPanes: false,
-                        searching: false,
-                        order: [[2, 'asc']]
-                    });
-
-                    for (var i = 0; i < data.ordered_feature_name.length; i++) {
-                        var now_key = data.ordered_feature_name[i];
-                        var dataPoints_raw = data.sensor_featname[now_key];
-                        var dataPoints_count = data.sever_count_featname[now_key];
-
-                        const ctx1 = document.getElementById(`sparkline_${i}`).getContext('2d');
-                        new Chart(ctx1, {
-                            type: 'line',
-                            data: {
-                                labels: dataPoints_raw.map((_, i) => i + 1),
-                                datasets: [{
-                                    data: dataPoints_raw,
-                                    borderColor: '#4CAF50',
-                                    fill: false,
-                                    borderWidth: 1,
-                                    pointRadius: 0,
-                                    tension: 0.3
-                                }]
-                            },
-                            options: {
-                                responsive: false,
-                                plugins: {
-                                    legend: { display: false },
-                                    tooltip: { enabled: false }
-                                },
-                                scales: {
-                                    x: { display: false },
-                                    y: { display: false }
-                                }
-                            }
-                        });
-
-                        const labels_count = Object.keys(dataPoints_count);
-                        const values_count = labels_count.map(key => dataPoints_count[key]);
-                        const barColors_count = labels_count.map(key => severity2color(parseInt(key)));
-
-                        const ctx2 = document.getElementById(`barchart_${i}`).getContext('2d');
-                        new Chart(ctx2, {
-                            type: 'bar',
-                            data: {
-                                labels: labels_count,
-                                datasets: [{
-                                    data: values_count,
-                                    backgroundColor: barColors_count,
-                                    borderRadius: 2
-                                }]
-                            },
-                            options: {
-                                responsive: false,
-                                plugins: {
-                                    legend: { display: false },
-                                    tooltip: { enabled: false }
-                                },
-                                scales: {
-                                    x: {
-                                        display: true,
-                                        offset: false,
-                                        ticks: {
-                                            font: { size: 7 },
-                                            padding: 0,
-                                            color: "#333"
-                                        },
-                                        grid: { display: false },
-                                        title: { display: false }
-                                    },
-                                    y: {
-                                        display: true,
-                                        grid: { display: true },
-                                        ticks: { display: true }
-                                    }
-                                }
-                            }
-                        });
-
-                    }
-                }, 500);
-            }
-        });
-
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url: "/api/zone_distribution",
-            data: { start_date: start_dateNewyear, end_date: end_date },
-            success: function (data) {
-                setTimeout(() => {
-                    new Chart(document.getElementById('operation_zoneChart').getContext('2d'), {
-                        type: 'pie',
-                        data: {
-                            labels: Object.keys(data.operation_zone),
-                            datasets: [{
-                                data: Object.values(data.operation_zone),
-                                hoverOffset: 4
-                            }]
-                        },
-                        options: {
-                            responsive: false,
-
-                            plugins: {
-                                title: {
-                                    display: true,
-                                    text: 'Load Distribution for the Year',
-                                    font: {
-                                        size: 10
-                                    },
-                                },
-                                legend: {
-                                    position: 'bottom',
-                                    labels: {
-                                        font: {
-                                            size: 10
-                                        }
-                                    }
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function (context) {
-                                            const value = context.raw;
-                                            const total = context.chart._metasets[0].total;
-                                            const percentage = ((value / total) * 100).toFixed(1);
-                                            return `${context.label}: ${value} (${percentage}%)`;
-                                        }
-                                    }
-                                },
-                                datalabels: {
-                                    formatter: (value, context) => {
-                                        const data = context.chart.data.datasets[0].data;
-                                        const total = data.reduce((a, b) => a + b, 0);
-                                        const percentage = ((value / total) * 100).toFixed(1);
-                                        return percentage + '%';
-                                    },
-                                    color: '#fff',
-                                    font: {
-                                        weight: 'bold',
-                                        size: 10
-                                    }
-                                }
-                            }
-                        },
-                        plugins: [ChartDataLabels]
-                    });
-
-                    const renameMap = {
-                        Grid: "AUX",
-                        Furnace: "FCE"
-                    };
-                    const renamed_modeop = Object.fromEntries(
-                        Object.entries(data.operation_mode).map(([k, v]) => [renameMap[k] || k, v])
+            $.ajax({
+                type: "GET",
+                dataType: "json",
+                url: "/api/panel_summary",
+                data: { start_date: start_date, end_date: end_date },
+                success: function (data) {
+                    // ── Timestamps ──
+                    const lastUpdateUtc = new Date(
+                        data.last_timestamp.endsWith('Z')
+                            ? data.last_timestamp
+                            : data.last_timestamp + 'Z'
                     );
+                    const witaOpts = {
+                        timeZone: 'Asia/Makassar',
+                        year: 'numeric', month: '2-digit', day: '2-digit',
+                        hour: '2-digit', minute: '2-digit', second: '2-digit'
+                    };
+                    document.getElementById("last_calcdate").textContent =
+                        lastUpdateUtc.toLocaleString('en-GB', witaOpts);
+                    const nextUpdateUtc = new Date(lastUpdateUtc.getTime() + 10 * 60 * 1000);
+                    document.getElementById("next-update").textContent =
+                        nextUpdateUtc.toLocaleString('en-GB', witaOpts);
 
-                    new Chart(document.getElementById('operation_modeChart').getContext('2d'), {
-                        type: 'pie',
-                        data: {
-                            labels: Object.keys(renamed_modeop),
-                            datasets: [{
-                                data: Object.values(renamed_modeop),
-                                hoverOffset: 4
-                            }]
-                        },
-                        options: {
-                            responsive: false,
+                    // ── Main sensor points (with severity model) ──
+                    // sensorPoints[i] corresponds to featureSet[i]
+                    for (let i = 0; i < sensorPoints.length; i++) {
+                        const p = sensorPoints[i];
+                        if (!p) continue;
+                        const el = document.getElementById(`sp${i}`);
+                        const featureName = featureSet[i];
+                        const currentUnit = unitSet[i];
+                        const sensorVal = data.last_sensor_featname[featureName];
+                        const severityVal = data.last_severity_featname[featureName];
+                        const priorityVal = data.priority_parameter[featureName];
 
-                            plugins: {
-                                title: {
-                                    display: true,
-                                    text: 'Mode Operation Distribution for the Year',
-                                    font: {
-                                        size: 10
-                                    },
-                                },
-                                legend: {
-                                    position: 'bottom',
-                                    labels: {
-                                        font: {
-                                            size: 10
-                                        }
-                                    }
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function (context) {
-                                            const value = context.raw;
-                                            const total = context.chart._metasets[0].total;
-                                            const percentage = ((value / total) * 100).toFixed(1);
-                                            return `${context.label}: ${value} (${percentage}%)`;
-                                        }
-                                    }
-                                },
-                                datalabels: {
-                                    formatter: (value, context) => {
-                                        const data = context.chart.data.datasets[0].data;
-                                        const total = data.reduce((a, b) => a + b, 0);
-                                        const percentage = ((value / total) * 100).toFixed(1);
-                                        return percentage + '%';
-                                    },
-                                    color: '#fff',
-                                    font: {
-                                        weight: 'bold',
-                                        size: 10
-                                    }
+                        el.innerHTML = `<div class="btn custom_button_status" onclick="window.open('/advisory/chart?feat_id=${i}','_blank')">
+                            ${p.name} | <span class="badge" style="background-color: ${severity2color(severityVal)}; color: ${getContrastingTextColor(severity2color(severityVal))}">${severityVal}</span> <span class="badge" style="display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background-color: ${severity2color(percentage2priority(priorityVal))}; color: ${getContrastingTextColor(severity2color(percentage2priority(priorityVal)))}">${percentage2alarmCode(priorityVal)}</span><br>
+                            <span class="badge bg-dark text-light box_withborder">${sensorVal} ${currentUnit}</span>`;
+                        if (severityVal > 1) {
+                            el.innerHTML += `<span class="position-absolute translate-middle p-2 bg-danger border border-light rounded-circle" style="top:7%; left: 5%; background-color: ${severity2color(severityVal)}">
+                                               <span class="visually-hidden">Warnings</span></span>`;
+                        }
+                        el.innerHTML += "</div>";
+                        el.style.zIndex = percentage2severity(severityVal);
+                    }
+
+                    // ── Additional sensor points (data only, no model) ──
+                    // additisensorPoints[i] corresponds to addfeatureSet[i]
+                    for (let i = 0; i < additisensorPoints.length; i++) {
+                        const p = additisensorPoints[i];
+                        if (!p) continue;
+                        const el = document.getElementById(`sp_add${i}`);
+                        const featureName = addfeatureSet[i];
+                        const currentUnit = addunitSet[i];
+                        const sensorVal = data.last_sensor_featname[featureName];
+
+                        el.innerHTML = `<div class="btn custom_button_status">
+                            ${p.name} | <span class="badge" style="background-color: gray;">x</span> <span class="badge" style="display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background-color: gray;">x</span><br>
+                            <span class="badge bg-dark text-light box_withborder">${sensorVal} ${currentUnit}</span></div>`;
+                    }
+                }
+            });
+        }
+
+        // Initial load
+        fetchAndRender();
+
+        // Refresh data via AJAX every 5 minutes (no page reload)
+        setInterval(fetchAndRender, 5 * 60 * 1000);
+
+        // ── Floating pie charts: Operation Mode & Load Distribution (YTD) ──
+        const ZONE_COLORS = {
+            'Shutdown':  '#6c757d',
+            'Warming':   '#fd7e14',
+            'No Load':   '#ffc107',
+            'Low':       '#20c997',
+            'Rough':     '#dc3545',
+            'Part':      '#0dcaf0',
+            'Efficient': '#198754',
+            'High':      '#0d6efd',
+            'Undefined': '#adb5bd'
+        };
+        // Shorten zone labels from API (remove "Load"/"Zone" suffix)
+        const ZONE_RENAME = {
+            'Low Load':       'Low',
+            'Rough Zone':     'Rough',
+            'Part Load':      'Part',
+            'Efficient Load': 'Efficient',
+            'High Load':      'High'
+        };
+        const MODE_RENAME = { 'Grid': 'AUX', 'Furnace': 'FCE' };
+        const MODE_COLORS = { 'AUX': '#00807C', 'FCE': '#EEA722' };
+
+        let modeChartInstance = null;
+        let zoneChartInstance = null;
+
+        const shadowPlugin = {
+            id: 'shadowSlices',
+            beforeDatasetDraw(chart, args) {
+                const { ctx } = chart;
+                if (chart.config.type !== 'pie') return;
+                const meta = chart.getDatasetMeta(args.index);
+                meta.data.forEach(seg => {
+                    const origDraw = seg.draw;
+                    seg.draw = function () {
+                        ctx.save();
+                        ctx.shadowColor = 'rgba(0,0,0,0.25)';
+                        ctx.shadowBlur = 6;
+                        ctx.shadowOffsetX = 2;
+                        ctx.shadowOffsetY = 2;
+                        origDraw.apply(this, arguments);
+                        ctx.restore();
+                    };
+                });
+            }
+        };
+
+        function buildPieConfig(labels, data, bgColors) {
+            return {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: bgColors,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (ctx) {
+                                    const v = ctx.raw;
+                                    const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                    return ` ${v} (${((v / total) * 100).toFixed(1)}%)`;
                                 }
                             }
                         },
-                        plugins: [ChartDataLabels]
+                        datalabels: {
+                            formatter: (value, ctx) => {
+                                const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                return ((value / total) * 100).toFixed(1) + '%';
+                            },
+                            color: '#fff',
+                            font: { weight: 'bold', size: 9 }
+                        }
+                    }
+                },
+                plugins: [shadowPlugin, ChartDataLabels]
+            };
+        }
+
+        function renderHtmlLegend(containerId, labels, colors) {
+            const el = document.getElementById(containerId);
+            el.innerHTML = labels.map((lbl, i) =>
+                `<span class="legend-item"><span class="legend-swatch" style="background:${colors[i]}"></span>${lbl}</span>`
+            ).join('');
+        }
+
+        function fetchAndRenderCharts() {
+            const end_date = moment.utc().format("YYYY-MM-DDTHH:mm:ss");
+            const start_dateYTD = moment.utc().startOf('year').format("YYYY-MM-DDTHH:mm:ss");
+
+            $.ajax({
+                type: "GET",
+                dataType: "json",
+                url: "/api/zone_distribution",
+                data: { start_date: start_dateYTD, end_date: end_date },
+                success: function (data) {
+                    // ── Operation Mode pie ──
+                    const modeLabels = Object.keys(data.operation_mode).map(k => MODE_RENAME[k] || k);
+                    const modeData = Object.values(data.operation_mode);
+                    const modeBg = modeLabels.map(l => MODE_COLORS[l] || '#adb5bd');
+
+                    // Set both canvases to same fixed pixel size so pies are equal
+                    const chartPx = Math.round(Math.min(Math.max(window.innerWidth * 0.09, 80), 160));
+                    ['operation_modeChart', 'operation_zoneChart'].forEach(id => {
+                        const c = document.getElementById(id);
+                        c.width = chartPx;
+                        c.height = chartPx;
                     });
-                }, 500);
-            }
-        });
 
-        // var now_date = new Date()
-        // // document.getElementById("last_update").textContent = now_date.toLocaleString();
-        // // document.getElementById("refresh_page_time").textContent = new Date(now_date.getTime() + 5 * 60 * 1000).toLocaleString();
-        // $.ajax({
-        //     type: "GET",
-        //     dataType: "json",
-        //     url: "/api/timeinfo_detail",
-        //     data: {},
-        //     success: function (data) {
-        //         const lastUpdate = new Date(data.datetime_last);
-        //         console.log(lastUpdate.toLocaleString())
-        //         document.getElementById("last_calcdate").textContent = lastUpdate.toLocaleString();
-        //         const nextUpdate = new Date(data.next_update);
-        //         console.log(nextUpdate.toLocaleString())
-        //         document.getElementById("next-update").textContent = nextUpdate.toLocaleString();
-        //     }
-        // })
+                    if (modeChartInstance) modeChartInstance.destroy();
+                    modeChartInstance = new Chart(
+                        document.getElementById('operation_modeChart').getContext('2d'),
+                        buildPieConfig(modeLabels, modeData, modeBg)
+                    );
+                    renderHtmlLegend('mode_legend', modeLabels, modeBg);
 
-        setInterval(() => {
-            location.reload();
-            //updateChart();
-        }, 5 * 60 * 1000);
+                    // ── Load Distribution pie ──
+                    const zoneLabels = Object.keys(data.operation_zone).map(k => ZONE_RENAME[k] || k);
+                    const zoneData = Object.values(data.operation_zone);
+                    const zoneBg = zoneLabels.map(l => ZONE_COLORS[l] || '#adb5bd');
+
+                    if (zoneChartInstance) zoneChartInstance.destroy();
+                    zoneChartInstance = new Chart(
+                        document.getElementById('operation_zoneChart').getContext('2d'),
+                        buildPieConfig(zoneLabels, zoneData, zoneBg)
+                    );
+                    renderHtmlLegend('zone_legend', zoneLabels, zoneBg);
+                }
+            });
+        }
+
+        // Initial chart load
+        fetchAndRenderCharts();
+
+        // Refresh charts every 30 minutes (less frequent than sensor data)
+        setInterval(fetchAndRenderCharts, 30 * 60 * 1000);
     });
 </script>
 {% endblock %}

@@ -5,94 +5,164 @@
 
 {% block content %}
 <style>
-    .custom_button_status {
-        /* height: 5vh; */
-        font-size: 0.7rem;
-        /* border-radius: 5px; */
-        /* border-color: black;
-        border-width: 2px; */
-    }
-
-    .box_withborder {
-        border-radius: 5px;
-        border-color: black;
-        border-width: 2px;
-    }
-
     .sparkline {
         width: 110px;
         height: 20px;
     }
+
+    .level-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+        letter-spacing: 0.3px;
+    }
+
+    .anomaly-count {
+        display: inline-block;
+        min-width: 28px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 12px;
+        text-align: center;
+        background: #fff5f5;
+        color: #c53030;
+    }
+
+    .anomaly-count.zero {
+        background: #f0fff4;
+        color: #276749;
+    }
+
+    .stat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        background: #f5f5f5;
+        color: #555;
+        border: 1px solid #e0e0e0;
+    }
+
+    .stat-pill .stat-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .stat-pill.critical .stat-dot { background: #ff0000; }
+    .stat-pill.warning .stat-dot { background: #ffaa00; }
+    .stat-pill.normal .stat-dot { background: #00ff00; }
+
+    #advisory_loading {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+        font-size: 14px;
+    }
+
+    .advisory-table-overflow {
+        overflow-x: auto;
+    }
 </style>
 
 <div class="row">
-    <div class="col-md-12 col-sm-12 ">
-        <div class="dashboard_graph">
-            <div class="row x_title">
-                <div class="col-md-6">
-                    <h3>Advisory Table</h3>
-                </div>
-                <div class="col-md-6">
-                </div>
+    <div class="col-md-12 col-sm-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>Advisory Table</h2>
+                <div class="pull-right" id="advisory_stats" style="margin-top:4px;"></div>
+                <div class="clearfix"></div>
             </div>
+            <div class="x_content">
+                <div id="advisory_loading">
+                    <i class="fa fa-spinner fa-spin fa-2x"></i>
+                    <p style="margin-top:10px;">Loading advisory data&hellip;</p>
+                </div>
 
-            <div class="col-md-12 col-sm-12 ">
-                <table id="example" class="table table-striped table-bordered" style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>Assets Name</th>
-                            <th>Priority</th>
-                            <th>Severity</th>
-                            <th>Severity Count</th>
-                            <th>Last Data Collection</th>
-                            <th>Anomaly Count</th>
-                            <th>First Anomaly Date</th>
-                            <th>Advisory Messages</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="advisory_maintable">
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <th>Assets Name</th>
-                            <th>Priority</th>
-                            <th>Severity</th>
-                            <th>Severity Count</th>
-                            <th>Last Data Collection</th>
-                            <th>Anomaly Count</th>
-                            <th>First Anomaly Date</th>
-                            <th>Advisory Messages</th>
-                            <th>Action</th>
-                        </tr>
-                    </tfoot>
-                </table>
+                <div class="advisory-table-overflow">
+                    <table id="example" class="table table-striped table-bordered" style="width:100%; display:none;">
+                        <thead>
+                            <tr>
+                                <th>Assets Name</th>
+                                <th>Priority</th>
+                                <th>Severity</th>
+                                <th>Severity Count</th>
+                                <th>Last Data Collection</th>
+                                <th>Anomaly Count</th>
+                                <th>First Anomaly Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="advisory_maintable">
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th>Assets Name</th>
+                                <th>Priority</th>
+                                <th>Severity</th>
+                                <th>Severity Count</th>
+                                <th>Last Data Collection</th>
+                                <th>Anomaly Count</th>
+                                <th>First Anomaly Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
-            <div class="clearfix"></div>
         </div>
     </div>
 </div>
+
 <script>
-    function percentageToWidth(severity) {
-        return (severity / 6) * 100;
-    }
+    /* ── Severity colors matching advisory_chart gauge ── */
+    const severityColorMap = {
+        1: '#00ff00',
+        2: '#aaff00',
+        3: '#ffff00',
+        4: '#ffaa00',
+        5: '#ff5500',
+        6: '#ff0000'
+    };
+    /* ── Badge styles: bg, text color ── */
+    const severityBadgeMap = {
+        1: { bg: '#d4edda', color: '#155724', border: '#c3e6cb' },
+        2: { bg: '#d4edda', color: '#155724', border: '#c3e6cb' },
+        3: { bg: '#fff3cd', color: '#856404', border: '#ffeeba' },
+        4: { bg: '#ffe0b2', color: '#e65100', border: '#ffcc80' },
+        5: { bg: '#f8d7da', color: '#721c24', border: '#f5c6cb' },
+        6: { bg: '#f8d7da', color: '#721c24', border: '#f5c6cb' }
+    };
+    const priorityBadgeMap = {
+        'LL': { bg: '#d4edda', color: '#155724', border: '#c3e6cb' },
+        'L':  { bg: '#d4edda', color: '#155724', border: '#c3e6cb' },
+        'M':  { bg: '#fff3cd', color: '#856404', border: '#ffeeba' },
+        'H':  { bg: '#ffe0b2', color: '#e65100', border: '#ffcc80' },
+        'HH': { bg: '#f8d7da', color: '#721c24', border: '#f5c6cb' }
+    };
+    /* ── Priority colors matching advisory_chart gauge (inverted) ── */
+    const priorityColorMap = {
+        'HH': '#ff0000',
+        'H':  '#ff5500',
+        'M':  '#ffaa00',
+        'L':  '#aaff00',
+        'LL': '#00ff00'
+    };
 
     function severity2color(severity) {
-        const norm = (severity - 1) / 5; // Normalize severity to range [0,1]
-        const colorScale = d3.scaleLinear()
-            .domain([0, 0.5, 1]) // Normalized values
-            .range(["green", "yellow", "red"]); // Corresponding colors
-
-        return colorScale(norm); // Return the mapped color
+        return severityColorMap[severity] || '#ff0000';
     }
 
-    function percentage2color(severity) {
-        const norm = severity / 100; // Normalize severity to range [0,1]
-        const colorScale = d3.scaleLinear()
-            .domain([0, 0.5, 1]) // Normalized values
-            .range(["green", "yellow", "red"]); // Corresponding colors
-
-        return colorScale(norm); // Return the mapped color
+    function formatTimestamp(ts) {
+        if (!ts) return '—';
+        return ts.replace("T", " ").substring(0, 16);
     }
 
     $(document).ready(function () {
@@ -105,34 +175,57 @@
             url: "/api/advisory_table",
             data: { start_date: start_date, end_date: end_date },
             success: function (data) {
-                console.log(data.priority_parameter)
+                console.log(data.priority_parameter);
 
-                document.getElementById("advisory_maintable").innerHTML = ""
+                // Compute stats
+                let criticalCount = 0, warningCount = 0, normalCount = 0;
                 for (let [key, value] of Object.entries(data.last_severity_featname)) {
-                    console.log()
+                    if (value >= 5) criticalCount++;
+                    else if (value >= 3) warningCount++;
+                    else normalCount++;
+                }
+                document.getElementById("advisory_stats").innerHTML = `
+                    <span class="stat-pill critical"><span class="stat-dot"></span>${criticalCount} Critical</span>
+                    <span class="stat-pill warning"><span class="stat-dot"></span>${warningCount} Warning</span>
+                    <span class="stat-pill normal"><span class="stat-dot"></span>${normalCount} Normal</span>
+                `;
+
+                // Build table rows
+                document.getElementById("advisory_maintable").innerHTML = "";
+                for (let [key, value] of Object.entries(data.last_severity_featname)) {
+                    const priorityVal = data.priority_parameter[key];
+                    const alarmCode = percentage2alarmCode(priorityVal);
+                    const sevBadge = severityBadgeMap[value] || { bg: '#f8d7da', color: '#721c24', border: '#f5c6cb' };
+                    const prioBadge = priorityBadgeMap[alarmCode] || { bg: '#fff3cd', color: '#856404', border: '#ffeeba' };
+                    const safeKey = key.replace(/ /g, "_");
+                    const anomalyData = data.severity_counter_overyear[safeKey];
+                    const anomalyCount = anomalyData ? anomalyData.count_above_5 : 0;
+                    const firstAnomaly = anomalyData ? formatTimestamp(anomalyData.first_timestamp) : '—';
+
                     document.getElementById("advisory_maintable").innerHTML += `
                         <tr>
                             <td>${key}</td>
                             <td>
-                                <div class="progress">
-                                    <div class="progress-bar" role="progressbar" style="width: ${100 - data.priority_parameter[key]}%; background-color: ${percentage2color(data.priority_parameter[key])}" aria-valuenow="${data.priority_parameter[key]}"
-                                        aria-valuemin="0" aria-valuemax="100"></div> 
-                                </div>
+                                <span class="level-badge" style="background:${prioBadge.bg};color:${prioBadge.color};border:1px solid ${prioBadge.border};">
+                                    ${alarmCode}
+                                </span>
                             </td>
                             <td>
-                                <div class="progress">
-                                    <div class="progress-bar" role="progressbar" style="width: ${percentageToWidth(value)}%; background-color: ${severity2color(value)}" aria-valuenow="${value}"
-                                        aria-valuemin="0" aria-valuemax="6"></div>
-                                </div>
+                                <span class="level-badge" style="background:${sevBadge.bg};color:${sevBadge.color};border:1px solid ${sevBadge.border};">
+                                    Level ${value}
+                                </span>
                             </td>
-                            <td><canvas id="barchart_${key.replace(" ", "_")}" class="sparkline"></canvas></td>
-                            <td>${data.last_timestamp.replace("T", " ")}</td>
-                            <td>${data.severity_counter_overyear[key.replace(/ /g, "_")].count_above_5}</td>
-                            <td>${data.severity_counter_overyear[key.replace(/ /g, "_")].first_timestamp.replace("T", " ")}</td>
-                            <td>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been</td>
-                            <td><button class="btn btn-primary" onclick="window.open('/advisory/chart?feat_id=${featureSet.indexOf(key)}','_blank')">Chart</button></td>
-                        </tr>`
+                            <td><canvas id="barchart_${safeKey}" class="sparkline"></canvas></td>
+                            <td>${formatTimestamp(data.last_timestamp)}</td>
+                            <td><span class="anomaly-count ${anomalyCount === 0 ? 'zero' : ''}">${anomalyCount}</span></td>
+                            <td>${firstAnomaly}</td>
+                            <td><button class="btn btn-primary btn-sm" onclick="window.open('/advisory/chart?feat_id=${featureSet.indexOf(key)}','_blank')">Chart</button></td>
+                        </tr>`;
                 }
+
+                // Show table
+                document.getElementById("advisory_loading").style.display = "none";
+                document.getElementById("example").style.display = "table";
 
                 setTimeout(() => {
                     new DataTable('#example', {
@@ -145,12 +238,16 @@
                     for (var i = 0; i < featureSet.length; i++) {
                         var now_key = featureSet[i];
                         var dataPoints_count = data.sever_count_featname[now_key];
+                        if (!dataPoints_count) continue;
 
                         const labels_count = Object.keys(dataPoints_count);
                         const values_count = labels_count.map(key => dataPoints_count[key]);
                         const barColors_count = labels_count.map(key => severity2color(parseInt(key)));
 
-                        const ctx2 = document.getElementById(`barchart_${now_key.replace(" ", "_")}`).getContext('2d');
+                        const canvasEl = document.getElementById(`barchart_${now_key.replace(/ /g, "_")}`);
+                        if (!canvasEl) continue;
+
+                        const ctx2 = canvasEl.getContext('2d');
                         new Chart(ctx2, {
                             type: 'bar',
                             data: {
@@ -187,7 +284,6 @@
                                 }
                             }
                         });
-
                     }
                 }, 500);
             }

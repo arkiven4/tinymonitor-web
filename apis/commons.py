@@ -12,18 +12,17 @@ import pandas as pd
 from django.conf import settings
 
 # Feature sets
-FEATURE_SET = [
-    'Active Power', 'Reactive Power', 'Governor speed actual', 'UGB X displacement',
-    'UGB Y displacement', 'LGB X displacement', 'LGB Y displacement', 'TGB X displacement',
-    'TGB Y displacement', 'Stator winding temperature 13', 'Stator winding temperature 14',
-    'Stator winding temperature 15', 'Surface Air Cooler Air Outlet Temperature',
-    'Surface Air Cooler Water Inlet Temperature', 'Surface Air Cooler Water Outlet Temperature',
-    'Stator core temperature', 'UGB metal temperature', 'LGB metal temperature 1',
-    'LGB metal temperature 2', 'LGB oil temperature', 'Penstock Flow', 'Turbine flow',
-    'UGB cooling water flow', 'LGB cooling water flow', 'Generator cooling water flow',
-    'Governor Penstock Pressure', 'Penstock pressure', 'Opening Wicked Gate',
-    'UGB Oil Contaminant', 'Gen Thrust Bearing Oil Contaminant'
-]
+FEATURE_SET = ['Active Power', 'Reactive Power', 'Governor speed actual', 'Opening Wicked Gate',
+     'Penstock pressure', 'Governor Penstock Pressure', 'Penstock Flow', 'Turbine flow',
+      'Gen Voltage Phase 1', 'Gen Voltage Phase 2', 'Gen Voltage Phase 3',
+       'Gen Current Phase 1','Gen Current Phase 2', 'Gen Current Phase 3',
+       'UGB X displacement', 'UGB Y displacement', 'LGB X displacement', 'LGB Y displacement', 'TGB X displacement', 'TGB Y displacement',
+       'Surface Air Cooler Air Outlet Temperature', 'Surface Air Cooler Water Inlet Temperature', 'Surface Air Cooler Water Outlet Temperature',
+       'Stator core temperature', 'Stator winding temperature 13', 'Stator winding temperature 14', 'Stator winding temperature 15',
+       'UGB metal temperature', 'LGB metal temperature 1', 'LGB metal temperature 2',
+       'UGB oil temperature', 'LGB oil temperature',
+       'UGB Oil Contaminant','Gen Thrust Bearing Oil Contaminant',
+       'UGB cooling water flow', 'LGB cooling water flow', 'Generator cooling water flow']
 
 ADDITIONAL_FEATURE_SET = ["Grid Selection", 'TGB temperature']
 

@@ -7,23 +7,222 @@
 {% block content %}
 
 <style>
+    /* ── Tooltip ── */
     #custom-tooltip {
         position: absolute;
-        background: white;
-        border: 1px solid black;
-        padding: 10px;
-        border-radius: 5px;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        padding: 12px 16px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,.12);
         pointer-events: auto;
         display: none;
         z-index: 1000;
+        font-size: 13px;
     }
-</style>
-<style>
+
+    /* ── Scoped overrides ── */
+    .adv-card {
+        background: #fff;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        margin-bottom: 6px;
+        overflow: hidden;
+    }
+    .adv-card .card-header {
+        background: #f8f9fa;
+        border-bottom: 1px solid #eee;
+        padding: 6px 12px;
+        font-weight: 600;
+        font-size: 14px;
+        color: #495057;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .adv-card .card-header h2 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .adv-card .card-body {
+        padding: 6px 10px;
+    }
+
+    /* ── Toolbar ── */
+    .adv-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        padding: 14px 20px;
+    }
+    .adv-toolbar .toolbar-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .adv-toolbar #reportrange_right {
+        background: #fff;
+        cursor: pointer;
+        padding: 7px 14px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 13px;
+        transition: border-color .15s;
+    }
+    .adv-toolbar #reportrange_right:hover {
+        border-color: #86b7fe;
+    }
+    .adv-toolbar #typebox_samplingrate {
+        width: 70px;
+        padding: 5px 8px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 13px;
+        text-align: center;
+    }
+    .adv-toolbar #setBtn_samplingrate {
+        padding: 5px 14px;
+        border: none;
+        border-radius: 6px;
+        background: #4e73df;
+        color: #fff;
+        font-size: 13px;
+        cursor: pointer;
+        transition: background .15s;
+    }
+    .adv-toolbar #setBtn_samplingrate:hover {
+        background: #3a5bc7;
+    }
+
+    /* ── Severity legend badges ── */
+    .severity-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        margin-left: auto;
+    }
+    .severity-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #333;
+        background: #f5f5f5;
+        border: 1px solid #e0e0e0;
+    }
+    .severity-badge .sev-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    /* ── Summary cards row ── */
+    .summary-row .adv-card {
+        height: 100%;
+    }
+    .summary-row .card-body {
+        height: 220px;
+        overflow: hidden;
+    }
+
+    /* ── Collapsible section ── */
+    .collapsible-body {
+        overflow: hidden;
+        transition: max-height .3s ease;
+    }
+    .collapsible-body.collapsed {
+        max-height: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+    .collapse-toggle {
+        cursor: pointer;
+        transition: transform .2s;
+    }
+    .collapse-toggle.rotated {
+        transform: rotate(180deg);
+    }
+
+    /* ── Tighter row gaps ── */
+    .row {
+        margin-bottom: 0;
+    }
+    .row + .row {
+        margin-top: 0;
+    }
+    .col-lg-4, .col-md-4, .col-sm-6, .col-12 {
+        padding-left: 4px;
+        padding-right: 4px;
+    }
+
+    /* ── Severity table inside doughnut card ── */
+    .severity-table {
+        width: 100%;
+        font-size: 13px;
+    }
+    .severity-table td {
+        padding: 4px 6px;
+        vertical-align: middle;
+    }
+    .severity-table .sev-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 6px;
+    }
+
+    /* ── Checkbox list ── */
     .checkbox-list {
         max-height: 300px;
         overflow-y: auto;
-        border: 1px solid #ccc;
-        padding: 10px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 8px;
+        background: #fafbfc;
+    }
+    .checkbox-list .form-check {
+        padding: 2px 6px 2px 26px;
+        margin-bottom: 0;
+        border-radius: 6px;
+        transition: background .12s;
+    }
+    .checkbox-list .form-check:hover {
+        background: #eef2ff;
+    }
+    .checkbox-list .form-check-label {
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    /* ── Chart wrapper ── */
+    .chart-wrapper {
+        position: relative;
+        padding: 2px 0;
+    }
+    .chart-wrapper .resetZoom {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        z-index: 10;
+        background: rgba(255,255,255,.85);
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 4px 10px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: background .15s;
+    }
+    .chart-wrapper .resetZoom:hover {
+        background: #e9ecef;
     }
 
     .x_content {
@@ -31,302 +230,215 @@
         clear: both !important;
         margin-top: 0px !important;
     }
+
+    /* ── Modal polish ── */
+    .modal-content {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0,0,0,.18);
+    }
 </style>
-<!-- <style>
-    div.dt-container div.dt-layout-row {
-        margin: 0 !important;
-    }
 
-    .nav-sm .container.body .right_col {
-        padding: 0 !important;
-    }
-</style> -->
+<!-- ═══════════════════════════════════════════════════
+     TOOLBAR: Date Range · Sampling · Severity Legend
+     ═══════════════════════════════════════════════════ -->
 <div class="row" id="chart_container">
-    <div class="col-md-12 col-sm-12 px-0">
-        <div class="x_panel tile"
-            style="display: flex;flex-direction: row;flex-wrap: nowrap;align-content: center;align-items: center;justify-content: space-between;">
-            <div>
-                <div id="reportrange_right" class="pull-left"
-                    style="background: #fff; cursor: pointer; padding: 10px 10px; border: 1px solid #ccc">
-                    <i class="fa fa-calendar"></i>
-                    <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
+    <div class="col-12">
+        <div class="adv-card">
+            <div class="adv-toolbar">
+                <div class="toolbar-group">
+                    <div id="reportrange_right">
+                        <i class="fa fa-calendar"></i>
+                        <span>December 30, 2014 - January 28, 2015</span> <b class="caret"></b>
+                    </div>
                 </div>
-                <div class="pull-left" style="background:#fff;cursor:pointer;padding:5px 10px;border:1px solid #ccc">
-                    <i class="fa fa-spinner"></i> Sampling Points <input type="text" id="typebox_samplingrate">
-                    <button id="setBtn_samplingrate">Set</button>
+                <div class="toolbar-group">
+                    <span style="font-size:13px;color:#6c757d;"><i class="fa fa-crosshairs"></i> Points</span>
+                    <input type="text" id="typebox_samplingrate">
+                    <button id="setBtn_samplingrate">Apply</button>
                 </div>
-            </div>
 
-            <div>
-                <p style="display:inline; margin-right: 10px;"><i class="fa fa-square" style="color: #00ff00;"></i> 1
-                    (0%-5%)
-                </p>
-                <p style="display:inline; margin-right: 10px;"><i class="fa fa-square" style="color: #aaff00;"></i> 2
-                    (5%-20%)
-                </p>
-                <p style="display:inline; margin-right: 10px;"><i class="fa fa-square" style="color: #ffff00;"></i> 3
-                    (20%-40%)
-                </p>
-                <p style="display:inline; margin-right: 10px;"><i class="fa fa-square" style="color: #ffaa00;"></i> 4
-                    (40%-75%)
-                </p>
-                <p style="display:inline; margin-right: 10px;"><i class="fa fa-square" style="color: #ff5500;"></i> 5
-                    (75%-100%)
-                </p>
-                <p style="display:inline; margin-right: 10px;"><i class="fa fa-square" style="color: #ff0000;"></i> 6 (>
-                    100%)
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-12 px-0">
-        <div class="">
-            <div class="x_content">
-                <div class="row">
-                    <div class="col-lg-4 col-md-4 col-sm-6 px-0">
-                        <div class="x_panel tile fixed_height_320 overflow_hidden">
-                            <div class="x_title">
-                                <h2>Percentage Distribution</h2>
-                                <ul class="nav navbar-right panel_toolbox">
-                                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-                                </ul>
-                                <div class="clearfix"></div>
-                            </div>
-                            <div class="x_content">
-                                <table class="" style="width:100%">
-                                    <tr>
-                                        <th style="width:65%;">
-                                            <p>Pie Chart</p>
-                                        </th>
-                                        <th>
-                                            <div class="col-lg-6 col-md-6 col-sm-6 ">
-                                                <p class="">Severity</p>
-                                            </div>
-                                            <div class="col-lg-6 col-md-6 col-sm-6 ">
-                                                <p class="">Count</p>
-                                            </div>
-                                        </th>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <canvas id="canvasDoughnut"
-                                                style="margin: 15px 10px 10px 0; height: 100%;"></canvas>
-                                        </td>
-                                        <td>
-                                            <table class="tile_info" id="severityTable">
-                                                <tbody>
-                                                    <tr>
-                                                        <td style="width:70%">
-                                                            <p><i class="fa fa-square" style="color: #00ff00;"></i>1
-                                                            </p>
-                                                        </td>
-                                                        <td class="severity-percent" data-severity="1"
-                                                            style="width:70%">100.0%</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="width:70%">
-                                                            <p><i class="fa fa-square" style="color: #aaff00;"></i>2
-                                                            </p>
-                                                        </td>
-                                                        <td class="severity-percent" data-severity="2"
-                                                            style="width:70%">0.0%</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="width:70%">
-                                                            <p><i class="fa fa-square" style="color: #ffff00;"></i>3
-                                                            </p>
-                                                        </td>
-                                                        <td class="severity-percent" data-severity="3"
-                                                            style="width:70%">0.0%</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="width:70%">
-                                                            <p><i class="fa fa-square" style="color: #ffaa00;"></i>4
-                                                            </p>
-                                                        </td>
-                                                        <td class="severity-percent" data-severity="4"
-                                                            style="width:70%">0.0%</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="width:70%">
-                                                            <p><i class="fa fa-square" style="color: #ff5500;"></i>5
-                                                            </p>
-                                                        </td>
-                                                        <td class="severity-percent" data-severity="5"
-                                                            style="width:70%">0.0%</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="width:70%">
-                                                            <p><i class="fa fa-square" style="color: #ff0000;"></i>6
-                                                            </p>
-                                                        </td>
-                                                        <td class="severity-percent" data-severity="6"
-                                                            style="width:70%">0.0%</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-4 col-sm-6 px-0">
-                        <div class="x_panel tile fixed_height_320 overflow_hidden">
-                            <div class="x_title">
-                                <h2>Percentage Severity</h2>
-                                <ul class="nav navbar-right panel_toolbox">
-                                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-                                </ul>
-                                <div class="clearfix"></div>
-                            </div>
-                            <div class="x_content" style="height: 100%; margin-top: -30px;">
-                                <div id="gauge_1" style="height: 100%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-4 col-sm-6 px-0">
-                        <div class="x_panel tile fixed_height_320 overflow_hidden">
-                            <div class="x_title">
-                                <h2>Priority</h2>
-                                <ul class="nav navbar-right panel_toolbox">
-                                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-                                </ul>
-                                <div class="clearfix"></div>
-                            </div>
-                            <div class="x_content" style="height: 100%; margin-top: -30px;">
-                                <div id="gauge_2" style="height: 100%;"></div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="severity-legend">
+                    <span class="severity-badge"><span class="sev-dot" style="background:#00ff00;"></span>1 (0-5%)</span>
+                    <span class="severity-badge"><span class="sev-dot" style="background:#aaff00;"></span>2 (5-20%)</span>
+                    <span class="severity-badge"><span class="sev-dot" style="background:#ffff00;"></span>3 (20-40%)</span>
+                    <span class="severity-badge"><span class="sev-dot" style="background:#ffaa00;"></span>4 (40-75%)</span>
+                    <span class="severity-badge"><span class="sev-dot" style="background:#ff5500;"></span>5 (75-100%)</span>
+                    <span class="severity-badge"><span class="sev-dot" style="background:#ff0000;"></span>6 (&gt;100%)</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- <div class="row" id="chart_container">
-    <div class="col-md-12 col-sm-12 px-0">
-        <div class="x_panel tile">
-            <div class="x_title">
-                <h2 id="title_featureRaw"></h2>
-                <ul class="nav navbar-right panel_toolbox">
-                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-                    <li class="dropdown"></li>
-                </ul>
-                <div class="clearfix"></div>
+<!-- ═══════════════════════════════════════════════════
+     SUMMARY ROW: Doughnut · Severity Gauge · Priority
+     ═══════════════════════════════════════════════════ -->
+<div class="row summary-row">
+    <!-- Doughnut / Distribution -->
+    <div class="col-lg-4 col-md-4 col-sm-6">
+        <div class="adv-card">
+            <div class="card-header">
+                <h2><i class="fa fa-pie-chart" style="margin-right:6px;color:#4e73df;"></i> Percentage Distribution</h2>
+                <a class="collapse-link" style="cursor:pointer;"><i class="fa fa-chevron-up"></i></a>
             </div>
-            <div class="x_content">
-                <button type="button" class="resetZoom" onclick="resetZoom(line_chart1)"><i class="fa fa-search-minus"
-                        aria-hidden="true"></i></button>
-                <div id="custom-tooltip0"
-                    style=" position: absolute; background: white; border: 1px solid black; padding: 10px; border-radius: 5px; pointer-events: auto; display: none; z-index: 1000; ">
+            <div class="card-body" style="display:flex;align-items:center;gap:8px;height:220px;">
+                <div style="flex:1;min-width:0;">
+                    <canvas id="canvasDoughnut" style="width:100%;height:180px;"></canvas>
                 </div>
-                <canvas id="chart_data0" style="width: 100%; height: 400px"></canvas>
+                <div style="flex:0 0 auto;">
+                    <table class="severity-table" id="severityTable">
+                        <thead>
+                            <tr>
+                                <th style="font-size:11px;color:#888;padding-bottom:6px;">Level</th>
+                                <th style="font-size:11px;color:#888;padding-bottom:6px;">Pct</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="sev-dot" style="background:#00ff00;"></span>1</td>
+                                <td class="severity-percent" data-severity="1">100.0%</td>
+                            </tr>
+                            <tr>
+                                <td><span class="sev-dot" style="background:#aaff00;"></span>2</td>
+                                <td class="severity-percent" data-severity="2">0.0%</td>
+                            </tr>
+                            <tr>
+                                <td><span class="sev-dot" style="background:#ffff00;"></span>3</td>
+                                <td class="severity-percent" data-severity="3">0.0%</td>
+                            </tr>
+                            <tr>
+                                <td><span class="sev-dot" style="background:#ffaa00;"></span>4</td>
+                                <td class="severity-percent" data-severity="4">0.0%</td>
+                            </tr>
+                            <tr>
+                                <td><span class="sev-dot" style="background:#ff5500;"></span>5</td>
+                                <td class="severity-percent" data-severity="5">0.0%</td>
+                            </tr>
+                            <tr>
+                                <td><span class="sev-dot" style="background:#ff0000;"></span>6</td>
+                                <td class="severity-percent" data-severity="6">0.0%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-12 col-sm-12 px-0">
-        <div class="x_panel tile">
-            <div class="x_title">
-                <h2>Parameter Trending Data</h2>
-                <ul class="nav navbar-right panel_toolbox">
-                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-                    <li class="dropdown"></li>
-                </ul>
-                <div class="clearfix"></div>
-            </div>
-            <div class="x_content">
-                <button type="button" class="resetZoom" onclick="resetZoom(line_chart2)"><i class="fa fa-search-minus"
-                        aria-hidden="true"></i></button>
-                <canvas id="chart_data1" style="width: 100%; height: 400px"></canvas>
-            </div>
-        </div>
-    </div>
-</div> -->
 
-<div class="row">
-    <div class="col-md-12 col-sm-12 px-0">
-        <div class="x_panel tile">
-            <div class="x_title">
-                <h2>Correlate Parameter</h2>
-                <ul class="nav navbar-right panel_toolbox">
-                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-                    <li class="dropdown"></li>
-                </ul>
-                <div class="clearfix"></div>
+    <!-- Severity Gauge -->
+    <div class="col-lg-4 col-md-4 col-sm-6">
+        <div class="adv-card">
+            <div class="card-header">
+                <h2><i class="fa fa-tachometer" style="margin-right:6px;color:#e74a3b;"></i> Severity</h2>
+                <a class="collapse-link" style="cursor:pointer;"><i class="fa fa-chevron-up"></i></a>
             </div>
-            <div class="x_content">
+            <div class="card-body" style="height:220px;">
+                <div id="gauge_1" style="width:100%;height:100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Priority Gauge -->
+    <div class="col-lg-4 col-md-4 col-sm-6">
+        <div class="adv-card">
+            <div class="card-header">
+                <h2><i class="fa fa-flag" style="margin-right:6px;color:#f6c23e;"></i> Priority</h2>
+                <a class="collapse-link" style="cursor:pointer;"><i class="fa fa-chevron-up"></i></a>
+            </div>
+            <div class="card-body" style="height:220px;">
+                <div id="gauge_2" style="width:100%;height:100%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     CORRELATE PARAMETER PICKER
+     ═══════════════════════════════════════════════════ -->
+<div class="row" style="margin-top: 10px;">
+    <div class="col-12">
+        <div class="adv-card">
+            <div class="card-header" onclick="toggleCorrelatePanel()" style="cursor:pointer;">
+                <h2><i class="fa fa-link" style="margin-right:6px;color:#1cc88a;"></i> Correlate Parameter</h2>
+                <i id="correlateToggleIcon" class="fa fa-chevron-down collapse-toggle"></i>
+            </div>
+            <div class="card-body collapsible-body collapsed" id="correlateBody" style="max-height:500px;">
                 <form id="correlationForm">
-                    <div class="checkbox-list" id="checkboxContainer"> </div>
-                    <br>
-                    <button type="submit" class="btn btn-primary">Set</button>
+                    <div class="checkbox-list" id="checkboxContainer"></div>
+                    <div style="margin-top:6px;">
+                        <button type="submit" class="btn btn-primary" style="border-radius:6px;padding:6px 24px;">
+                            <i class="fa fa-check" style="margin-right:4px;"></i> Apply
+                        </button>
+                    </div>
                 </form>
-                <div class="clearfix"></div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════
+     CHART: Raw Sensor Correlated
+     ═══════════════════════════════════════════════════ -->
 <div class="row" id="correlateChartContainer">
-    <div class="col-md-12 col-sm-12">
-        <div class="x_panel tile">
-            <div class="x_title">
-                <h2 id="title_featureRaw">Raw Sensor Data Correlated Feature</h2>
-                <ul class="nav navbar-right panel_toolbox">
-                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-                    <li class="dropdown"></li>
-                </ul>
-                <div class="clearfix"></div>
+    <div class="col-12">
+        <div class="adv-card">
+            <div class="card-header">
+                <h2 id="title_featureRaw"><i class="fa fa-line-chart" style="margin-right:6px;color:#36b9cc;"></i> Raw Sensor Data Correlated Feature</h2>
+                <a class="collapse-link" style="cursor:pointer;"><i class="fa fa-chevron-up"></i></a>
             </div>
-            <div class="x_content">
-                <button type="button" class="resetZoom" onclick="resetZoom(line_chart3)"><i class="fa fa-search-minus"
-                        aria-hidden="true"></i></button>
-                <div id="custom-tooltip0"
-                    style=" position: absolute; background: white; border: 1px solid black; padding: 10px; border-radius: 5px; pointer-events: auto; display: none; z-index: 1000; ">
+            <div class="card-body">
+                <div class="chart-wrapper">
+                    <button type="button" class="resetZoom" onclick="resetZoom(line_chart3)">
+                        <i class="fa fa-search-minus"></i> Reset Zoom
+                    </button>
+                    <div id="custom-tooltip0"
+                        style="position:absolute;background:#fff;border:1px solid #dee2e6;padding:12px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.12);pointer-events:auto;display:none;z-index:1000;font-size:13px;">
+                    </div>
+                    <canvas id="correlate_chart_data0" style="width:100%;height:700px;"></canvas>
                 </div>
-                <canvas id="correlate_chart_data0" style="width: 100%; height: 700px"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row" id="correlateChartContainer">
-    <div class="col-md-12 col-sm-12">
-        <div class="x_panel tile">
-            <div class="x_title">
-                <h2 id="title_featureRaw">Trending Correlated Feature</h2>
-                <ul class="nav navbar-right panel_toolbox">
-                    <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
-                    <li class="dropdown"></li>
-                </ul>
-                <div class="clearfix"></div>
-            </div>
-            <div class="x_content">
-                <button type="button" class="resetZoom" onclick="resetZoom(line_chart4)"><i class="fa fa-search-minus"
-                        aria-hidden="true"></i></button>
-                <div id="custom-tooltip0"
-                    style=" position: absolute; background: white; border: 1px solid black; padding: 10px; border-radius: 5px; pointer-events: auto; display: none; z-index: 1000; ">
-                </div>
-                <canvas id="correlate_chart_data1" style="width: 100%; height: 700px"></canvas>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog" style="max-width: 80%;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Popup</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- ═══════════════════════════════════════════════════
+     CHART: Trending Correlated
+     ═══════════════════════════════════════════════════ -->
+<div class="row" id="correlateChartTrendContainer">
+    <div class="col-12">
+        <div class="adv-card">
+            <div class="card-header">
+                <h2><i class="fa fa-area-chart" style="margin-right:6px;color:#858796;"></i> Trending Correlated Feature</h2>
+                <a class="collapse-link" style="cursor:pointer;"><i class="fa fa-chevron-up"></i></a>
+            </div>
+            <div class="card-body">
+                <div class="chart-wrapper">
+                    <button type="button" class="resetZoom" onclick="resetZoom(line_chart4)">
+                        <i class="fa fa-search-minus"></i> Reset Zoom
+                    </button>
+                    <div id="custom-tooltip1"
+                        style="position:absolute;background:#fff;border:1px solid #dee2e6;padding:12px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.12);pointer-events:auto;display:none;z-index:1000;font-size:13px;">
+                    </div>
+                    <canvas id="correlate_chart_data1" style="width:100%;height:400px;"></canvas>
                 </div>
-                <div class="modal-body">
-                    <img src="{% static 'img/output2.png' %}" class="img-fluid mx-auto d-block">
-                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     MODAL
+     ═══════════════════════════════════════════════════ -->
+<div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" style="max-width:80%;">
+        <div class="modal-content">
+            <div class="modal-header" style="border-bottom:1px solid #eee;">
+                <h5 class="modal-title" style="font-weight:600;">Detail View</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding:24px;">
+                <img src="{% static 'img/output2.png' %}" class="img-fluid mx-auto d-block" style="border-radius:8px;">
             </div>
         </div>
     </div>
@@ -904,5 +1016,12 @@
     });
 
     //window.addEventListener('resize', gaugeSeverityChart.resize);
+
+    function toggleCorrelatePanel() {
+        const body = document.getElementById('correlateBody');
+        const icon = document.getElementById('correlateToggleIcon');
+        body.classList.toggle('collapsed');
+        icon.classList.toggle('rotated');
+    }
 </script>
 {% endblock %}

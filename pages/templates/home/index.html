@@ -17,105 +17,136 @@
         display: none;
         z-index: 1000;
     }
+    #severity-cards-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    .severity-card {
+        padding: 12px 14px;
+        border-radius: 8px;
+        background: #fff;
+        border: 1px solid #e6e6e6;
+        transition: box-shadow 0.2s;
+        cursor: default;
+    }
+    .severity-card:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .severity-card-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+    .severity-rank {
+        font-size: 14px;
+        font-weight: 700;
+        color: #aaa;
+        margin-right: 8px;
+    }
+    .severity-name {
+        font-weight: 600;
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .severity-bar-wrap {
+        height: 18px;
+        background: #eee;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 8px;
+    }
+    .severity-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+    .severity-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #666;
+    }
+    .severity-meta strong {
+        color: #333;
+    }
+    .sensor-card {
+        border: 1px solid #e6e6e6;
+        border-radius: 8px;
+        background: #fff;
+        margin-bottom: 0;
+        overflow: hidden;
+    }
+    .sensor-card-header {
+        background: #f7f7f7;
+        padding: 10px 15px;
+        font-weight: 600;
+        font-size: 14px;
+        border-bottom: 1px solid #e6e6e6;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .sensor-card-header .badge-severity {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+    .sensor-card-body {
+        display: flex;
+        gap: 0;
+    }
+    .sensor-chart-col {
+        flex: 1;
+        padding: 10px;
+        position: relative;
+    }
+    .sensor-chart-col:first-child {
+        border-right: 1px solid #eee;
+    }
+    .sensor-chart-wrap {
+        position: relative;
+        height: 250px;
+    }
+    .sensor-chart-label {
+        font-size: 11px;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+    .page-footer {
+        text-align: center;
+        padding: 10px 0;
+        color: #888;
+        font-size: 13px;
+        border-top: 1px solid #e6e6e6;
+        margin-top: 15px;
+    }
 </style>
 
 <div class="row" id="chart_container">
-    <div class="col-md-8 col-sm-12 px-0">
+    <div class="col-md-12 col-sm-12 px-0">
         <div class="x_panel tile">
             <div class="x_title">
-                <h2>Severity Chart</h2>
+                <h2>Sensor Severity Ranking</h2>
                 <div class="clearfix"></div>
             </div>
-            <div class="x_content">
-                <canvas id="barChart" style="width: 100%; height: 500px"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4 col-sm-12 px-0">
-        <div class="x_panel tile">
-            <div class="x_title">
-                <h2>Information</h2>
-                <div class="clearfix"></div>
-            </div>
-            <div class="x_content">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="table-responsive">
-                            <table class="table">
-                                <tbody>
-                                    <tr>
-                                        <th style="width:25%">Server Time</th>
-                                        <td id="current-time"></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Last update</th>
-                                        <td id="last-update"></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Next Update</th>
-                                        <td id="next-update"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        <hr />
-                        <div class="table-responsive">
-                            <table class="table">
-                                <tbody>
-                                    <tr>
-                                        <th style="width:25%">Models Used in Calc</th>
-                                        <td>6</td>
-                                    </tr>
-                                    <tr>
-                                        <th>Threshold Setting</th>
-                                        <td>Dynamic</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+            <div class="x_content" id="severity-cards-container">
+                <!-- Severity cards rendered dynamically -->
             </div>
         </div>
     </div>
 </div>
-<div class="row" id="chart_container">
-    <div class="col-md-6 col-sm-12 px-0">
-        <div class="x_panel tile">
-            <div class="x_title">
-                <h2>Original vs Prediction Sensor Data</h2>
-                <div class="clearfix"></div>
-            </div>
-            <div class="x_content">
-                <canvas id="lineChart1" style="width: 100%; height: 300px"></canvas>
-                <hr />
-                <canvas id="lineChart2" style="width: 100%; height: 300px"></canvas>
-                <hr />
-                <canvas id="lineChart3" style="width: 100%; height: 300px"></canvas>
-                <hr />
-                <canvas id="lineChart4" style="width: 100%; height: 300px"></canvas>
-                <hr />
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-sm-12 px-0">
-        <div class="x_panel tile">
-            <div class="x_title">
-                <h2>Loss and Threshold</h2>
-                <div class="clearfix"></div>
-            </div>
-            <div class="x_content">
-                <canvas id="losslineChart1" style="width: 100%; height: 300px"></canvas>
-                <hr />
-                <canvas id="losslineChart2" style="width: 100%; height: 300px"></canvas>
-                <hr />
-                <canvas id="losslineChart3" style="width: 100%; height: 300px"></canvas>
-                <hr />
-                <canvas id="losslineChart4" style="width: 100%; height: 300px"></canvas>
-                <hr />
-            </div>
-        </div>
-    </div>
+<div class="row" id="sensor-charts-container">
+    <!-- 2x2 grid of sensor cards rendered dynamically -->
+</div>
+
+<div class="page-footer">
+    Last updated: <span id="last-update">—</span>
 </div>
 
 <script>
@@ -131,6 +162,7 @@
     function parseData_fromserver(data) {
         const timestamps = data.df_timestamp;
         const predictions = data.y_pred_send;
+        const predictions_std = data.y_pred_std_send;
         const originalData = data.df_feature_send;
         const lossData = data.loss_send;
 
@@ -141,12 +173,65 @@
 
         const colors = severityValues.map(value => severity2color(value));
 
-        return [timestamps, predictions, originalData, lossData, severityData, severityLabels, severityValues, severityCounts, colors]
+        return [timestamps, predictions, predictions_std, originalData, lossData, severityData, severityLabels, severityValues, severityCounts, colors]
     }
 
     let chart_array = [];
     let losschart_array = [];
-    let barchart = null;
+
+    function renderSeverityCards(severityLabels, severityValues, severityCounts, colors) {
+        const container = document.getElementById('severity-cards-container');
+        container.innerHTML = '';
+        // Sort by severity descending for ranking
+        const indices = severityLabels.map((_, i) => i);
+        indices.sort((a, b) => severityValues[b] - severityValues[a]);
+
+        indices.slice(0, 9).forEach((i, rank) => {
+            const maxSev = 6;
+            const pct = Math.min((severityValues[i] / maxSev) * 100, 100);
+            const card = document.createElement('div');
+            card.className = 'severity-card';
+            card.innerHTML = `
+                <div class="severity-card-header">
+                    <span class="severity-rank">#${rank + 1}</span>
+                    <span class="severity-name">${severityLabels[i]}</span>
+                </div>
+                <div class="severity-bar-wrap">
+                    <div class="severity-bar-fill" style="width:${pct}%;background:${colors[i]}"></div>
+                </div>
+                <div class="severity-meta">
+                    <span>Severity: <strong style="color:${colors[i]}">${severityValues[i].toFixed(1)}</strong></span>
+                    <span>Confidence: <strong>${severityCounts[i]}</strong></span>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function updateTimeinfo() {
+        $.ajax({
+            type: "GET",
+            dataType: "json",
+            url: "/api/timeinfo_detail",
+            success: function (data) {
+                const lastUpdateUtc = new Date(
+                    data.datetime_last.endsWith('Z')
+                        ? data.datetime_last
+                        : data.datetime_last + 'Z'
+                );
+                document.getElementById("last-update").textContent =
+                    lastUpdateUtc.toLocaleString('en-GB', {
+                        timeZone: 'Asia/Makassar',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+            }
+        });
+    }
 
     function updateChart() {
         var end_date = nowDateMoment.format("YYYY-MM-DDTHH:mm:ss"); // moment.utc();
@@ -158,13 +243,19 @@
             data: { start_date: start_date, end_date: end_date },
             url: "/api/severity_plot",
             success: function (data) {
-                let [timestamps, predictions, originalData, lossData, severityData, severityLabels, severityValues, severityCounts, colors] = parseData_fromserver(data)
+                let [timestamps, predictions, predictions_std, originalData, lossData, severityData, severityLabels, severityValues, severityCounts, colors] = parseData_fromserver(data)
 
                 // Line Charts
                 severityLabels.slice(0, 4).forEach((feature, idx) => {
+                    const predData = predictions.map(row => row[idx]);
+                    const upperBound = predictions.map((row, i) => row[idx] + predictions_std[i][idx]);
+                    const lowerBound = predictions.map((row, i) => row[idx] - predictions_std[i][idx]);
+
                     chart_array[idx].data.labels = timestamps;
-                    chart_array[idx].data.datasets[0] = { label: "Original", data: originalData.map(row => row[idx]), borderColor: "red", fill: false },
-                        { label: "Prediction", data: predictions.map(row => row[idx]), borderColor: "blue", fill: false }
+                    chart_array[idx].data.datasets[0] = { label: "Original", data: originalData.map(row => row[idx]), borderColor: "red", backgroundColor: "red", fill: false };
+                    chart_array[idx].data.datasets[1] = { label: "Prediction", data: predData, borderColor: "blue", backgroundColor: "blue", fill: false };
+                    chart_array[idx].data.datasets[2] = { label: "Uncertainty", data: upperBound, borderColor: "rgba(0,0,255,0.2)", backgroundColor: "rgba(0,0,255,0.1)", borderWidth: 0, pointRadius: 0, fill: false };
+                    chart_array[idx].data.datasets[3] = { label: "Uncertainty", data: lowerBound, borderColor: "rgba(0,0,255,0.2)", backgroundColor: "rgba(0,0,255,0.1)", borderWidth: 0, pointRadius: 0, fill: '-1' };
                     chart_array[idx].update();
 
                     losschart_array[idx].data.labels = timestamps;
@@ -176,12 +267,12 @@
                     losschart_array[idx].update();
                 });
 
-                // Bar Chart 
-                barchart.data.labels = severityLabels
-                barchart.data.datasets[0] = { label: "Severity", data: severityValues, backgroundColor: colors, count: severityCounts }
-                barchart.update();
+                // Severity Cards
+                renderSeverityCards(severityLabels, severityValues, severityCounts, colors);
             }
         });
+
+        updateTimeinfo();
     }
 
     $(document).ready(function () {
@@ -194,34 +285,82 @@
             url: "/api/severity_plot",
             data: { start_date: start_date, end_date: end_date },
             success: function (data) {
-                let [timestamps, predictions, originalData, lossData,
+                let [timestamps, predictions, predictions_std, originalData, lossData,
                     severityData, severityLabels, severityValues, severityCounts, colors] = parseData_fromserver(data)
 
-                var copy_timestamp = timestamps.map(ts => new Date(ts));
-                document.getElementById("current-time").textContent =
-                    new Date().toLocaleString('en-GB', {
-                        timeZone: 'Asia/Makassar',
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                    });
-
-                // Line Charts
+                // Build sensor card HTML containers
+                const chartsContainer = document.getElementById('sensor-charts-container');
+                chartsContainer.innerHTML = '';
                 severityLabels.slice(0, 4).forEach((feature, idx) => {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-12 col-sm-12 px-0';
+                    col.innerHTML = `
+                        <div class="x_panel tile" style="margin-bottom:10px">
+                            <div class="sensor-card">
+                                <div class="sensor-card-header">
+                                    <span class="badge-severity" style="background:${colors[idx]}"></span>
+                                    ${feature}
+                                </div>
+                                <div class="sensor-card-body">
+                                    <div class="sensor-chart-col">
+                                        <div class="sensor-chart-label">Original vs Prediction</div>
+                                        <div class="sensor-chart-wrap">
+                                            <canvas id="lineChart${idx + 1}"></canvas>
+                                        </div>
+                                    </div>
+                                    <div class="sensor-chart-col">
+                                        <div class="sensor-chart-label">Loss & Threshold</div>
+                                        <div class="sensor-chart-wrap">
+                                            <canvas id="losslineChart${idx + 1}"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    chartsContainer.appendChild(col);
+                });
+
+                // Create charts after DOM elements exist
+                severityLabels.slice(0, 4).forEach((feature, idx) => {
+                    const predData = predictions.map(row => row[idx]);
+                    const upperBound = predictions.map((row, i) => row[idx] + predictions_std[i][idx]);
+                    const lowerBound = predictions.map((row, i) => row[idx] - predictions_std[i][idx]);
+
                     chart_array.push(new Chart(document.getElementById(`lineChart${idx + 1}`).getContext('2d'), {
                         type: 'line',
                         data: {
                             labels: timestamps,
-                            datasets: [{ label: "Original", data: originalData.map(row => row[idx]), backgroundColor: "red", borderColor: "red", fill: false },
-                            { label: "Prediction", data: predictions.map(row => row[idx]), backgroundColor: "blue", borderColor: "blue", fill: false }]
+                            datasets: [
+                                { label: "Original", data: originalData.map(row => row[idx]), backgroundColor: "red", borderColor: "red", fill: false },
+                                { label: "Prediction", data: predData, backgroundColor: "blue", borderColor: "blue", fill: false },
+                                { label: "Uncertainty", data: upperBound, borderColor: "rgba(0,0,255,0.2)", backgroundColor: "rgba(0,0,255,0.1)", borderWidth: 0, pointRadius: 0, fill: false },
+                                { label: "Uncertainty", data: lowerBound, borderColor: "rgba(0,0,255,0.2)", backgroundColor: "rgba(0,0,255,0.1)", borderWidth: 0, pointRadius: 0, fill: '-1' }
+                            ]
                         },
                         options: {
                             responsive: true,
+                            maintainAspectRatio: false,
                             animation: { duration: 500 },
-                            plugins: { legend: { display: true }, title: { display: true, text: feature } },
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    labels: {
+                                        boxWidth: 10,
+                                        font: { size: 11 },
+                                        filter: (item, chart) => {
+                                            const seen = new Set();
+                                            const dominated = [];
+                                            chart.datasets.forEach((ds, i) => {
+                                                if (seen.has(ds.label)) dominated.push(i);
+                                                else seen.add(ds.label);
+                                            });
+                                            return !dominated.includes(item.datasetIndex);
+                                        }
+                                    }
+                                },
+                                title: { display: false }
+                            },
                             scales: {
                                 x: xChartLineFormat,
                                 y: {
@@ -239,9 +378,11 @@
                         },
                         options: {
                             responsive: true,
+                            maintainAspectRatio: false,
                             animation: { duration: 500 },
                             plugins: {
-                                legend: { display: true }, title: { display: true, text: feature },
+                                legend: { display: true, labels: { boxWidth: 10, font: { size: 11 } } },
+                                title: { display: false },
                                 annotation: {
                                     annotations: [{
                                         type: 'line',
@@ -268,91 +409,15 @@
                     }));
                 });
 
-                // Bar Chart
-                barchart = new Chart(document.getElementById("barChart").getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: severityLabels,
-                        datasets: [{
-                            label: "Severity",
-                            data: severityValues,
-                            count: severityCounts,
-                            backgroundColor: colors
-                        }]
-                    },
-                    options: {
-                        responsive: false,
-                        indexAxis: 'y',
-                        animation: { duration: 500 },
-                        scales: {
-                            x: { suggestedMin: 0, suggestedMax: 7, grid: { display: true, } }
-                        },
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: { enabled: true },
-                            datalabels: {
-                                anchor: 'center',
-                                align: 'center',
-                                color: 'white',
-                                font: { weight: 'bold' },
-                                formatter: (value, context) => {
-                                    return context.dataset.count[context.dataIndex];
-                                }
-                            }
-                        },
-                        onClick: (event, elements) => {
-                            if (elements.length > 0) {
-                                const index = elements[0].index;
-                                const selectedFeature = severityLabels[index];
-                                alert(`You clicked on ${selectedFeature}`);
-                            }
-                        }
-                    },
-                    plugins: [ChartDataLabels]
-                });
+                // Severity Cards
+                renderSeverityCards(severityLabels, severityValues, severityCounts, colors);
             }
         });
 
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url: "/api/timeinfo_detail",
-            data: { start_date: start_date, end_date: end_date },
-            success: function (data) {
-                const lastUpdateUtc = new Date(
-                    data.datetime_last.endsWith('Z')
-                        ? data.datetime_last
-                        : data.datetime_last + 'Z'
-                );
-
-                document.getElementById("last-update").textContent =
-                    lastUpdateUtc.toLocaleString('en-GB', {
-                        timeZone: 'Asia/Makassar',
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                    });
-
-                const nextUpdate = new Date(lastUpdateUtc.getTime() + 10 * 60 * 1000);
-                document.getElementById("next-update").textContent =
-                    nextUpdate.toLocaleString('en-GB', {
-                        timeZone: 'Asia/Makassar',
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit'
-                    });
-            }
-        })
+        updateTimeinfo();
 
         setInterval(() => {
-            location.reload();
-            //updateChart();
+            updateChart();
         }, 5 * 60 * 1000);
     });
 </script>
