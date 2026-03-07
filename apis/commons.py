@@ -254,52 +254,6 @@ def percentage2severity(value):
         6
     )
 
-def calc_counterPercentage(threshold_percentages):
-    """
-    Calculate the counter percentage for each feature.
-
-    Args:
-        threshold_percentages (dict): A dictionary of threshold percentages.
-
-    Returns:
-        tuple: Counter feature dictionary, counter feature plot.
-    """
-    counter_feature = {}
-    for modex_idx, values_pred in threshold_percentages.items():
-        values_pred = dict(sorted(values_pred.items(), key=lambda item: item[1], reverse=True)[:10])
-        for name_feat, percentage in values_pred.items():
-            if name_feat in counter_feature:
-                counter_feature[name_feat]["count"] = counter_feature[name_feat]["count"] + 1
-                counter_feature[name_feat]["percentage"] = counter_feature[name_feat]["percentage"] + percentage
-            else:
-                counter_feature[name_feat] = {"count": 1, "percentage": percentage}
-
-    counter_feature_s1 = dict(sorted(counter_feature.items(), key=lambda item: item[1]['count'], reverse=True)[:10])
-    counter_feature_s2 = dict(sorted(counter_feature_s1.items(), key=lambda item: item[1]['percentage'] // len(model_array), reverse=True))
-    #counter_feature_s2_rank = dict(sorted(counter_feature_s1.items(), key=lambda item: item[1]['count'], reverse=True))
-
-    for key, value in counter_feature_s2.items():
-        counter_feature_s2[key]['count'] = (counter_feature_s2[key]['count'] / len(model_array)) * 100
-        counter_feature_s2[key]['severity'] = percentage2severity(counter_feature_s2[key]['percentage'] // len(model_array))
-        counter_feature_s2[key]['percentage'] = (counter_feature_s2[key]['percentage'] // len(model_array))
-
-    # Find Which Model Have Highest Confidence
-    counter_feature_plot = {}
-    for index, value in counter_feature_s2.items():
-        higher_data = {"model": 0, "percentage": 0}
-        for model_idx in threshold_percentages:
-            if index in threshold_percentages[model_idx]:
-                if higher_data["percentage"] <= threshold_percentages[model_idx][index]:
-                    higher_data["model"] = model_idx
-                    higher_data["percentage"] = threshold_percentages[model_idx][index]
-        
-        counter_feature_plot[index] = higher_data['model']
-
-    return counter_feature_s2, counter_feature_plot
-
-
-
-
 def order_objects_by_keys(data, key_order):
     """
     Order objects by keys.

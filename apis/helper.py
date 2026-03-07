@@ -493,55 +493,6 @@ def get_SeverityNLoss(start_date=None, end_date=None):
     return counter_feature_s2, df_timestamp, df_feature, y_pred, y_pred_std, loss, thr_now_model
 
 
-def get_top10Charts(start_date, end_date):
-    start_date, end_date = get_FixedDate(start_date, end_date)
-
-    threshold_percentages = {}
-    for idx_model, (model_name) in enumerate(commons.model_array):
-        now_fetched = commons.fetch_between_dates(
-            start_date, end_date, settings.MONITORINGDB_PATH + "db/threshold_data.db", model_name)[-1, 2:]
-
-        threshold_pass = {}
-        for idx_sensor, sensor_thre in enumerate(now_fetched):
-            threshold_pass[commons.FEATURE_SET[idx_sensor]
-                           ] = float(sensor_thre)
-
-        threshold_percentages[idx_model] = threshold_pass
-
-    counter_feature_s2, counter_feature_plot = commons.calc_counterPercentage(
-        threshold_percentages)
-    counter_feature_s2 = counter_feature_s2.keys()
-    index_top10feat = []
-    for feat_top in counter_feature_s2:
-        index_top10feat.append(commons.FEATURE_SET.index(feat_top))
-
-    # index_top10feat = list(reversed(index_top10feat))
-    # ^ Get 10 Feature
-
-    severity_trending_datas = commons.fetch_between_dates(
-        start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
-    sensor_datas = commons.fetch_between_dates(
-        start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor")
-
-    data_timestamp = sensor_datas[:, 1]
-    severity_trending_datas = severity_trending_datas[:, 2:].astype(float)
-
-    # Start Implement Adjsutment
-    severity_trending_datas[:, 22] = severity_trending_datas[:, 22] * 0.15
-
-    severity_trending_datas = severity_trending_datas[:, index_top10feat]
-    sensor_datas = sensor_datas[:, 2:][:, index_top10feat].astype(float)
-    sensor_statistic_current = param_statistic[:, index_top10feat]
-
-    # window_size = 15
-    # kernel = np.ones(window_size) / window_size
-
-    # for i in range(sensor_datas.shape[-1]):
-    #     sensor_datas[:, i] = np.convolve(sensor_datas[:, i], kernel, mode='same')
-
-    return counter_feature_s2, data_timestamp, severity_trending_datas, sensor_datas, sensor_statistic_current
-
-
 def get_sensorNtrend(start_date, end_date):
     severity_trending_datas = commons.fetch_between_dates(
         start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")

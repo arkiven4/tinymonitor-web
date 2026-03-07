@@ -120,23 +120,6 @@ def severity_plot(request):
 
 
 @api_view(['GET'])
-def top10_charts(request):
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
-
-    counter_feature_s2, data_timestamp, severity_trending_datas, sensor_datas, sensor_statistic_current = helper_fun.get_top10Charts(
-        start_date, end_date)
-    data = {
-        'counter_feature_s2': counter_feature_s2,
-        'df_timestamp': data_timestamp.tolist(),
-        'severity_trending_datas': severity_trending_datas.tolist(),
-        'sensor_datas': sensor_datas.tolist(),
-        'sensor_statistic_current': sensor_statistic_current.tolist(),
-    }
-    return Response(data, status=status.HTTP_200_OK)
-
-
-@api_view(['GET'])
 def advisory_table(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')

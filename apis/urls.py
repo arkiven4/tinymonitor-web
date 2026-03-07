@@ -10,7 +10,6 @@ urlpatterns = [
     path('severity_plot', views.severity_plot, name='severity_plot'),
     path('advisory_table', views.advisory_table, name='advisory_table'), 
     path('advisory_detail/<int:feat_id>', views.advisory_detail, name='advisory_detail'),
-    path('top10_charts', views.top10_charts, name='top10_charts'),
     path('timeinfo_detail', views.timeinfo_detail, name='timeinfo_detail'),
     path('adjust_threshold_settings', views.adjust_threshold_settings, name='adjust_threshold_settings'),
 ] 

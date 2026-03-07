@@ -48,9 +48,5 @@ def advisory(request):
 def advisory_chart(request):
     return render(request, "advisory/advisory_chart.html", {})
 
-def charts(request):
-    return render(request, "charts/charts.html", {})
-
-
 def settings_page(request):
     return render(request, "settings/settings.html", {})
