@@ -184,7 +184,7 @@ def adjust_threshold_settings(request):
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
 
-    datetime_last  = helper_fun.get_adjustthr(start_date, end_date)
+    datetime_last  = ""
     data = {
         'datetime_last': datetime_last,
     }

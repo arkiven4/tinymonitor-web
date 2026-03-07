@@ -11,7 +11,6 @@ import numpy as np
 import pandas as pd
 from django.conf import settings
 
-# Feature sets
 FEATURE_SET = ['Active Power', 'Reactive Power', 'Governor speed actual', 'Opening Wicked Gate',
      'Penstock pressure', 'Governor Penstock Pressure', 'Penstock Flow', 'Turbine flow',
       'Gen Voltage Phase 1', 'Gen Voltage Phase 2', 'Gen Voltage Phase 3',
@@ -25,10 +24,6 @@ FEATURE_SET = ['Active Power', 'Reactive Power', 'Governor speed actual', 'Openi
        'UGB cooling water flow', 'LGB cooling water flow', 'Generator cooling water flow']
 
 ADDITIONAL_FEATURE_SET = ["Grid Selection", 'TGB temperature']
-
-MODEL_ARRAY = [
-    "Attention", "DTAAD", "MAD_GAN", "TranAD", "DAGMM", "USAD", "OmniAnomaly"
-]
 
 LABEL_TO_CODE = {
     'Shutdown': 0,

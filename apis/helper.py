@@ -73,42 +73,13 @@ def get_FixedDate(start_date=None, end_date=None, ignore=False):
     end_dateT1 = datetime.strptime(
         end_date, "%Y-%m-%dT%H:%M:%S") - timedelta(minutes=30)
     try:
-        now_fetched = commons.fetch_between_dates(end_dateT1.strftime(
-            "%Y-%m-%dT%H:%M:%S"), end_date, settings.MONITORINGDB_PATH + "db/threshold_data.db", commons.model_array[0])[-1, 2:]
+        commons.fetch_between_dates(end_dateT1.strftime("%Y-%m-%dT%H:%M:%S"), end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "original_sensor")[-1, 2:]
     except:
         datetime_last = commons.get_LastdateLastRow(settings.MONITORINGDB_PATH + "db/original_data.db")
         start_date = (datetime_last - timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%S")
         end_date = datetime_last.strftime("%Y-%m-%dT%H:%M:%S")
 
     return start_date, end_date
-
-
-def get_adjustthr(start_date=None, end_date=None):
-    start_date, end_date = get_FixedDate(start_date, end_date)
-
-    # multiplier_severity = commons.fetch_last_rows(1, settings.MONITORINGDB_PATH + "db/multiplier_severity.db", model_name)[-1, 2:]
-    mean_severity_percentage = {f: {"count": 0, "percentage": 0} for f in commons.FEATURE_SET}
-    for idx_model, model_name in enumerate(commons.model_array):
-        now_fetched = commons.fetch_last_rows(
-            1, settings.MONITORINGDB_PATH + "db/threshold_data.db", model_name)[-1, 2:]
-        threshold_pass = {commons.FEATURE_SET[idx_sensor]: float(
-            sensor_thre) for idx_sensor, sensor_thre in enumerate(now_fetched)}
-        for feature_name in commons.FEATURE_SET:
-            if threshold_pass[feature_name] >= 20:
-                mean_severity_percentage[feature_name]["count"] += 1
-                mean_severity_percentage[feature_name]["percentage"] += threshold_pass[feature_name]
-
-    for f, v in mean_severity_percentage.items():
-        if v["count"] >= 2:
-            v["count"] = round((v["count"] / len(commons.model_array)) * 100, 2)
-            v["percentage"] = round(v["percentage"] / len(commons.model_array))
-        else:
-            v["count"] = 0
-            v["percentage"] = 0
-
-    # print(mean_severity_percentage['UGB cooling water flow']["percentage"] * auto_adjust_constant)
-    # print(auto_adjust_constant)
-    return ""
 
 
 def get_TimeInformastion():
