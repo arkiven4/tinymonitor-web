@@ -2,7 +2,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Home - Vale Dash{% endblock %}
+{% block title %}Overall CBM{% endblock %}
 
 {% block content %}
 
@@ -228,49 +228,50 @@
     // name = short display label, top/left/right = position %
     // null entries = features not displayed on the diagram
     const sensorPoints = [
-        /* 0  Active Power                          */ { top: 0,    left: 0,    name: "Active Power" },
-        /* 1  Reactive Power                         */ { top: 7,    left: 0,    name: "Reactive Power" },
-        /* 2  Governor speed actual                  */ { top: 0,    right: 0,   name: "Governor Speed" },
-        /* 3  Opening Wicked Gate                    */ { top: 90,   left: 14,   name: "Opening Wicked Gate" },
-        /* 4  Penstock pressure                      */ { top: 66,   left: 18,   name: "Penstock pressure" },
-        /* 5  Governor Penstock Pressure              */ { top: 88,   left: 11.5, name: "Governor Penstock Press" },
-        /* 6  Penstock Flow                          */ { top: 74,   left: 18,   name: "Penstock Flow" },
-        /* 7  Turbine flow                           */ { top: 82,   left: 18,   name: "Turbine flow" },
-        /* 8  Gen Voltage Phase 1                    */ { top: 14,   left: 0,    name: "Gen Voltage Ph.1" },
-        /* 9  Gen Voltage Phase 2                    */ { top: 7,    right: 0,   name: "Gen Voltage Ph.2" },
-        /* 10 Gen Voltage Phase 3                    */ { top: 14,   right: 0,   name: "Gen Voltage Ph.3" },
-        /* 11 Gen Current Phase 1                    */ { top: 49,   left: 0,    name: "Gen Current Ph.1" },
-        /* 12 Gen Current Phase 2                    */ { top: 21,   right: 0,   name: "Gen Current Ph.2" },
-        /* 13 Gen Current Phase 3                    */ { top: 28,   right: 0,   name: "Gen Current Ph.3" },
-        /* 14 UGB X displacement                     */ { top: 8,    left: 74,   name: "UGB X displacement" },
-        /* 15 UGB Y displacement                     */ { top: 15,   left: 74,   name: "UGB Y displacement" },
-        /* 16 LGB X displacement                     */ { top: 52,   left: 58,   name: "LGB X displacement" },
-        /* 17 LGB Y displacement                     */ { top: 59,   left: 58,   name: "LGB Y displacement" },
-        /* 18 TGB X displacement                     */ { top: 71,   left: 63,   name: "TGB X displacement" },
-        /* 19 TGB Y displacement                     */ { top: 78,   left: 63,   name: "TGB Y displacement" },
-        /* 20 Surface Air Cooler Air Outlet Temp     */ { top: 38,   left: 79,   name: "SAC Air Outlet T." },
-        /* 21 Surface Air Cooler Water Inlet Temp    */ { top: 48,   left: 79,   name: "SAC Water Inlet T." },
-        /* 22 Surface Air Cooler Water Outlet Temp   */ { top: 58,   left: 79,   name: "SAC Water Outlet T." },
-        /* 23 Stator core temperature                */ { top: 42,   left: 2,    name: "Stator core T." },
-        /* 24 Stator winding temperature 13          */ { top: 56,   left: 0,    name: "Stator winding T. 13" },
-        /* 25 Stator winding temperature 14          */ { top: 63,   left: 0,    name: "Stator winding T. 14" },
-        /* 26 Stator winding temperature 15          */ { top: 70,   left: 0,    name: "Stator winding T. 15" },
-        /* 27 UGB metal temperature                  */ { top: 9,    left: 24,   name: "UGB metal Temp" },
-        /* 28 LGB metal temperature 1                */ { top: 43,   left: 22,   name: "LGB metal Temp 1" },
-        /* 29 LGB metal temperature 2                */ { top: 51,   left: 22,   name: "LGB metal Temp 2" },
-        /* 30 UGB oil temperature                    */ { top: 2,    left: 36,   name: "UGB oil Temp" },
-        /* 31 LGB oil temperature                    */ { top: 58,   left: 22,   name: "LGB oil Temp" },
-        /* 32 UGB Oil Contaminant                    */ { top: 2,    left: 22.5, name: "UGB Oil Contaminant" },
-        /* 33 Gen Thrust Bearing Oil Contaminant     */ { top: 93,   left: 9.5,  name: "Gen Thrust Bearing Oil Contam." },
-        /* 34 UGB cooling water flow                 */ { top: 7.5,  left: 57,   name: "UGB CW flow" },
-        /* 35 LGB cooling water flow                 */ { top: 41,   left: 61,   name: "LGB CW flow" },
-        /* 36 Generator cooling water flow           */ { top: 24,   left: 82,   name: "Generator CW flow" },
+        /* 0  Active Power                          */ { top: 52,    left: 73,    name: "Active Power" },
+        /* 1  Reactive Power                         */ { top: 52,    left: 81,    name: "Reactive Power" },
+        /* 2  Governor speed actual                  */ { top: 58,    left: 73,   name: "Governor Speed" },
+        /* 3  Opening Wicked Gate                    */ { top: 84,   left: 29,   name: "Opening Wicked Gate" },
+        /* 4  Penstock pressure                      */ { top: 72,   left: 30,   name: "Penstock pressure" },
+        /* 5  Governor Penstock Pressure              */ { top: 78,   left: 28, name: "Governor Penstock Press" },
+        /* 6  Penstock Flow                          */ { top: 72,   left: 22,   name: "Penstock Flow" },
+        /* 7  Turbine flow                           */ { top: 78,   left: 21,   name: "Turbine flow" },
+        /* 8  Gen Voltage Phase 1                    */ { top: 29,   left: 73,    name: "Gen Voltage Ph.1" },
+        /* 9  Gen Voltage Phase 2                    */ { top: 35,   left: 73,   name: "Gen Voltage Ph.2" },
+        /* 10 Gen Voltage Phase 3                    */ { top: 41,   left: 73,   name: "Gen Voltage Ph.3" },
+        /* 11 Gen Current Phase 1                    */ { top: 29,   left: 82,    name: "Gen Current Ph.1" },
+        /* 12 Gen Current Phase 2                    */ { top: 35,   left: 82,   name: "Gen Current Ph.2" },
+        /* 13 Gen Current Phase 3                    */ { top: 41,   left: 82,   name: "Gen Current Ph.3" },
+        /* 14 UGB X displacement                     */ { top: 9,    left: 63,   name: "UGB X displacement" },
+        /* 15 UGB Y displacement                     */ { top: 15,   left: 63,   name: "UGB Y displacement" },
+        /* 16 LGB X displacement                     */ { top: 50,   left: 57,   name: "LGB X displacement" },
+        /* 17 LGB Y displacement                     */ { top: 56,   left: 57,   name: "LGB Y displacement" },
+        /* 18 TGB X displacement                     */ { top: 68,   left: 60,   name: "TGB X displacement" },
+        /* 19 TGB Y displacement                     */ { top: 74,   left: 60,   name: "TGB Y displacement" },
+        /* 20 Surface Air Cooler Air Outlet Temp     */ { top: 46,   left: 15,   name: "SAC Air Outlet T." },
+        /* 21 Surface Air Cooler Water Inlet Temp    */ { top: 52,   left: 15,   name: "SAC Water Inlet T." },
+        /* 22 Surface Air Cooler Water Outlet Temp   */ { top: 58,   left: 15,   name: "SAC Water Outlet T." },
+        /* 23 Stator core temperature                */ { top: 16,   left: 15,    name: "Stator core T." },
+        /* 24 Stator winding temperature 13          */ { top: 22,   left: 13.5,    name: "Stator winding T. 13" },
+        /* 25 Stator winding temperature 14          */ { top: 28,   left: 13.5,    name: "Stator winding T. 14" },
+        /* 26 Stator winding temperature 15          */ { top: 34,   left: 13.5,    name: "Stator winding T. 15" },
+        /* 27 UGB metal temperature                  */ { top: 12,    left: 31,   name: "UGB metal Temp" },
+        /* 28 LGB metal temperature 1                */ { top: 46,   left: 33,   name: "LGB metal Temp 1" },
+        /* 29 LGB metal temperature 2                */ { top: 52,   left: 33,   name: "LGB metal Temp 2" },
+        /* 30 UGB oil temperature                    */ { top: 8,    left: 40,   name: "UGB oil Temp" },
+        /* 31 LGB oil temperature                    */ { top: 58,   left: 34,   name: "LGB oil Temp" },
+        /* 32 UGB Oil Contaminant                    */ { top: 6,    left: 30, name: "UGB Oil Contaminant" },
+        /* 33 Gen Thrust Bearing Oil Contaminant     */ { top: 37,   left: 36,  name: "Gen Thrust Bearing Oil Contam." },
+        /* 34 UGB cooling water flow                 */ { top: 7.5,  left: 53,   name: "UGB CW flow" },
+        /* 35 LGB cooling water flow                 */ { top: 43,   left: 57,   name: "LGB CW flow" },
+        /* 36 Generator cooling water flow           */ { top: 21,   left: 74,   name: "Generator CW flow" },
     ];
 
     // Additional sensor points (not in the severity model, data-only display)
     // additisensorPoints[i] matches addfeatureSet[i] / addunitSet[i] from base.html
     const additisensorPoints = [
-        /* 1  TGB temperature  */ { top: 86,   left: 65,   name: "TGB temperature" },
+        { top: 86,   left: 65,   name: "dummmy" },
+        /* 1  TGB temperature  */ { top: 80,   left: 60,   name: "TGB temperature" },
     ];
 
     // ── Helper functions ──
@@ -363,9 +364,11 @@
 
                     // ── Additional sensor points (data only, no model) ──
                     // additisensorPoints[i] corresponds to addfeatureSet[i]
+                    
                     for (let i = 0; i < additisensorPoints.length; i++) {
                         const p = additisensorPoints[i];
                         if (!p) continue;
+                        if (p.name == "dummmy") continue;
                         const el = document.getElementById(`sp_add${i}`);
                         const featureName = addfeatureSet[i];
                         const currentUnit = addunitSet[i];

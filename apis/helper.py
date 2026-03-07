@@ -32,7 +32,6 @@ with open('precom_files/param_statistic.pickle', 'rb') as handle:
 with open('precom_files/correlation.pickle', 'rb') as handle:
     correlation_param = pickle.load(handle)  # (4, 30)
 
-
 def calculate_priority(parameter_name, recap_severity, current_severity, equipment_critical_list):
     o = recap_severity['Level'] * recap_severity['Proportion']
     o = np.sum(o)
@@ -45,9 +44,7 @@ def calculate_priority(parameter_name, recap_severity, current_severity, equipme
     p = o * s * c
     return p
 
-
-recap_severity = pd.DataFrame(
-    {'Level': [1, 2, 3, 4, 5, 6], 'Proportion': [0.2, 0.1, 0.1, 0.5, 0.1, 0]})
+recap_severity = pd.DataFrame({'Level': [1, 2, 3, 4, 5, 6], 'Proportion': [0.2, 0.1, 0.1, 0.5, 0.1, 0]})
 equipment_critical_list = [
     'UGB X Displacement',
     'UGB Y Displacement',
@@ -69,8 +66,6 @@ equipment_critical_list = [
 # Main Function For Web
 #
 #########################################################
-
-
 def get_FixedDate(start_date=None, end_date=None, ignore=False):
     if ignore:
         return start_date, end_date
@@ -81,10 +76,8 @@ def get_FixedDate(start_date=None, end_date=None, ignore=False):
         now_fetched = commons.fetch_between_dates(end_dateT1.strftime(
             "%Y-%m-%dT%H:%M:%S"), end_date, settings.MONITORINGDB_PATH + "db/threshold_data.db", commons.model_array[0])[-1, 2:]
     except:
-        datetime_last = commons.get_LastdateLastRow(
-            settings.MONITORINGDB_PATH + "db/original_data.db")
-        start_date = (datetime_last - timedelta(hours=2)
-                      ).strftime("%Y-%m-%dT%H:%M:%S")
+        datetime_last = commons.get_LastdateLastRow(settings.MONITORINGDB_PATH + "db/original_data.db")
+        start_date = (datetime_last - timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%S")
         end_date = datetime_last.strftime("%Y-%m-%dT%H:%M:%S")
 
     return start_date, end_date
@@ -142,10 +135,8 @@ def get_PanelSummary(start_date=None, end_date=None):
     sensor_datas = commons.fetch_between_dates(
         start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "original_data", resampling=False)
     sensor_datas2 = commons.fetch_between_dates(
-        start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "original_data", resampling=False)
-    # sensor_datas2 = commons.fetch_between_dates(
-    #     start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "additional_original_data",
-    #     resampling=False)
+        start_date, end_date, settings.MONITORINGDB_PATH + "db/original_data.db", "additional_original_data",
+        resampling=False)
     severtrend_datas = commons.fetch_between_dates(
         start_date, end_date, settings.MONITORINGDB_PATH + "db/severity_trendings.db", "severity_trendings")
 
@@ -158,9 +149,6 @@ def get_PanelSummary(start_date=None, end_date=None):
     sensor_datas = sensor_datas[:, 2:].astype(float)
     sensor_datas2 = sensor_datas2[:, 2:].astype(float)
     severtrend_datas = severtrend_datas[:, 2:].astype(float)
-
-    # Start Implement Adjsutment
-    severtrend_datas[:, 22] = severtrend_datas[:, 22] * 0.15
 
     vectorized_func = np.vectorize(commons.percentage2severity)
     severity_level_datas = vectorized_func(severtrend_datas)
@@ -198,9 +186,6 @@ def get_PanelSummary(start_date=None, end_date=None):
     severtrend_datas = severtrend_datas[:, 2:].astype(float)
     sensor_datas = sensor_datas[:, 2:].astype(float)
 
-    # Start Implement Adjsutment
-    severtrend_datas[:, 22] = severtrend_datas[:, 22] * 0.15
-
     priority_parameter = {}
     for idx, feature_name in enumerate(commons.FEATURE_SET):
         current_severity = commons.percentage2severity(
@@ -230,9 +215,8 @@ def get_OperationDistributionTimeline(start_date=None, end_date=None, units=None
     if units == None:
         units = ['LGS1']
 
-    sensor_datas = commons.fetch_between_dates(
-        start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", units[0] + "_timeline")
-
+    sensor_datas = commons.fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", units[0] + "_timeline")
+    
     if len(sensor_datas) == 0:
         return [], [], []
 
@@ -240,7 +224,7 @@ def get_OperationDistributionTimeline(start_date=None, end_date=None, units=None
     sensor_datas = sensor_datas[:, 2:].astype(float)
     activepow_data = sensor_datas[:, 0].astype(float)
     rpm_data = sensor_datas[:, 1].astype(float)
-    cb_data = sensor_datas[:, 4].astype(float)
+    cb_data = sensor_datas[:, 2].astype(float)
     df = pd.DataFrame({
         'Timestap': data_timestamp,
         'Active Power': activepow_data,
@@ -248,7 +232,7 @@ def get_OperationDistributionTimeline(start_date=None, end_date=None, units=None
         'CB': cb_data
     })
 
-    aux_1 = sensor_datas[:, 3].astype(float)
+    aux_1 = sensor_datas[:, 4].astype(float)
     df['Load Label'] = df.apply(commons.label_load, axis=1)
     df['Load Code'] = df['Load Label'].map(commons.LABEL_TO_CODE)
     # df = df[df['Load Code'] != df['Load Code'].shift()].reset_index(drop=True)
@@ -273,7 +257,7 @@ def get_unit_status(start_date=None, end_date=None, unit='LGS1'):
     sensor_datas = sensor_datas[:, 2:].astype(float)
     activepow_data = sensor_datas[:, 0]
     rpm_data = sensor_datas[:, 1]
-    cb_data = sensor_datas[:, 4]
+    cb_data = sensor_datas[:, 2]
 
     df = pd.DataFrame({
         'Timestap': data_timestamp,
@@ -333,13 +317,12 @@ def get_KPIData(start_date=None, end_date=None, units=None, noe_metric="noe"):
             'aux_1': aux_1,
         }
 
-        ppl_data = commons.fetch_between_dates(
-            start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", unit + "_timeline", max_rows=2000)
+        ppl_data = commons.fetch_between_dates(start_date, end_date, settings.MONITORINGDB_PATH + "db/kpi.db", unit + "_timeline", max_rows=2000)
         if ppl_data is not None and len(ppl_data) > 0:
             aux_timeline[unit] = {
                 'timestamp': ppl_data[:, 1],
-                'aux_0': ppl_data[:, 2].astype(float) * ppl_data[:, 4].astype(float),
-                'aux_1': ppl_data[:, 2].astype(float) * ppl_data[:, 5].astype(float),
+                'aux_0': ppl_data[:, 2].astype(float) * ppl_data[:, 5].astype(float),
+                'aux_1': ppl_data[:, 2].astype(float) * ppl_data[:, 6].astype(float),
             }
 
     reference_unit = list(aux_timeline.keys())[0]
@@ -664,9 +647,6 @@ def get_advisoryDetail(start_date, end_date, sensor_id, feat_correlate, feat_cor
 
     data_timestamp_addi = addisensor_datas[:, 1]
     addisensor_datas = addisensor_datas[:, 2:]
-
-    # Start Implement Adjsutment
-    # severity_trending_datas[:, 22] = severity_trending_datas[:, 22] * 0.10
 
     shutdown_periods = commons.process_shutdownTimestamp(data_timestamp, sensor_datas)
     selected_severity_trending_datas = severity_trending_datas[:, columns_tofetch.index(

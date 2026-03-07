@@ -55,10 +55,11 @@ def label_load(row):
     ap = row['Active Power']
     rpm = row['Governor speed actual']
     cb = row['CB']
+    #print(cb)
 
     if cb != 1:
         return 'Shutdown'
-    if ap < 3:
+    if ap < 5:
         return 'Warming' if rpm < 90 else 'No Load'
     if 1 <= ap < 20:
         return 'Low Load'
@@ -335,7 +336,7 @@ def process_shutdownTimestamp(data_timestamp, sensor_datas):
     )
 
     data_timestamp_cb = sensor_datas[:, 1]
-    cb_data = sensor_datas[:, 6].astype(float)
+    cb_data = sensor_datas[:, 4].astype(float)
 
     shutdown_mask = (cb_data != 1)
     change_points = np.diff(shutdown_mask.astype(int), prepend=0)
