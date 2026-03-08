@@ -1,0 +1,580 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Madrid}
+\usecolortheme{default}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{ragged2e}
+
+\title{TinyMonitor Web\\Page to API to Helper to Payload}
+\author{CBM Vale}
+\date{8 March 2026}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Objective}
+\justifying
+This document explains each page with a technical backend flow:
+
+\begin{center}
+\texttt{URL / HTML Page -> View / API -> Helper Function -> Payload}
+\end{center}
+
+For each API, the deck explains:
+\begin{itemize}
+    \item request arguments,
+    \item process inside the API and helper,
+    \item returned payload fields.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{1. Page Map}
+\small
+\centering
+\begin{tabular}{lll}
+\toprule
+Page URL & Page view & API count \\
+\midrule
+\texttt{/} & \texttt{index()} & 2 APIs \\
+\texttt{/dashboard/} & \texttt{dashboard()} & 2 APIs \\
+\texttt{/kpi/} & \texttt{kpi()} & 2 APIs \\
+\texttt{/kpi\_units/} & \texttt{kpi\_units()} & 2 APIs \\
+\texttt{/kpi/update\_manualdata} & \texttt{kpi\_manualdata()} & no separate API \\
+\texttt{/advisory/} & \texttt{advisory()} & 1 API \\
+\texttt{/advisory/chart} & \texttt{advisory\_chart()} & 1 API \\
+\texttt{/settings/} & \texttt{settings\_page()} & 1 API \\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+\begin{frame}{2. Home Page Overview}
+\justifying
+\begin{block}{Page flow}
+\texttt{/} -> \texttt{pages.views.index(request)} ->
+\texttt{render(request, "home/index.html", \{\})}
+\end{block}
+
+\begin{block}{APIs called by the page}
+\begin{itemize}
+    \item \texttt{/api/timeinfo\_detail}
+    \item \texttt{/api/severity\_plot}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{3. Home API 1: \texttt{timeinfo\_detail()}}
+\justifying
+\begin{block}{Flow}
+\texttt{/} -> \texttt{/api/timeinfo\_detail} ->
+\texttt{apis.views.timeinfo\_detail()} ->
+\texttt{helper\_fun.get\_TimeInformastion()}
+\end{block}
+
+\begin{block}{Arguments}
+No request arguments are read.
+\end{block}
+
+\begin{block}{Process}
+The helper reads the latest row from
+\texttt{db/severity\_trendings.db}, table \texttt{original\_sensor},
+then builds:
+\begin{itemize}
+    \item latest timestamp,
+    \item next update time = latest timestamp + 10 minutes.
+\end{itemize}
+\end{block}
+
+\begin{block}{Return}
+\texttt{datetime\_last}, \texttt{next\_update}
+\end{block}
+\end{frame}
+
+\begin{frame}{4. Home API 2: \texttt{severity\_plot()}}
+\justifying
+\begin{block}{Flow}
+\texttt{/} -> \texttt{/api/severity\_plot} ->
+\texttt{apis.views.severity\_plot()} ->
+\texttt{helper\_fun.get\_SeverityNLoss(start\_date, end\_date)}
+\end{block}
+
+\begin{block}{Arguments}
+\texttt{start\_date}, \texttt{end\_date}
+\end{block}
+
+\begin{block}{Process}
+The helper:
+\begin{itemize}
+    \item adjusts the date range with \texttt{get\_FixedDate()},
+    \item reads latest severity and confidence,
+    \item selects the top abnormal features,
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+\begin{frame}{5. Home API 2: Process and Return}
+\justifying
+\begin{block}{Flow continuation}
+\texttt{helper\_fun.get\_SeverityNLoss(start\_date, end\_date)}
+\end{block}
+
+\begin{block}{Process continued}
+\begin{itemize}
+    \item loads actual sensor, prediction mean, prediction std, and loss,
+    \item prepares only the top features for plotting.
+\end{itemize}
+\end{block}
+
+\begin{block}{Return}
+\small
+\texttt{counter\_feature\_s2}, \texttt{df\_timestamp}, \texttt{df\_feature\_send}, \texttt{y\_pred\_send}, \texttt{y\_pred\_std\_send}, \texttt{loss\_send}, \texttt{thr\_now\_model}
+\end{block}
+\end{frame}
+
+\begin{frame}{6. Dashboard Page Overview}
+\justifying
+\begin{block}{Page flow}
+\texttt{/dashboard/} -> \texttt{pages.views.dashboard(request)} ->
+\texttt{render(request, "home/dashboard.html", \{\})}
+\end{block}
+
+\begin{block}{APIs called by the page}
+\begin{itemize}
+    \item \texttt{/api/panel\_summary}
+    \item \texttt{/api/zone\_distribution}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{7. Dashboard API 1: \texttt{panel\_summary()}}
+\justifying
+\begin{block}{Flow}
+\texttt{/dashboard/} -> \texttt{/api/panel\_summary} ->
+\texttt{apis.views.panel\_summary()} ->
+\texttt{helper\_fun.get\_PanelSummary(start\_date, end\_date)}
+\end{block}
+
+\begin{block}{Arguments}
+\texttt{start\_date}, \texttt{end\_date}
+\end{block}
+
+\begin{block}{Process}
+The helper:
+\begin{itemize}
+    \item fixes the requested date range,
+    \item reads original sensor data, additional sensor data, and severity trends,
+    \item converts severity percentages into severity levels,
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+\begin{frame}{8. Dashboard API 1: Process and Return}
+\justifying
+\begin{block}{Flow continuation}
+\texttt{helper\_fun.get\_PanelSummary(start\_date, end\_date)}
+\end{block}
+
+\begin{block}{Process continued}
+\begin{itemize}
+    \item builds latest value maps and historical value maps,
+    \item counts severity frequencies per feature,
+    \item ranks the most severe features,
+    \item computes \texttt{priority\_parameter} for each feature.
+\end{itemize}
+\end{block}
+
+\begin{block}{Return}
+\small
+\texttt{last\_timestamp}, \texttt{last\_sensor\_featname}, \texttt{sensor\_featname}, \texttt{last\_severity\_featname}, \texttt{sever\_featname}, \texttt{ordered\_feature\_name}, \texttt{sever\_count\_featname}, \texttt{priority\_parameter}
+\end{block}
+\end{frame}
+
+\begin{frame}{9. Dashboard API 2: \texttt{zone\_distribution()}}
+\justifying
+\begin{block}{Flow}
+\texttt{/dashboard/} -> \texttt{/api/zone\_distribution} ->
+\texttt{apis.views.zone\_distribution()} ->
+\texttt{helper\_fun.get\_OperationDistribution(start\_date, end\_date, tags)}
+\end{block}
+
+\begin{block}{Arguments}
+\texttt{start\_date}, \texttt{end\_date}, optional \texttt{tags}
+\end{block}
+
+\begin{block}{Process}
+The API parses \texttt{tags} from comma-separated text into a list.
+If tags are missing, the helper defaults to \texttt{['LGS1']}.
+Then the helper reads KPI timeline data and calculates:
+\begin{itemize}
+    \item operation mode distribution,
+    \item operation zone distribution.
+\end{itemize}
+\end{block}
+
+\begin{block}{Return}
+\texttt{operation\_mode}, \texttt{operation\_zone}
+\end{block}
+\end{frame}
+
+\begin{frame}{10. KPI Overview Page Overview}
+\justifying
+\begin{block}{Page flow}
+\texttt{/kpi/} -> \texttt{pages.views.kpi(request)} ->
+\texttt{render(request, "kpi/kpi.html", \{\})}
+\end{block}
+
+\begin{block}{APIs called by the page}
+\begin{itemize}
+    \item \texttt{/api/unitStatus}
+    \item \texttt{/api/kpi}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{11. KPI API 1: \texttt{unitStatus()}}
+\justifying
+\begin{block}{Flow}
+\texttt{/kpi/} -> \texttt{/api/unitStatus} ->
+\texttt{apis.views.unitStatus()} ->
+\texttt{helper\_fun.get\_units\_status(start\_date, end\_date, tags)}
+\end{block}
+
+\begin{block}{Arguments}
+\texttt{start\_date}, \texttt{end\_date}
+\end{block}
+
+\begin{block}{Process}
+The API uses a hardcoded tag list:
+\texttt{LGS1, LGS2, LGS3, BGS1, BGS2, KGS1, KGS2}.
+The helper loops over units and determines whether the latest load code means:
+\begin{itemize}
+    \item \texttt{alive}, or
+    \item \texttt{shutdown}.
+\end{itemize}
+\end{block}
+
+\begin{block}{Return}
+\texttt{status\_dict}
+\end{block}
+\end{frame}
+
+\begin{frame}{12. KPI API 2: \texttt{kpi()}}
+\justifying
+\begin{block}{Flow}
+\texttt{/kpi/} -> \texttt{/api/kpi} ->
+\texttt{apis.views.kpi()} ->
+\texttt{helper\_fun.get\_KPIData(start\_date, end\_date, tags, noe\_metric)}
+\end{block}
+
+\begin{block}{Arguments}
+\texttt{start\_date}, \texttt{end\_date}, optional \texttt{tags}, optional \texttt{noe\_metric}
+\end{block}
+
+\begin{block}{Process}
+The helper:
+\begin{itemize}
+    \item reads KPI tables per unit,
+    \item prepares OEE-related series,
+    \item builds plant aggregate series,
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{13. KPI API 2: Process and Return}
+\justifying
+\begin{block}{Flow continuation}
+\texttt{helper\_fun.get\_KPIData(start\_date, end\_date, tags, noe\_metric)}
+\end{block}
+
+\begin{block}{Process continued}
+\begin{itemize}
+    \item loads manual event recap from \texttt{number\_of\_event.pickle},
+    \item optionally loads \texttt{other\_kpis.pickle},
+    \item returns one combined payload for units, plant, and manual KPI blocks.
+\end{itemize}
+\end{block}
+
+\begin{block}{Return overview}
+Top-level keys include per-unit entries plus \texttt{plant}, \texttt{noe}, and \texttt{other\_kpi}.
+\end{block}
+\end{frame}
+
+\begin{frame}{14. KPI API 2 Return Structure}
+\justifying
+\begin{block}{Top-level keys}
+Per-unit keys such as \texttt{LGS1}, \texttt{LGS2}, \texttt{BGS1}, plus
+\texttt{plant}, \texttt{noe}, and \texttt{other\_kpi}
+\end{block}
+
+\begin{block}{Per-unit return fields}
+\texttt{timestamp}, \texttt{oee}, \texttt{phy\_avail}, \texttt{performance}, \texttt{uo\_Avail}, \texttt{aux\_0}, \texttt{aux\_1}
+\end{block}
+
+\begin{block}{Extra payloads}
+\texttt{plant}: aggregate power and plant series\\
+\texttt{noe}: grouped event metrics\\
+\texttt{other\_kpi}: \texttt{MTBF}, \texttt{MTTR}, \texttt{TEEP}
+\end{block}
+\end{frame}
+
+\begin{frame}{15. KPI Unit Page Overview}
+\justifying
+\begin{block}{Page flow}
+\texttt{/kpi\_units/} -> \texttt{pages.views.kpi\_units(request)} ->
+\texttt{render(request, "kpi/kpi\_units.html", \{\})}
+\end{block}
+
+\begin{block}{APIs called by the page}
+\begin{itemize}
+    \item \texttt{/api/zone\_distributionTimeline}
+    \item \texttt{/api/kpi}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{16. KPI Unit API 1: \texttt{zone\_distributionTimeline()}}
+\justifying
+\begin{block}{Flow}
+\texttt{/kpi\_units/} -> \texttt{/api/zone\_distributionTimeline} ->
+\texttt{apis.views.zone\_distributionTimeline()} ->
+\texttt{helper\_fun.get\_OperationDistributionTimeline(start\_date, end\_date, tags)}
+\end{block}
+
+\begin{block}{Arguments}
+\texttt{start\_date}, \texttt{end\_date}, optional \texttt{tags}
+\end{block}
+
+\begin{block}{Process}
+The helper reads one unit timeline table from \texttt{db/kpi.db},
+creates a temporary DataFrame, labels each row by load class,
+converts the load label to a load code,
+and returns timeline-ready arrays.
+\end{block}
+
+\begin{block}{Return}
+\texttt{data\_timestamp}, \texttt{load\_datas}, \texttt{grid\_datas}
+\end{block}
+\end{frame}
+
+\begin{frame}{17. KPI Unit API 2: \texttt{kpi()}}
+\justifying
+\begin{block}{Flow}
+\texttt{/kpi\_units/} -> \texttt{/api/kpi} ->
+\texttt{apis.views.kpi()} ->
+\texttt{helper\_fun.get\_KPIData(start\_date, end\_date, tags, noe\_metric)}
+\end{block}
+
+\begin{block}{Arguments}
+Same as KPI overview page:
+\texttt{start\_date}, \texttt{end\_date}, optional \texttt{tags}, optional \texttt{noe\_metric}
+\end{block}
+
+\begin{block}{Process and return}
+The same KPI helper is reused here, but now the frontend typically uses it together with one selected unit timeline from \texttt{zone\_distributionTimeline()}.
+\end{block}
+\end{frame}
+
+\begin{frame}{18. Manual Upload Page Overview}
+\justifying
+\begin{block}{Page flow}
+\texttt{/kpi/update\_manualdata} ->
+\texttt{pages.views.kpi\_manualdata(request)}
+\end{block}
+
+\begin{block}{Special case}
+This page does not call a separate \texttt{/api/*} endpoint.
+Its POST processing is done directly inside the page view.
+\end{block}
+\end{frame}
+
+\begin{frame}{19. Manual Upload POST Flow}
+\justifying
+\begin{block}{Arguments}
+\texttt{request.method}, uploaded \texttt{file}, and
+\texttt{request.POST['type\_data']}
+\end{block}
+
+\begin{block}{Process}
+If \texttt{type\_data = noe}, the view reads Excel, derives
+\texttt{Start} and \texttt{End}, and writes
+\texttt{db/number\_of\_event.pickle}.
+
+If \texttt{type\_data = other\_kpi}, the view reads Excel,
+converts month and week into date ranges, and writes
+\texttt{db/other\_kpis.pickle}.
+\end{block}
+
+\begin{block}{Return}
+Success: \texttt{\{'message': 'File read successfully', 'type': 'success'\}}\\
+Failure: \texttt{\{'message': 'Error reading file: ...', 'type': 'danger'\}}
+\end{block}
+\end{frame}
+
+\begin{frame}{20. Advisory Table Page Overview}
+\justifying
+\begin{block}{Page flow}
+\texttt{/advisory/} -> \texttt{pages.views.advisory(request)} ->
+\texttt{render(request, "advisory/advisory.html", \{\})}
+\end{block}
+
+\begin{block}{API called by the page}
+\texttt{/api/advisory\_table}
+\end{block}
+\end{frame}
+
+\begin{frame}{21. Advisory API: \texttt{advisory\_table()}}
+\justifying
+\begin{block}{Flow}
+\texttt{/advisory/} -> \texttt{/api/advisory\_table} ->
+\texttt{apis.views.advisory\_table()} ->
+\texttt{helper\_fun.get\_advisoryTable(start\_date, end\_date)}
+\end{block}
+
+\begin{block}{Arguments}
+\texttt{start\_date}, \texttt{end\_date}
+\end{block}
+
+\begin{block}{Process}
+The helper reads severity trending data, applies smoothing and one feature adjustment, computes priority values, builds one-week severity history, counts severity levels, and orders features by latest severity.
+\end{block}
+
+\begin{block}{Return}
+\small
+\texttt{last\_timestamp}, \texttt{last\_severity\_featname}, \texttt{sever\_1week\_featname}, \texttt{sever\_count\_featname}, \texttt{severity\_counter\_overyear}, \texttt{priority\_parameter}
+\end{block}
+\end{frame}
+
+\begin{frame}{22. Advisory Detail Page Overview}
+\justifying
+\begin{block}{Page flow}
+\texttt{/advisory/chart} -> \texttt{pages.views.advisory\_chart(request)} ->
+\texttt{render(request, "advisory/advisory\_chart.html", \{\})}
+\end{block}
+
+\begin{block}{API called by the page}
+\texttt{/api/advisory\_detail/<feat\_id>}
+\end{block}
+\end{frame}
+
+\begin{frame}{23. Advisory Detail API: Arguments and Process}
+\justifying
+\begin{block}{Flow}
+\texttt{/advisory/chart} -> \texttt{/api/advisory\_detail/<feat\_id>} ->
+\texttt{apis.views.advisory\_detail()} ->
+\texttt{helper\_fun.get\_advisoryDetail(...)}
+\end{block}
+
+\begin{block}{Arguments}
+\texttt{start\_date}, \texttt{end\_date}, path \texttt{feat\_id},
+\texttt{feat\_correlate}, \texttt{feat\_correlate\_addi},
+\texttt{maximum\_points}
+\end{block}
+
+\begin{block}{Process}
+The API parses correlation lists from text into integer arrays.
+The helper then:
+\begin{itemize}
+    \item selects requested columns,
+    \item reads severity, original sensor, and additional sensor tables,
+    \item computes shutdown periods,
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{24. Advisory Detail API: Process and Return}
+\justifying
+\begin{block}{Flow continuation}
+\texttt{helper\_fun.get\_advisoryDetail(...)}
+\end{block}
+
+\begin{block}{Process continued}
+\begin{itemize}
+    \item smooths the selected severity trend,
+    \item builds correlation-ready sensor arrays,
+    \item computes priority for the selected feature.
+\end{itemize}
+\end{block}
+
+\begin{block}{Return summary}
+The endpoint returns timestamps, severity trend, signal values, correlation payloads, shutdown periods, and priority.
+\end{block}
+\end{frame}
+
+\begin{frame}{25. Advisory Detail API: Return Fields}
+\justifying
+\begin{block}{Payload fields}
+\small
+\texttt{feat\_id}, \texttt{data\_timestamp}, \texttt{data\_timestamp\_addi}, \texttt{severity\_trending\_datas}, \texttt{priority\_data}, \texttt{sensor\_datas}, \texttt{shutdown\_periods}, \texttt{correlation\_nowparam}, \texttt{correlate\_sensor\_datas}, \texttt{correlate\_sensor\_addi\_datas}, \texttt{correlate\_trending\_datas}
+\end{block}
+
+\begin{block}{Meaning}
+This is the deepest investigation payload in the application.
+It returns the selected signal, the severity trend, correlated signals,
+shutdown intervals, and priority information.
+\end{block}
+\end{frame}
+
+\begin{frame}{26. Settings Page and API}
+\justifying
+\begin{block}{Page flow}
+\texttt{/settings/} -> \texttt{pages.views.settings\_page(request)} ->
+\texttt{render(request, "settings/settings.html", \{\})}
+\end{block}
+
+\begin{block}{API flow}
+\texttt{/settings/} -> \texttt{/api/adjust\_threshold\_settings} ->
+\texttt{apis.views.adjust\_threshold\_settings()}
+\end{block}
+
+\begin{block}{Arguments and process}
+The view reads \texttt{start\_date} and \texttt{end\_date}, but there is no helper call yet and no threshold update logic yet.
+\end{block}
+
+\begin{block}{Return}
+\texttt{\{'datetime\_last': ""\}}
+\end{block}
+\end{frame}
+
+\begin{frame}{27. Final Summary Table}
+\small
+\centering
+\begin{tabular}{>{\RaggedRight}p{0.16\linewidth}>{\RaggedRight}p{0.25\linewidth}>{\RaggedRight}p{0.23\linewidth}>{\RaggedRight\arraybackslash}p{0.26\linewidth}}
+\toprule
+Page & API & Main process & Main return \\
+\midrule
+\texttt{/} & \texttt{timeinfo\_detail()} & latest timestamp lookup & time info \\
+\texttt{/} & \texttt{severity\_plot()} & select top anomaly traces & traces and prediction payload \\
+\texttt{/dashboard/} & \texttt{panel\_summary()} & summary maps and priorities & summary payload \\
+\texttt{/dashboard/} & \texttt{zone\_distribution()} & operation distribution & distribution payload \\
+\texttt{/kpi/} & \texttt{unitStatus()} & alive/shutdown status & \texttt{status\_dict} \\
+\texttt{/kpi/} & \texttt{kpi()} & KPI, plant, manual KPI & KPI payload \\
+\texttt{/kpi\_units/} & \texttt{zone\_distributionTimeline()} & load-code timeline & timeline payload \\
+\texttt{/kpi\_units/} & \texttt{kpi()} & reused KPI payload & KPI payload \\
+\texttt{/advisory/} & \texttt{advisory\_table()} & severity ranking & advisory table payload \\
+\texttt{/advisory/chart} & \texttt{advisory\_detail()} & deep detail and correlation & advisory detail payload \\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+\begin{frame}{28. Final Takeaway}
+\justifying
+\begin{alertblock}{Main conclusion}
+For pages with more than one API, each API should be read separately: arguments in, process inside helper, and payload out.
+\end{alertblock}
+
+\begin{itemize}
+    \item Home, Dashboard, KPI, and KPI Unit pages each use two different APIs.
+    \item Advisory and Settings use one API each.
+    \item Manual upload is a special case because the page view itself handles the POST processing.
+\end{itemize}
+\end{frame}
+
+\end{document}
