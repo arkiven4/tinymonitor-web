@@ -8,3 +8,4 @@ db_prod
 staticfiles
 *.csv
 *.log
+.pytest_cache
