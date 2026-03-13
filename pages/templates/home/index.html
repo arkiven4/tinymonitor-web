@@ -170,6 +170,55 @@
 </div>
 
 <script>
+    // Function to generate dynamic time format based on date range
+    function getAdaptiveXAxisConfig(startDate, endDate) {
+        const start = moment.utc(startDate);
+        const end = moment.utc(endDate);
+        const daysDiff = end.diff(start, 'days');
+        
+        let timeUnit, tooltipFormat, displayFormat;
+        
+        if (daysDiff <= 1) {
+            timeUnit = 'minute';
+            tooltipFormat = 'HH:mm';
+            displayFormat = { minute: 'HH:mm' };
+        } else if (daysDiff <= 7) {
+            timeUnit = 'hour';
+            tooltipFormat = 'Do-MMM HH:mm';
+            displayFormat = { hour: 'Do-MMM HH:mm' };
+        } else if (daysDiff <= 31) {
+            timeUnit = 'day';
+            tooltipFormat = 'Do-MMM';
+            displayFormat = { day: 'Do-MMM' };
+        } else if (daysDiff <= 365) {
+            timeUnit = 'week';
+            tooltipFormat = 'Do-MMM';
+            displayFormat = { week: 'Do-MMM' };
+        } else {
+            timeUnit = 'month';
+            tooltipFormat = 'MMM YY';
+            displayFormat = { month: 'MMM YY' };
+        }
+        
+        return {
+            type: 'time',
+            time: {
+                unit: timeUnit,
+                tooltipFormat: tooltipFormat,
+                displayFormats: displayFormat
+            },
+            ticks: {
+                minRotation: 45,
+                maxTicksLimit: 7,
+                autoSkip: true,
+            },
+            title: {
+                display: true,
+                text: 'Timestamp'
+            }
+        };
+    }
+
     function severity2color(severity) {
         const norm = (severity - 1) / 5;
         const colorScale = d3.scaleLinear()
@@ -400,7 +449,7 @@
                                 title: { display: false }
                             },
                             scales: {
-                                x: xChartLineFormat,
+                                x: getAdaptiveXAxisConfig(start_date, end_date),
                                 y: {
                                     title: { display: true, text: unitSet[featureSet.indexOf(feature)] }
                                 }
@@ -438,7 +487,7 @@
                                 }
                             },
                             scales: {
-                                x: xChartLineFormat,
+                                x: getAdaptiveXAxisConfig(start_date, end_date),
                                 y: {
                                     title: { display: true, text: unitSet[featureSet.indexOf(feature)] }
                                 }

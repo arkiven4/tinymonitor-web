@@ -351,7 +351,140 @@
         color: #007e7a;
         font-weight: 700;
     }
+
+    /* ── Loading Overlay ── */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn .3s ease-in-out;
+    }
+
+    .loading-overlay.show {
+        display: flex;
+    }
+
+    .loading-overlay.error {
+        background: rgba(220, 53, 69, 0.85);
+    }
+
+    .overlay-content {
+        background: #fff;
+        padding: 40px 60px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0,0,0,.3);
+        min-width: 300px;
+        animation: slideUp .4s ease-in-out;
+    }
+
+    .loading-overlay.error .overlay-content {
+        background: #fff3cd;
+        border: 2px solid #dc3545;
+    }
+
+    .overlay-spinner {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 20px;
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #4e73df;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    .loading-overlay.error .overlay-spinner {
+        border-top-color: #dc3545;
+        animation: none;
+    }
+
+    .overlay-text {
+        font-size: 18px;
+        color: #333;
+        margin: 15px 0 0 0;
+        font-weight: 500;
+    }
+
+    .loading-overlay.error .overlay-text {
+        color: #dc3545;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    .overlay-subtext {
+        font-size: 14px;
+        color: #6c757d;
+        margin: 10px 0 0 0;
+    }
+
+    .loading-overlay.error .overlay-subtext {
+        color: #721c24;
+    }
+
+    .overlay-error-icon {
+        font-size: 50px;
+        color: #dc3545;
+        margin-bottom: 15px;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 </style>
+
+<!-- ═══════════════════════════════════════════════════
+     LOADING OVERLAY
+     ═══════════════════════════════════════════════════ -->
+<div id="loadingOverlay" class="loading-overlay show">
+    <div class="overlay-content">
+        <div class="overlay-spinner"></div>
+        <div class="overlay-text">Loading Dashboard...</div>
+        <div class="overlay-subtext">Please wait while we fetch your data</div>
+    </div>
+</div>
+
+<script>
+    // Show loading overlay immediately on page load
+    window.addEventListener('load', function() {
+        // Overlay stays visible, will be hidden by the AJAX call completion
+    });
+    
+    // Backup: ensure overlay is shown if page loads without executing full script
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay && !overlay.classList.contains('show')) {
+                overlay.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        });
+    }
+</script>
+
 <div class="kpi-grid-wrapper">
 <div class="kpi-toolbar">
             <div style="display: flex; align-items: center; gap: 14px;">
@@ -661,6 +794,58 @@
     let start_date;
     let idx_sensor;
 
+    // ═══════════════════════════════════════════════════
+    // LOADING OVERLAY CONFIGURATION
+    // ═══════════════════════════════════════════════════
+    const OVERLAY_CONFIG = {
+        simulateError: false,      // Set to true to simulate an error
+        debugMode: false,          // Set to true to disable overlay (useful for debugging)
+        errorDelay: 2000           // Delay before showing error (ms)
+    };
+
+    // Function to show loading overlay
+    function showLoadingOverlay() {
+        if (OVERLAY_CONFIG.debugMode) return;
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.classList.remove('error');
+        overlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Function to hide loading overlay
+    function hideLoadingOverlay() {
+        if (OVERLAY_CONFIG.debugMode) return;
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.classList.remove('show');
+        overlay.classList.remove('error');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Function to show error overlay
+    function showErrorOverlay(errorMessage = 'An error occurred while loading the dashboard') {
+        if (OVERLAY_CONFIG.debugMode) return;
+        const overlay = document.getElementById('loadingOverlay');
+        const content = overlay.querySelector('.overlay-content');
+        
+        overlay.classList.add('error');
+        overlay.classList.add('show');
+        
+        content.innerHTML = `
+            <div class="overlay-error-icon">⚠️</div>
+            <div class="overlay-text">Error Loading Dashboard</div>
+            <div class="overlay-subtext">${errorMessage}</div>
+            <div style="margin-top: 20px;">
+                <button class="btn btn-danger" onclick="location.reload();" style="margin-right: 10px;">
+                    <i class="fa fa-refresh"></i> Retry
+                </button>
+                <button class="btn btn-secondary" onclick="history.back();">
+                    <i class="fa fa-arrow-left"></i> Go Back
+                </button>
+            </div>
+        `;
+        document.body.style.overflow = 'hidden';
+    }
+
     const datepicker_callback = function (start, end, label) {
         var url = new URL(window.location.href);
         var params = url.searchParams;
@@ -671,6 +856,54 @@
         window.location.href = `${url.pathname}?${params.toString()}`;
     };
 
+    // Function to generate dynamic time format based on date range
+    function getAdaptiveXAxisConfig(startDate, endDate) {
+        const start = moment.utc(startDate);
+        const end = moment.utc(endDate);
+        const daysDiff = end.diff(start, 'days');
+        
+        let timeUnit, tooltipFormat, displayFormat;
+        
+        if (daysDiff <= 1) {
+            timeUnit = 'minute';
+            tooltipFormat = 'HH:mm';
+            displayFormat = { minute: 'HH:mm' };
+        } else if (daysDiff <= 7) {
+            timeUnit = 'hour';
+            tooltipFormat = 'Do-MMM HH:mm';
+            displayFormat = { hour: 'Do-MMM HH:mm' };
+        } else if (daysDiff <= 31) {
+            timeUnit = 'day';
+            tooltipFormat = 'Do-MMM';
+            displayFormat = { day: 'Do-MMM' };
+        } else if (daysDiff <= 365) {
+            timeUnit = 'week';
+            tooltipFormat = 'Do-MMM';
+            displayFormat = { week: 'Do-MMM' };
+        } else {
+            timeUnit = 'month';
+            tooltipFormat = 'MMM YY';
+            displayFormat = { month: 'MMM YY' };
+        }
+        
+        return {
+            type: 'time',
+            time: {
+                unit: timeUnit,
+                tooltipFormat: tooltipFormat,
+                displayFormats: displayFormat
+            },
+            ticks: {
+                minRotation: 45,
+                maxTicksLimit: 7,
+                autoSkip: true,
+            },
+            title: {
+                display: true,
+                text: 'Timestamp'
+            }
+        };
+    }
 
     function severity2color(severity) {
         const norm = (severity - 1) / 5; // Normalize severity to range [0,1]
@@ -747,8 +980,13 @@
             start_date = nowDateMoment.subtract(29, 'days').format("YYYY-MM-DDTHH:mm:ss");
         }
 
+        // Create a copy of dateRangeOptions1 with updated start/end dates
+        var dateRangeOptionsAdaptive = Object.assign({}, dateRangeOptions1);
+        dateRangeOptionsAdaptive.startDate = moment.utc(start_date);
+        dateRangeOptionsAdaptive.endDate = moment.utc(end_date);
+
         $('#reportrange_right span').html(moment.utc(start_date).format('MMMM D, YYYY') + ' - ' + moment.utc(end_date).format('MMMM D, YYYY'));
-        $('#reportrange_right').daterangepicker(dateRangeOptions1, datepicker_callback);
+        $('#reportrange_right').daterangepicker(dateRangeOptionsAdaptive, datepicker_callback);
 
 
         let tags = urlParams.get('tag');
@@ -759,6 +997,17 @@
         let noe_metric = urlParams.get('noe_metric');
         if (!noe_metric) {
             noe_metric = "noe";
+        }
+
+        // Show loading overlay
+        showLoadingOverlay();
+        
+        // Simulate error if configured (for testing purposes)
+        if (OVERLAY_CONFIG.simulateError) {
+            setTimeout(() => {
+                showErrorOverlay('Simulated error: Failed to fetch KPI data. Please check your connection and try again.');
+            }, OVERLAY_CONFIG.errorDelay);
+            return;
         }
 
         $.ajax({
@@ -779,6 +1028,9 @@
                         label.style.color = color;
                     }
                 });
+            },
+            error: function (xhr, status, error) {
+                console.error('Unit Status Error:', status, error, xhr);
             }
         })
 
@@ -1371,6 +1623,30 @@
 
 
                 }, 500);
+                
+                // Hide loading overlay after all charts are rendered
+                hideLoadingOverlay();
+            },
+            error: function (xhr, status, error) {
+                // Handle AJAX errors
+                let errorMessage = 'Failed to load KPI data';
+                
+                if (xhr.status === 404) {
+                    errorMessage = 'The requested data was not found';
+                } else if (xhr.status === 500) {
+                    errorMessage = 'Server error occurred. Please try again later';
+                } else if (xhr.status === 403) {
+                    errorMessage = 'You do not have permission to view this data';
+                } else if (xhr.status === 0) {
+                    errorMessage = 'Network error. Please check your connection';
+                } else if (status === 'timeout') {
+                    errorMessage = 'Request timed out. Please try again';
+                } else if (status === 'error') {
+                    errorMessage = `Error: ${xhr.status} ${xhr.statusText}`;
+                }
+                
+                console.error('AJAX Error:', status, error, xhr);
+                showErrorOverlay(errorMessage);
             }
         });
     });
