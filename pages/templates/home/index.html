@@ -52,16 +52,36 @@
         text-overflow: ellipsis;
     }
     .severity-bar-wrap {
-        height: 18px;
-        background: #eee;
-        border-radius: 4px;
-        overflow: hidden;
-        margin-bottom: 8px;
+        display: flex;
+        gap: 4px;
+        margin-bottom: 12px;
+        align-items: flex-end;
+        padding: 8px;
+        background-color: #f5f5f5;
+        border-radius: 6px;
     }
-    .severity-bar-fill {
-        height: 100%;
-        border-radius: 4px;
-        transition: width 0.5s ease;
+    .severity-segment {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+    .severity-segment-bar {
+        width: 100%;
+        height: 18px;
+        border-radius: 3px;
+        transition: background-color 0.5s ease;
+        border: 1px solid #ddd;
+    }
+    .severity-segment-bar.filled {
+        border-color: #999;
+    }
+    .severity-segment-label {
+        font-size: 10px;
+        font-weight: 700;
+        text-align: center;
+        width: 100%;
     }
     .severity-meta {
         display: flex;
@@ -188,17 +208,35 @@
 
         indices.slice(0, 9).forEach((i, rank) => {
             const maxSev = 6;
-            const pct = Math.min((severityValues[i] / maxSev) * 100, 100);
+            const currentValue = Math.min(severityValues[i], maxSev);
             const card = document.createElement('div');
             card.className = 'severity-card';
+            
+            // Build segmented progress bar
+            let barHTML = '<div class="severity-bar-wrap">';
+            for (let segment = 1; segment <= 6; segment++) {
+                const isFilled = segment <= currentValue;
+                const segmentColor = severity2color(segment);
+                // Active bars: full opacity, Inactive bars: low opacity with severity color
+                const barColor = isFilled ? segmentColor : d3.color(segmentColor).copy({opacity: 0.10}).toString();
+                const filledClass = isFilled ? 'filled' : '';
+                // Darken label color using darker shade of the severity color
+                const labelColor = d3.color(segmentColor).darker(1).toString();
+                barHTML += `
+                    <div class="severity-segment">
+                        <div class="severity-segment-bar ${filledClass}" style="background-color:${barColor} !important;"></div>
+                        <span class="severity-segment-label" style="color:${labelColor}">${segment}</span>
+                    </div>
+                `;
+            }
+            barHTML += '</div>';
+            
             card.innerHTML = `
                 <div class="severity-card-header">
                     <span class="severity-rank">#${rank + 1}</span>
                     <span class="severity-name">${severityLabels[i]}</span>
                 </div>
-                <div class="severity-bar-wrap">
-                    <div class="severity-bar-fill" style="width:${pct}%;background:${colors[i]}"></div>
-                </div>
+                ${barHTML}
                 <div class="severity-meta">
                     <span>Severity: <strong style="color:${colors[i]}">${severityValues[i].toFixed(1)}</strong></span>
                     <span>Confidence: <strong>${severityCounts[i]}</strong></span>

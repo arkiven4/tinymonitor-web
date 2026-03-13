@@ -237,7 +237,182 @@
         border-radius: 12px;
         box-shadow: 0 8px 30px rgba(0,0,0,.18);
     }
+
+    /* ── File Explorer Panel ── */
+    .file-explorer-container {
+        position: fixed;
+        right: 0;
+        top: 0;
+        width: 280px;
+        height: 100vh;
+        background: #f5f5f5;
+        border-left: 1px solid #e0e0e0;
+        overflow-y: auto;
+        z-index: 999;
+        padding-top: 50px;
+        transition: transform .3s ease;
+    }
+
+    .file-explorer-container.collapsed {
+        transform: translateX(100%);
+    }
+
+    .file-explorer-toggle {
+        background: #4e73df;
+        border: none;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background .2s;
+        font-size: 14px;
+    }
+
+    .file-explorer-toggle:hover {
+        background: #3a5bc7;
+    }
+
+    .file-explorer-header {
+        padding: 12px 16px;
+        background: #fff;
+        border-bottom: 2px solid #4e73df;
+        font-weight: 700;
+        font-size: 14px;
+        color: #333;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .file-explorer-close {
+        background: none;
+        border: none;
+        color: #666;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+        transition: color .2s;
+    }
+
+    .file-explorer-close:hover {
+        color: #333;
+    }
+
+    .file-explorer-section {
+        padding: 12px 0;
+    }
+
+    .file-explorer-section-title {
+        padding: 8px 16px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: #eeeeee;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .file-explorer-section-title .toggle-icon {
+        display: inline-block;
+        width: 16px;
+        text-align: center;
+        transition: transform .2s;
+    }
+
+    .file-explorer-section-title.collapsed .toggle-icon {
+        transform: rotate(-90deg);
+    }
+
+    .file-explorer-items {
+        max-height: none;
+        overflow-y: auto;
+        max-height: calc(100vh - 200px);
+        transition: max-height .3s ease;
+    }
+
+    .file-explorer-items.collapsed {
+        max-height: 0;
+        overflow: hidden;
+    }
+
+    .file-explorer-item {
+        padding: 8px 16px;
+        font-size: 13px;
+        color: #333;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-left: 3px solid transparent;
+        transition: background .15s, border-color .15s;
+    }
+
+    .file-explorer-item:hover {
+        background: #efefef;
+    }
+
+    .file-explorer-item.active {
+        background: #e3f2fd;
+        border-left-color: #4e73df;
+        color: #1976d2;
+        font-weight: 600;
+    }
+
+    .file-explorer-item-icon {
+        display: inline-block;
+        width: 18px;
+        text-align: center;
+        color: #4e73df;
+        font-weight: bold;
+    }
+
+    .file-explorer-item.active .file-explorer-item-icon {
+        color: #1976d2;
+    }
+
+    /* ── Chart container with position relative for button positioning ── */
+    .adv-card {
+        position: relative;
+    }
+    
+    .chart-area-wrapper {
+        transition: margin-right .3s ease;
+    }
+
+    .chart-area-wrapper.expanded {
+        margin-right: 0;
+    }
+
+    #chart_container {
+        position: relative;
+    }
 </style>
+
+<!-- ═══════════════════════════════════════════════════
+     FILE EXPLORER PANEL (Hidden by default)
+     ═══════════════════════════════════════════════════ -->
+<div id="fileExplorerPanel" class="file-explorer-container collapsed">
+    <div class="file-explorer-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="fa fa-folder-open"></i> Parameters
+        </div>
+        <button class="file-explorer-close" onclick="closeFileExplorer()" title="Close">
+            <i class="fa fa-times"></i>
+        </button>
+    </div>
+    <div id="fileExplorerContent"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     MAIN CHART CONTENT WRAPPER
+     ═══════════════════════════════════════════════════ -->
+<div id="chartAreaWrapper" class="chart-area-wrapper">
 
 <!-- ═══════════════════════════════════════════════════
      TOOLBAR: Date Range · Sampling · Severity Legend
@@ -266,6 +441,10 @@
                     <span class="severity-badge"><span class="sev-dot" style="background:#ff5500;"></span>5 (75-100%)</span>
                     <span class="severity-badge"><span class="sev-dot" style="background:#ff0000;"></span>6 (&gt;100%)</span>
                 </div>
+                
+                <button id="fileExplorerToggle" class="file-explorer-toggle" title="Toggle Parameter Explorer">
+                    <i class="fa fa-bars"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -443,6 +622,9 @@
         </div>
     </div>
 </div>
+
+</div><!-- End of chartAreaWrapper -->
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-daterangepicker/3.0.5/daterangepicker.min.js"
     integrity="sha512-mh+AjlD3nxImTUGisMpHXW03gE6F4WdQyvuFRkjecwuWLwD2yCijw4tKA3NsEFpA1C3neiKhGXPSIGSfCYPMlQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -1016,6 +1198,72 @@
     });
 
     //window.addEventListener('resize', gaugeSeverityChart.resize);
+
+    // ═══════════════════════════════════════════════════════════
+    // FILE EXPLORER INITIALIZATION & HANDLERS
+    // ═══════════════════════════════════════════════════════════
+    function initializeFileExplorer() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentFeatId = parseInt(urlParams.get('feat_id') || '0');
+        const container = document.getElementById('fileExplorerContent');
+        
+        // Create Main Parameters section
+        let html = `
+            <div class="file-explorer-section">
+                <div class="file-explorer-section-title" onclick="toggleFileExplorerSection(this)">
+                    <span class="toggle-icon">▼</span>
+                    Main Parameters
+                </div>
+                <div class="file-explorer-items">
+        `;
+        
+        featureSet.forEach((feature, index) => {
+            const isActive = currentFeatId === index ? 'active' : '';
+            html += `
+                <div class="file-explorer-item ${isActive}" onclick="navigateToFeature(${index})" title="${feature}">
+                    <span class="file-explorer-item-icon">📊</span>
+                    <span class="file-explorer-item-text">${feature}</span>
+                </div>
+            `;
+        });
+        
+        html += `</div></div>`;
+        
+        container.innerHTML = html;
+    }
+
+    function toggleFileExplorerSection(titleElement) {
+        const itemsDiv = titleElement.nextElementSibling;
+        itemsDiv.classList.toggle('collapsed');
+        titleElement.classList.toggle('collapsed');
+    }
+
+    function navigateToFeature(featId) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('feat_id', featId);
+        window.location.href = url.toString();
+    }
+
+    // Toggle file explorer panel
+    document.getElementById('fileExplorerToggle').addEventListener('click', () => {
+        const panel = document.getElementById('fileExplorerPanel');
+        const wrapper = document.getElementById('chartAreaWrapper');
+        panel.classList.toggle('collapsed');
+        wrapper.classList.toggle('expanded');
+    });
+
+    // Close file explorer panel
+    function closeFileExplorer() {
+        const panel = document.getElementById('fileExplorerPanel');
+        const wrapper = document.getElementById('chartAreaWrapper');
+        panel.classList.add('collapsed');
+        wrapper.classList.remove('expanded');
+    }
+
+    // Initialize file explorer when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeFileExplorer();
+    });
 
     function toggleCorrelatePanel() {
         const body = document.getElementById('correlateBody');
